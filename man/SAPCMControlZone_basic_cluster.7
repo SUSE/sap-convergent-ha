@@ -1,0 +1,247 @@
+.\" Version: 0.1
+.\"
+.TH SAPCMControlZone_basic_cluster 7 "29 Sep 2023" "" "SAPCMControlZone"
+.\"
+.SH NAME
+.\"
+SAPCMControlZone_basic_cluster \- basic settings to make SAPCMControlZone work.
+.PP
+.\"
+.SH DESCRIPTION
+.\"
+The Convergent Mediation (CM) component ControlZone needs a certain basic
+cluster configuration. Besides necessary settings, additional configurations
+might match specific needs.
+
+.PP
+\fB* Operating System Basics\fR
+
+\fBUsers and groups\fR
+
+Technical users and groups, such as "mzadmin" are defined locally in the Linux
+system. See man page passwd(5) and usermod(8.
+
+\fBHostnames\fR
+
+Name resolution of the cluster nodes and the virtual IP address must be done
+locally on all cluster nodes. See man page hosts(5).
+
+\fBTime synchronization\fR
+
+Strict time synchronization between the cluster nodes is mandatory, e.g. NTP.
+See man page chrony.conf(5).
+
+\fBNFS mounted filesystem\fR
+
+A shared filesystem for TODO can be statically mounted on both cluster nodes.
+This filesystem holds working directories, e.g. for batch processing. This NFS
+share is optional. It must not be confused with the ControlZone application
+itself. The application is installed at both cluster nodes on local filesystems.
+Client-side write caching has to be disabled for the NFS shares containing
+customer data. See man page fstab(5) and example below.
+
+.PP
+\fB* CRM Basics\fR
+
+\fBstonith-enabled = true\fR
+
+The cib bootstrap option stonith-enabled is crucial for any reliable pacemaker
+cluster.
+.br
+The value 'true' is one pre-requisite for having a cluster supported.  
+
+\fBmigration-threshold = 3\fR
+
+The crm rsc_default parameter migration-threshold defines how many errors on a
+resource can be detected before this resource will be moved to another node.
+Avalue greater than 1 is needed for resource monitor option on-fail=restart.
+See also failure-timeout.
+
+\fBrecord-pending = true\fR
+
+The crm op_default record-pending defines, whether the intention of an action
+upon the resource is recorded in the Cluster Information Base (CIB).
+Setting this parameter to \'true\' allows the user to see pending actions like
+\'starting\' and \'stopping\' in crm_mon.
+
+\fBfailure-timeout = 86400\fR
+
+The crm op_default failure-timeout defines how long failed actions will
+be kept in the CIB. After that time the failure record will be deleted.
+Time unit is seconds. 
+See also migration-threshold.
+.br
+The value '86400' means failure records will be cleaned automatically after
+one day.
+
+\fBpriority-fencing-delay = 30\fP
+
+The optional crm property priority-fencing-delay specified delay for the
+fencings that are targeting the lost nodes with the highest total resource
+priority in case we do not have the majority of the nodes in our cluster
+partition, so that the more significant nodes potentially win any fencing
+match, which is especially meaningful under split-brain of 2-node cluster.
+A promoted resource instance takes the base priority + 1 on calculation if
+the base priority is not 0. Any delay that are introduced by pcmk_delay_max
+configured for the corresponding fencing resources will be added to this
+delay. A meta attribute priority=100 or alike for the ControlZone resource is
+needed to make this work. See ocf_suse_SAPCMControlZone(7).
+.br
+The delay should be significantly greater than, or safely twice,
+pcmk_delay_max.
+.PP
+.\"
+.SH EXAMPLES
+.\"
+.\" TODO OS network tcp_retries2=8 (8..10)
+.\"
+\fB* CRM basic configuration\fR
+
+This example has been taken from a two-node cluster SLE-HA 15 SP4 with
+disk-based SBD. Ppriority fecing is configured and the SBD pcmk_delay_max has
+been reduced accordingly.
+.PP
+.RS 2 
+primitive rsc_stonith_sbd stonith:external/sbd \\
+.br
+ params pcmk_delay_max=15
+.PP
+property cib-bootstrap-options: \\
+.br
+ cluster-infrastructure=corosync \\
+.br
+ placement-strategy=balanced \\
+.br
+ dc-deadtime=20 \\
+.br
+ stonith-enabled=true \\
+.br
+ stonith-timeout=150 \\
+.br
+ stonith-action=reboot \\
+.br
+ have-watchdog=true \\
+.br
+ priority-fencing-delay=30
+.PP
+rsc_defaults rsc-options: \\
+.br
+ resource-stickiness=1 \\
+.br
+ migration-threshold=3 \\
+.br
+ failure-timeout=86400
+.PP
+op_defaults op-options: \\
+.br
+ timeout=120 \\
+.br
+ record-pending=true 
+.RE
+.PP
+\fB* Statically mounted NFS share for TODO filesystem\fR
+
+Below is an fstab example for filesystems TODO.
+The filesystems are statically mounted on all nodes of the cluster. 
+The parent directory TODO resides on each node locally.
+The correct mount options are depending on the NFS server.
+However, client-side write caching has to be disabled in any case.
+.PP
+.RS 2
+.\" TODO check NFS options
+nfs1:/s/TODO /TODO nfs4 rw,noac,sync,default 0 0
+.RE
+.PP
+Note: The NFS share might be monitored, but not mounted/umounted by the HA
+cluster. See ocf_suse_SAPCMControlZone(7) for details.
+
+.PP
+\fB* Ping cluster resource for checking connectivity\fR
+
+Below is an example of an optional ping resource for checking connectivity to
+the outer world. If the nodes have only one network interface, shared between
+HA cluster and application, this measure may not improve availability.
+.br
+ControlZone should run on an node from which more ping targets can be reached
+than from others. If all nodes are same, the ControlZone application resource
+group (e.g. grp_C11) stays where it is.
+Three vital infrastructure servers outside the datacenter are choosen as ping
+targets. If at least two targets are reachable, the current node is preferred
+for running ControlZone. The maximum time for detecting connectivity changes is
+ca.180 seconds.
+.PP
+.RS 2
+primitive rsc_ping ocf:pacemaker:ping \\
+.br
+ params name=ping-okay host_list="proxy1 proxy2 proxy3" \\
+.br 
+ op monitor interval=120 timeout=60 start-delay=10 on-fail=ignore
+.PP
+clone cln_ping rsc_ping
+.PP
+location loc_connect_C11 grp_C11 \\
+.br
+ rule 90000: ping-okay gt 1
+.RE
+.PP
+.\"
+.SH FILES
+.\"
+.TP
+/etc/passwd
+the local user database
+.TP
+/etc/groups
+the local group database
+.TP
+/etc/hosts
+the local hostname resolution database
+.TP
+/etc/chrony.conf
+the basic configuration for time synchronisation
+.TP
+/etc/sysctl.d/*.conf
+the OS kernel parameters, e.g. TCP tunables
+.TP
+/etc/fstab
+the filesystem table, for statically mounted NFS shares
+.PP
+.\"
+.SH BUGS
+.\"
+In case of any problem, please use your favourite SAP support process to open a
+request for the component BC-OP-LNX-SUSE.
+.br
+Please report feedback and suggestions to feedback@suse.com.
+.PP
+.\"
+.SH SEE ALSO
+.\"
+\fBocf_suse_SAPCMControlZone\fP(7), \fBocf_heartbeat_ping\fP(7) ,
+\fBcrm\fP(8) , \fBpasswd\fP(5) , \fBusermod\fP(8) , \fBhosts\fP(5) ,
+\fBfstab\fP(5) , \fBnfs\fP(5) , \fBmount\fP(8) , \fBchrony.conf\fP(5) ,
+\fBha_related_suse_tids\fP(7) , \fBha_related_sap_notes\fP(7) ,
+.br
+https://documentation.suse.com/sbp/sap/ ,
+.br
+https://documentation.suse.com/#sle-ha ,
+.br
+https://www.suse.com/es-es/support/kb/doc/?id=000019722 ,
+.br
+https://launchpad.support.sap.com/#/notes/3079845
+.PP
+.\"
+.SH AUTHORS
+.\"
+F.Herschel, L.Pinne
+.PP
+.\"
+.SH COPYRIGHT
+.\"
+(c) 2023 SUSE LLC
+.br
+SAPCMControlZone comes with ABSOLUTELY NO WARRANTY.
+.br
+For details see the GNU General Public License at
+http://www.gnu.org/licenses/gpl.html
+.\"
