@@ -1,42 +1,358 @@
-.\" Version: 0.0.1
+.\" Version: 0.1
 .\"
-.TH ocf_suse_SAPCMControlZone 7 "02 Oct 2023" "" "OCF resource agents"
+.TH ocf_suse_SAPCMControlZone 7 "29 Sep 2023" "" "SAPCMControlZone"
 .\"
 .SH NAME
-SAPCMControlZone \- Manages takeover for SAP HANA Convergent Mediation Control Zone
+.\"
+SAPCMControlZone \- Manages Convergent Mediation ControlZone component for a single instance as HA resource.
 .PP
 .\"
-.SH SYNOPSIS
-\fBSAPCMControlZone\fP [start | stop | status | monitor | meta\-data | validate\-all | methods | usage ]
+.SH SYNOPSYS
+.\"
+\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | validate\-all | methods | reload | usage ]
 .PP
 .\"
 .SH DESCRIPTION
-\fBSAPCMControlZone\fP manages the SAP HANA Convergent Mediation Control Zone.
+.\"
+SAPCMControlZone is a resource agent for managing the Convergent Mediation
+ControlZone component for a single instance as HA resource.
 .PP
-....
+The Convergent Mediation (CM) TODO contains a central component ControlZone.
+TODO
+.PP
+TODO
+NFS shares with working directories can be mounted statically on all nodes. The
+HA cluster does not need to control that filesystems.
+
+The resource agent uses the following interfaces provided by the ControlZone
+component:
+.PP
+mzsh startup
+.PP
+mzsh status
+.PP
+mzsh shutdown
+
+.PP
+Please see also the REQUIREMENTS section below.
+.PP
+.\"
+.SH SUPPORTED PARAMETERS
+.\"
+This resource agent supports the following parameters:
+.PP
+\fBMZ_USER\fP
+.RS 4
+OS user who calls mzsh, owner of $MZ_HOME.
+.br
+Unique, string, default "mzadmin".
+.RE
+.PP
+\fBMZ_HOME\fP
+.RS 4
+TODO
+Unique, string, default "TODO".
+.RE
+.PP
+\fBSHUTDOWN_RETRIES\fP
+.RS 4
+Number of retries to check for process shutdown. Passed to mzsh.
+.br
+Unique, integer, default "20".
+.RE
+.PP
+\fBVERBOSE_STATUS\fP
+.RS 4
+Enables verbose mode. Passed to mzsh.
+.br
+Unique, [ yes | no ], default "no".
+.RE
+.PP
+
+.PP
+.\"
+.SH SUPPORTED ACTIONS
+.\"
+This resource agent supports the following actions (operations):
+.PP
+\fBstart\fR
+.RS 4
+Starts the ControlZone resource.
+.br
+Suggested minimum timeout: 120\&.
+.RE
+.PP
+\fBstop\fR
+.RS 4
+Stops the ControlZone resource.
+.br
+Suggested minimum timeout: 120\&.
+.RE
+.PP
+\fBmonitor\fR
+.RS 4
+TODO
+Should be greater than expected infrastructure timeouts.
+.br
+Suggested minimum timeout: 120\&.
+.RE
+.PP
+\fBvalidate\-all\fR
+.RS 4
+Performs a validation of the resource configuration.
+.br
+Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBmeta\-data\fR
+.RS 4
+Retrieves resource agent metadata (internal use only).
+.br
+Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBmethods\fR
+.RS 4
+Reports on the methods, the RA supports.
+.br
+Suggested minimum timeout: 5\&.
+.RE
+.PP
+\fBreload\fR
+.RS 4
+Change parameters without forcing a recover of the resource.
+.br
+Suggested minimum timeout: TODO\&.
+.RE
+.PP
+.\"
+.SH RETURN CODES
+.\"
+The return codes are defined by the OCF cluster framework. Please refer to the
+OCF definition on the website mentioned below.
+.RE
+.PP
 .\"
 .SH EXAMPLES
 .\"
+Configuration and basic checks for ControlZone resources in Linux clusters.
+See also man page SAPCMControlZone_maintenance_examples(7).
+.PP
+\fB* Example configuration for resource group with ControlZone and IP address.\fR
+.PP
+A ControlZone resoure rsc_cz_C11 is configured, handled by OS user c11adm.
+This resource is grouped with an IP address resource rsc_ip_C11 into group
+grp_C11. The resource group might run on either node, but never in parallel.
+This gives a typical active/passive HA setup.
+.PP
+In case of ControlZone failure (or monitor timeout), the resource group gets
+restarted until it gains success or migration-threshold is reached. If
+migration-threshold is exceeded, or if the node where the group runs fails, the
+group will be moved to the other node.
+A priority is configured for correct fencing in split-brain situations.
+See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPAddr2(7).
+.PP
+.RS 2
+primitive rsc_cz_C11 ocf:suse:SAPCMControlZone \\
+.br
+ params MZ_USER=c11adm \\
+.br
+ op monitor interval=120 timeout=180 on-fail=restart \\
+.br
+ op start timeout=300 \\
+.br
+ op stop timeout=300 \\
+.br
+ meta priority=100
+.RE
+.PP
+.RS 2
+primitive rsc_ip_C11 ocf:heartbeat:IPaddr2 \\
+.br
+ params ip=192.168.1.234 \\
+.br
+ op monitor interval=60 timeout=20 on-fail=restart
+.RE
+.PP
+.RS 2
+group grp_C11 \\
+.br
+ rsc_cz_C11 rsc_ip_C11
+.PP
+.RE
+\fB* Optional Filesystem resource for monitoring NFS shares.\fR
+.PP
+A shared filesystem migth be statically mounted by OS on both cluster nodes.
+This filesystem holds working directories. It must not be confused with the
+ControlZone application itself. Client-side write caching has to be disabled.
+.PP
+A Filesystem resource is configured for a bind-mount of the real NFS share.
+This resource is grouped with the ControlZone and IP address. In case of
+filesystem failures, the whole group gets restarted.
+No mount or umount on the real NFS share is done.
+See also man page ocf_heartbeat_Filesystem(7) and nfs(5).
+.PP
+.RS 2
+primitive rsc_fs_C11 ocf:heartbeat:Filesystem \\
+.br
+ params device=<TODO-subdir-inside-apps-real-fs> directory=<TODO-bind-dir-for-check> \\
+.br
+ fstype=nfs4 options=bind,noac,sync,rw,defaults \\
+.br
+ op monitor interval=120 timeout=120 on-fail=restart \\
+.br
+ op_params OCF_CHECK_LEVEL=20 \\
+.br
+ op start timeout=120 \\
+.br
+ op stop timeout=120
+.RE
+.PP
+.RS 2
+group grp_C11 \\
+.br
+ rsc_fs_C11 rsc_cz_C11 rsc_ip_C11
+.RE
+.PP
+\fB* Show configuration of ControlZone resource and resource group.\fR
+.PP
+Resource is rsc_cz_C11, resource group is grp_C11.
+.PP
+.RS 2 
+# crm configure show rsc_cz_C11 grp_C11
+.RE
+.PP
+\fB* Search for log entries of SAPCMControlZone, show errors only.\fR
+.PP
+.RS 2
+# grep "SAPCMControlZone.*RA.*rc=[1-7,9]" /var/log/messages
+.RE
+.PP
+\fB* Show failcount for resource rsc_cz_C11.\fR
+.PP
+.RS 2
+# cibadmin -Ql | grep rsc_cz_C1.*fail-count
+.RE
+.PP
+\fB* Manually trigger a SAPCMControlZone probe action.\fR
+.PP
+.RS 2
+# OCF_ROOT=/usr/lib/ocf/ \\
+.br
+OCF_RESKEY_CRM_meta_interval=0 \\
+.br
+/usr/lib/ocf/resource.d/suse/SAPCMControlZone monitor
+.RE
+.PP
+\fB* Example for testing the SAPCMControlZone RA.\fR
+.PP
+The ControlZone application will be manually shut down, while controlled by the
+Linux cluster. This could be done as very basic testing of SAPCMControlZone RA
+integration. Terminating ControlZone processes is dangerous. This test should
+not be done on production systems. Example user is mzdamin.
+.br
+Note: Understand the impact before trying.
+.PP
+.RS 2
+1. Check ControlZone and Linux cluster for clean and idle state.
+.br
+2. Shut down ControlZone.
+.br
+ # su - mzadmin "mzsh shutdown"
+.br
+3. Wait for the cluster to recover from resource failure.
+.br
+4. Clean up resource fail-count.
+.br
+5. Check ControlZone and Linux cluster for clean and idle state.
+.RE
+.PP
+.\"
 .SH FILES
 .\"
-.SH REQUIREMENTS 
+.TP
+/usr/lib/ocf/resource.d/suse/SAPCMControlZone
+the resource agent
+.TP
+/opt/TODO/mzsh
+TODO
+.TP
+$MZ_HOME, e.g. TODO
+TODO
+.PP
+.\"
+.SH REQUIREMENTS
+.\"
+* Convergent Mediation ControlZone version 9.0.0.0 or higher is installed and
+configured on both cluster nodes.
+.PP
+* Only one ControlZone instance per Linux cluster.
+.PP
+* Technical users and groups are defined locally in the Linux system. If users
+are resolved by remote service, local caching is neccessary. Substitute user
+(su) to user "mzadmin" needs to work reliable and without customized actions or
+messages.
+.PP
+* Strict time synchronization between the cluster nodes, e.g. NTP.
+.PP
+* Needed NFS shares (e.g. TODO) mounted statically or by automounter. 
+No client-side write caching.
+.PP
+* The RA monitoring operations have to be active.
+.PP
+* RA runtime almost completely depends on call-outs to controlled resources,
+OS and Linux cluster. The infrastructure needs to allow these call-outs to
+return in time.
+.PP
+* The ControlZone application is not started/stopped by OS. Thus there is no
+SystemV, systemd or cron job.
+.PP
+* As long as the ControlZone application is managed by the Linux cluster, the
+application is not started/stopped/moved from outside. Thus no manual actions
+are done.
+.PP
+* Interfaces to ControlZone TODO mzsh startup/shutdown/status
+.PP
 .\"
 .SH BUGS
-As we currently do not have any code the resource agent is currenty 100% bug-free. We will work on that ;-)
+.\"
+In case of any problem, please use your favourite SAP support process to open a
+request for the component BC-OP-LNX-SUSE.
+.br
+Please report feedback and suggestions to feedback@suse.com.
+.PP
 .\"
 .SH SEE ALSO
+.\"
+\fBSAPCMControlZone_basic_cluster\fP(7),
+\fBSAPCMControlZone_maintenance_examples\fP(7),
+\fBocf_heartbeat_IPaddr2\fP(7) , \fBocf_heartbeat_Filesystem\fP(7) ,
+\fBcrm\fP(8) , \fBcrm_mon\fP(8) ,
+\fBnfs\fP(5) , \fBmount\fP(8) , 
 .br
-
+http://clusterlabs.org/doc/en-US/Pacemaker/1.1/html/Pacemaker_Explained/s-ocf-return-codes.html ,
+.br
+https://infozone.atlassian.net/wiki/spaces/MD9/pages/4881672/mzsh ,
+.br
+https://documentation.suse.com/sbp/sap/ ,
+.br
+https://documentation.suse.com/#sle-ha ,
+.br
+https://www.suse.com/es-es/support/kb/doc/?id=000019722 ,
+.br
+https://launchpad.support.sap.com/#/notes/3079845
+.PP
 .\"
 .SH AUTHORS
-.br 
-L. Pinne 
+.\"
+F.Herschel, L.Pinne
+.PP
 .\"
 .SH COPYRIGHT
-.br
+.\"
 (c) 2023 SUSE LLC
 .br
-The resource agent SAPHana comes with ABSOLUTELY NO WARRANTY.
+SAPCMControlZone comes with ABSOLUTELY NO WARRANTY.
 .br
 For details see the GNU General Public License at
 http://www.gnu.org/licenses/gpl.html
