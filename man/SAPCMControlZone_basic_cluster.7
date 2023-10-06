@@ -1,6 +1,6 @@
 .\" Version: 0.1
 .\"
-.TH SAPCMControlZone_basic_cluster 7 "29 Sep 2023" "" "SAPCMControlZone"
+.TH SAPCMControlZone_basic_cluster 7 "06 Oct 2023" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -149,7 +149,7 @@ However, client-side write caching has to be disabled in any case.
 .PP
 .RS 2
 .\" TODO check NFS options
-nfs1:/s/TODO /TODO nfs4 rw,noac,sync,default 0 0
+nfs1:/s/c11/platform /platform nfs4 rw,noac,sync,default 0 0
 .RE
 .PP
 Note: The NFS share might be monitored, but not mounted/umounted by the HA
