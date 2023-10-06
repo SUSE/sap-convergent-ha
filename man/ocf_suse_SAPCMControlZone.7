@@ -208,14 +208,18 @@ A Filesystem resource is configured for a bind-mount of the real NFS share.
 This resource is grouped with the ControlZone and IP address. In case of
 filesystem failures, the whole group gets restarted.
 No mount or umount on the real NFS share is done.
-See also man page ocf_heartbeat_Filesystem(7) and nfs(5).
+Example for the real NFS share is /mnt/platform/check/, example for the bind-mount
+is /mnt/check/. Both mount points have to be created before the cluster resource
+is activated. 
+See also man page SAPCMControlZone_basic_cluster(7), ocf_heartbeat_Filesystem(7)
+and nfs(5).
 .PP
 .RS 2
 primitive rsc_fs_C11 ocf:heartbeat:Filesystem \\
 .br
- params device=<TODO-subdir-inside-apps-real-fs> directory=<TODO-bind-dir-for-check> \\
+ params device=/mnt/platform/check/ directory=/mnt/check/ \\
 .br
- fstype=nfs4 options=bind,noac,sync,rw,defaults \\
+ fstype=nfs4 options=bind,rw,noac,sync,defaults \\
 .br
  op monitor interval=120 timeout=120 on-fail=restart \\
 .br
