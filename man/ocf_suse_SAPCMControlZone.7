@@ -317,7 +317,7 @@ actions or messages.
 .PP
 * Strict time synchronization between the cluster nodes, e.g. NTP.
 .PP
-* Needed NFS shares (e.g. TODO) mounted statically or by automounter. 
+* Needed NFS shares (e.g. /mnt/platform/) mounted statically or by automounter. 
 No client-side write caching.
 .PP
 * The RA monitoring operations have to be active.
@@ -333,7 +333,10 @@ SystemV, systemd or cron job.
 application is not started/stopped/moved from outside. Thus no manual actions
 are done.
 .PP
-* Interfaces to ControlZone TODO mzsh startup/shutdown/status
+* Interface for the RA to the ControlZone platform is the command mzsh. The
+mzsh is called with the arguments startup, shutdown, status and kill. Instead
+of evluating mzsh´s return codes, its output is parsed. Thus the command and
+its output needs to stable.
 .PP
 .\"
 .SH BUGS
