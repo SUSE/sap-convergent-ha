@@ -34,7 +34,7 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 
 function mz_call()
 {
-    local timeout, user, action, component
+    local rc timeout, user, action, component
     while [ $# -gt 0 ]; do
         case "$1" in
             --user=* )  user=${1#*=} ;;
@@ -42,6 +42,7 @@ function mz_call()
             --timeout=* )  timeout=${1#*=} ;;
             --component=* )  component=${1#*=} ;;
         esac
+        shift
     done
 }
 
