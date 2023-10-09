@@ -16,15 +16,15 @@
 #      See usage() function below for more details...
 #
 # OCF instance parameters:
-#   OCF_RESKEY_SID              (or alternatively USER)
-#   OCF_RESKEY_SHUTDOWN_RETRIES (do not mix-up with migration threshold)
+#   OCF_RESKEY_USER             - the linux user to control the CM control-zone
+#   OCF_RESKEY_SHUTDOWN_RETRIES (optional, do not mix-up with migration threshold)
 #   OCF_RESKEY_VERBOSE_STATUS   (optional, defaults to no)
 #
 #######################################################################
-SAPHanaControllerVersion="0.0.1"
+SAPHanaControllerVersion="0.0.2"
 #
 # Initialization:
-export raType="sapcmcz_"
+export raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
@@ -32,36 +32,52 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 #######################################################################
 #
 
-function sapcmcz_usage()
+function mz_call()
+{
+    local rc timeout, user, action, component
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --user=* )  user=${1#*=} ;;
+            --action=* )  action=${1#*=} ;;
+            --timeout=* )  timeout=${1#*=} ;;
+            --component=* )  component=${1#*=} ;;
+        esac
+        shift
+    done
+}
+
+function mz_usage()
 {
     echo "usage: ..."
 }
 
-function sapcmcz_init()
+function mz_init()
 {
     # TODO: init variables
     echo "init"
+    mz_user="$OCF_RESKEY_USER:-mzuser"
+    mz_component="platform"
 }
 
-function sapcmcz_meta_data()
+function mz_meta_data()
 {
    echo '<?xml version="1.0"?>
 <!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
-<resource-agent name="SAPHanaController" version="$raVersion">
+<resource-agent name="SAPCMControlZone" version="$raVersion">
 <version>1.1</version>
-<shortdesc lang="en">Manages SAP onvergent Mediation Control Zone.</shortdesc>
-<longdesc lang="en">Manages SAP onvergent Mediation Control Zone.</longdesc>
+<shortdesc lang="en">Manages SAP convergent Mediation Control Zone.</shortdesc>
+<longdesc lang="en">Manages SAP convergent Mediation Control Zone.</longdesc>
 <parameters>
-<parameter name="SID" unique="0" required="1">
-    <longdesc lang="en">SAP System Identifier (SID) like "SLE" or "HAE"</longdesc>
-    <shortdesc lang="en">SAP System Identifier (SID)</shortdesc>
+<parameter name="USER" unique="0" required="1">
+    <longdesc lang="en">Linux user to control the CM component.</longdesc>
+    <shortdesc lang="en">Linux user to control the CM component.</shortdesc>
     <content type="string" default="" />
 </parameter>
 </parameters>
 <actions>
-    <action name="start"   timeout="300" />
-    <action name="stop"    timeout="300" />
-    <action name="monitor" timeout="180" interval="120" />
+    <action name="start"   timeout="120" />
+    <action name="stop"    timeout="120" />
+    <action name="monitor" timeout="60" interval="120" />
     <action name="validate-all" timeout="5" />
     <action name="meta-data" timeout="5" />
     <action name="methods" timeout="5" />
@@ -71,7 +87,7 @@ function sapcmcz_meta_data()
    '
 }
 
-function sapcmcz_check_params()
+function mz_check_params()
 {
     # TODO: Change this fucntion to check the really needed parameters
     if  [ -z "$OCF_RESKEY_SID" ]
@@ -81,24 +97,36 @@ function sapcmcz_check_params()
     fi
 }
 
-function sapcmcz_start()
+function mz_start()
 {
-    echo "start"
+    local rc="$OCF_SUCCESS"
+    mz_call --timeout=60 --action=startup --component="$mz_component" --user="$mz_user"; rc="$?"
+    # TODO; map to cluster return code (OCF_*)
+    return "$rc"
 }
 
-function sapcmcz_stop()
+function mz_stop()
 {
-    echo "stop"
+    local rc="$OCF_SUCCESS"
+    # TODO: retry 
+    mz_call --timeout=60 --action=shutdown --component="$mz_component" --user="$mz_user"; rc="$?"
+    # TODO; map to cluster return code (OCF_*)
+    return "$rc"
 }
 
-function sapcmcz_reload()
+function mz_reload()
 {
-    echo "reload"
+    local rc="$OCF_SUCCESS"
+    return "$rc"
 }
 
-function sapcmcz_monitor()
+function mz_monitor()
 {
-    echo "monitor"
+    local rc="$OCF_SUCCESS"
+    # TODO: retry 
+    mz_call --timeout=60 --action=shutdown --component="$mz_component" --user="$mz_user"; rc="$?"
+    # TODO; map to cluster return code (OCF_*)
+    return "$rc"
 }
 
 # function: main - main function to operate
