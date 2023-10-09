@@ -99,8 +99,8 @@ pcmk_delay_max.
 
 This example has been taken from a two-node cluster SLE-HA 15 SP4 with
 disk-based SBD. Priority fecing is configured and the SBD pcmk_delay_max has
-been reduced accordingly. The stonith-delay is adjusted to SBD message-wait.
-The migration-threshold is set to 3. The failure-timeout is 86400.
+been reduced accordingly. The stonith-timeout is adjusted to SBD on-disk
+msgwait. The migration-threshold is set to 3. The failure-timeout is 86400.
 .PP
 .RS 2 
 primitive rsc_stonith_sbd stonith:external/sbd \\
