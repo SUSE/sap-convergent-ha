@@ -14,18 +14,16 @@ SAPCMControlZone \- Manages the Convergent Mediation ControlZone platform for a 
 .\"
 .SH DESCRIPTION
 .\"
-SAPCMControlZone is a resource agent for managing the Convergent Mediation
+SAPCMControlZone is a resource agent for managing the Convergent Mediation (CM)
 ControlZone platform for a single instance as HA resource.
 .PP
-The Convergent Mediation (CM) application contains a central ControlZone
-platform.
+The CM application contains a central ControlZone platform.
 TODO
 This ControlZone platform is handled as active/passive resource.
 .PP
-TODO
 NFS shares with working directories can be mounted statically on all nodes. The
 HA cluster does not need to control that filesystems.
-
+.PP
 The resource agent uses the following interfaces provided by the ControlZone
 component:
 .PP
@@ -36,8 +34,8 @@ mzsh status platform
 mzsh shutdown platform
 .PP
 mzsh kill platform
-.PP
-TODO output
+.\" .PP
+.\" TODO output
 .PP
 Please see also the REQUIREMENTS section below.
 .PP
@@ -271,7 +269,7 @@ OCF_RESKEY_CRM_meta_interval=0 \\
 The ControlZone platform will be terminated, while controlled by the
 Linux cluster. This could be done as very basic testing of SAPCMControlZone RA
 integration. Terminating ControlZone platform processes is dangerous. This test
-should not be done on production systems. Example user is mzdamin.
+should not be done on production systems. Example user is mzadmin.
 .br
 Note: Understand the impact before trying.
 .PP
