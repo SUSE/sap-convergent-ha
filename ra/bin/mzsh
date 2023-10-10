@@ -38,11 +38,11 @@ wd1 is running"
             ;;
     shutdown )
         if [[ "$is_fail" == "no" ]]; then
-            printf "Shuting down $comp..."
+            printf "Shutting down $comp..."
             sleep 5
             echo "done."
         else
-            printf "Shuting down $comp..."
+            printf "Shutting down $comp..."
             sleep 30
         fi
             ;;
