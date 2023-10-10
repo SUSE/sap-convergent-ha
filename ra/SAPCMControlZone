@@ -36,7 +36,7 @@ function mz_call()
 {
     # TODO: Check, if we need to switch user (su) for the mzshell action or if we (at least for status-check) could call it as user root to avoid problems with e.g. active directory
     # TODO: Implement 'timeout'
-    local rc timeout=0, user, action="status", component="platform"
+    local rc="$OCF_ERR_GENERIC" timeout=0, user="$mz_user", action="status", component="platform"
     while [ $# -gt 0 ]; do
         case "$1" in
             --user=* )  user=${1#*=} ;;
@@ -50,6 +50,7 @@ function mz_call()
     case "$action" in
         status )
                 # we might need 1-2 retries, lets check if we only need to retry, if the status runs into a timeout
+                # can be called WITHOUT su
                 if "$mz_bin_dir/$mz_shell"  status | grep -q "$component is running"; then
                     ocf_log info "mz_call: $component is running"
                     rc="$OCF_SUCCESS"
@@ -59,7 +60,8 @@ function mz_call()
                 fi
                 ;;
         startup )
-                if "$mz_bin_dir/$mz_shell" startup "$component" | grep -q "Shutting down $component...done."; then
+                # needs to switch-user to <mzadmin>
+                if su - "$user" "$mz_bin_dir/$mz_shell" startup "$component" | grep -qi "starting $component...done."; then
                     ocf_log info "mz_call: $component is started"
                     rc="$OCF_SUCCESS"
                 else
@@ -68,7 +70,8 @@ function mz_call()
                 fi
                     ;;
         shutdown )
-                if "$mz_bin_dir/$mz_shell" shutdown "$component" | grep -q "Shutting down $component...done."; then
+                # needs to switch-user to <mzadmin>
+                if su - "$user" "$mz_bin_dir/$mz_shell" shutdown "$component" | grep -q "Shutting down $component...done."; then
                     ocf_log info "mz_call: $component is stopped"
                     rc="$OCF_SUCCESS"
                 else
@@ -77,14 +80,16 @@ function mz_call()
                 fi
                     ;;
         restart )
-                if "$mz_bin_dir/$mz_shell" restart "$component" | grep -q "Starting $component...done."; then
+                # needs to switch-user to <mzadmin>
+                if su - "$user" "$mz_bin_dir/$mz_shell" restart "$component" | grep -q "Starting $component...done."; then
                     rc="$OCF_SUCCESS"
                 else
                     rc="$OCF_ERR_GENERIC"
                 fi
                 ;;
         kill )
-                if "$mz_bin_dir/$mz_shell"  kill "$component" | grep -q "killing $component\.*done."; then
+                # needs to switch-user to <mzadmin>
+                if su - "$user" "$mz_bin_dir/$mz_shell"  kill "$component" | grep -q "killing $component\.*done."; then
                     ocf_log info "mz_call: killing $component successful"
                     rc="$OCF_SUCCESS"
                 else
@@ -96,6 +101,7 @@ function mz_call()
                 # not implemented
                 rc="$OCF_ERR_UNIMPLEMENTED"
     esac
+    return "$rc"
 }
 
 function mz_usage()
@@ -107,7 +113,7 @@ function mz_init()
 {
     # TODO: init variables
     echo "init"
-    mz_user="$OCF_RESKEY_USER:-mzuser"
+    mz_user="${OCF_RESKEY_USER:-mzuser}"
     mz_component="platform"
     # TODO: chacnge mz_dir from 'current directory' tto the mz installation directory once we could test/check that
     mz_base_dir="$PWD"
@@ -145,12 +151,14 @@ function mz_meta_data()
 
 function mz_check_params()
 {
+    local rc="$OCF_SUCCESS"
     # TODO: Change this fucntion to check the really needed parameters
-    if  [ -z "$OCF_RESKEY_SID" ]
-    then
-        ocf_log err "ACT: Please set parameter SID!"
-        exit "$OCF_ERR_ARGS"
-    fi
+    #if  [ -z "$OCF_RESKEY_SID" ]
+    #then
+    #    ocf_log err "ACT: Please set parameter SID!"
+    #    exit "$OCF_ERR_ARGS"
+    #fi
+    return "$rc"
 }
 
 function mz_start()
