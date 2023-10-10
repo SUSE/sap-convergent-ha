@@ -34,7 +34,9 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 
 function mz_call()
 {
-    local rc timeout, user, action, component
+    # TODO: Check, if we need to switch user (su) for the mzshell action or if we (at least for status-check) could call it as user root to avoid problems with e.g. active directory
+    # TODO: Implement 'timeout'
+    local rc timeout=0, user, action="status", component="platform"
     while [ $# -gt 0 ]; do
         case "$1" in
             --user=* )  user=${1#*=} ;;
@@ -44,6 +46,56 @@ function mz_call()
         esac
         shift
     done
+
+    case "$action" in
+        status )
+                # we might need 1-2 retries, lets check if we only need to retry, if the status runs into a timeout
+                if "$mz_bin_dir/$mz_shell"  status | grep -q "$component is running"; then
+                    ocf_log info "mz_call: $component is running"
+                    rc="$OCF_SUCCESS"
+                else
+                    ocf_log info "mz_call: $component is NOT running"
+                    rc="$OCF_NOT_RUNNING"
+                fi
+                ;;
+        startup )
+                if "$mz_bin_dir/$mz_shell" startup "$component" | grep -q "Shutting down $component...done."; then
+                    ocf_log info "mz_call: $component is started"
+                    rc="$OCF_SUCCESS"
+                else
+                    ocf_log info "mz_call: $component is NOT started"
+                    rc="$OCF_NOT_RUNNING"
+                fi
+                    ;;
+        shutdown )
+                if "$mz_bin_dir/$mz_shell" shutdown "$component" | grep -q "Shutting down $component...done."; then
+                    ocf_log info "mz_call: $component is stopped"
+                    rc="$OCF_SUCCESS"
+                else
+                    ocf_log info "mz_call: $component is still NOT stopped"
+                    rc="$OCF_ERR_GENERIC"
+                fi
+                    ;;
+        restart )
+                if "$mz_bin_dir/$mz_shell" restart "$component" | grep -q "Starting $component...done."; then
+                    rc="$OCF_SUCCESS"
+                else
+                    rc="$OCF_ERR_GENERIC"
+                fi
+                ;;
+        kill )
+                if "$mz_bin_dir/$mz_shell"  kill "$component" | grep -q "killing $component\.*done."; then
+                    ocf_log info "mz_call: killing $component successful"
+                    rc="$OCF_SUCCESS"
+                else
+                    ocf_log info "mz_call: killing $component NOT successful"
+                    rc="$OCF_ERR_GENERIC"
+                fi
+                ;;
+        * ) 
+                # not implemented
+                rc="$OCF_ERR_UNIMPLEMENTED"
+    esac
 }
 
 function mz_usage()
@@ -57,6 +109,10 @@ function mz_init()
     echo "init"
     mz_user="$OCF_RESKEY_USER:-mzuser"
     mz_component="platform"
+    # TODO: chacnge mz_dir from 'current directory' tto the mz installation directory once we could test/check that
+    mz_base_dir="$PWD"
+    mz_bin_dir="$mz_base_dir/bin"
+    mz_shell="mzsh"
 }
 
 function mz_meta_data()
@@ -124,7 +180,7 @@ function mz_monitor()
 {
     local rc="$OCF_SUCCESS"
     # TODO: retry 
-    mz_call --timeout=60 --action=shutdown --component="$mz_component" --user="$mz_user"; rc="$?"
+    mz_call --timeout=60 --action=status --component="$mz_component" --user="$mz_user"; rc="$?"
     # TODO; map to cluster return code (OCF_*)
     return "$rc"
 }
