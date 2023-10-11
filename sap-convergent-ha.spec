@@ -22,9 +22,10 @@ Group:          Productivity/Clustering/HA
 Summary:        Resource agents to control the convergent mediation control zone
 # Selected GPL-2.0-or-later as correct license from https://github.com/openSUSE/spec-cleaner#spdx-licenses
 License:        GPL-2.0-or-later 
-URL:             
-Source0:         %{name}-%{version}.tgz 
-BuildRequires:  
+URL:            https://www.suse.com 
+Source0:        %{name}-%{version}.tgz 
+
+BuildRequires:  gzip
 BuildArch:      noarch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
@@ -44,19 +45,15 @@ Authors:
 
 %prep
 tar xf %{S:0}
-#%autosetup
 
 %build
 gzip man/*
-#%configure
-#%make_build
 
 %install
-#%make_install
 
 # resource agents (ra)
 mkdir -p %{buildroot}/usr/lib/ocf/resource.d/suse
-install -m 0755 ra/SAPHana* %{buildroot}/usr/lib/ocf/resource.d/suse/
+install -m 0755 ra/SAP* %{buildroot}/usr/lib/ocf/resource.d/suse/
 
 # manual pages
 mkdir -p %{buildroot}%{_mandir}/man7
@@ -66,14 +63,13 @@ install -m 0444 man/*.7.gz %{buildroot}%{_mandir}/man7
 %postun
 
 %files
+%dir /usr/lib/ocf
+%dir /usr/lib/ocf/resource.d
 %dir /usr/lib/ocf/resource.d/suse
 /usr/lib/ocf/resource.d/suse/*
-#/usr/share/%{name}
-#%dir /usr/lib/%{name}
 
-%license COPYING
-%doc README
-#%doc ChangeLog README
+%license LICENSE
+%doc README.md
 %doc %{_mandir}/man7/*
 
 %changelog
