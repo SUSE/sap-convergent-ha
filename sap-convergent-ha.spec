@@ -42,6 +42,9 @@ Authors:
     Fabian Herschel
     Lars Pinne
 
+%package mz
+Group:          Productivity/Clustering/HA
+Summary:        Resource agents to control the convergent mediation control zone
 
 %prep
 tar xf %{S:0}
@@ -54,6 +57,9 @@ gzip man/*
 # resource agents (ra)
 mkdir -p %{buildroot}/usr/lib/ocf/resource.d/suse
 install -m 0755 ra/SAP* %{buildroot}/usr/lib/ocf/resource.d/suse/
+
+mkdir -p %{buildroot}/usr/bin
+install -m 0755 test/mzsh %{buildroot}/usr/bin
 
 # manual pages
 mkdir -p %{buildroot}%{_mandir}/man7
@@ -71,6 +77,9 @@ install -m 0444 man/*.7.gz %{buildroot}%{_mandir}/man7
 %license LICENSE
 %doc README.md
 %doc %{_mandir}/man7/*
+
+%files mz
+/usr/bin/mzsh
 
 %changelog
 
