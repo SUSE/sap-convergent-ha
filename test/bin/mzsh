@@ -1,0 +1,52 @@
+#!/usr/bin/bash
+set -x
+
+action="$1"
+comp="$2"
+
+(( a = $(date +'%S') % 2 ))
+if [[ "$a" == 0 ]]; then
+    is_fail="no"
+else
+    is_fail="yes"
+fi
+
+case "$action" in
+    status )  
+            if [[ "$is_fail" == "yes" ]]; then
+                echo "ec1 is running
+platform is not running
+ui is running
+wd1 is running"
+              else
+                echo "ec1 is running
+platform is running
+ui is running
+wd1 is running"
+
+              fi
+                ;;
+    startup )
+        if [[ "$is_fail" == "no" ]]; then
+            printf "starting $comp..."
+            sleep 10
+            echo "done."
+        else
+            printf "starting $comp..."
+            sleep 30
+        fi
+            ;;
+    shutdown )
+        if [[ "$is_fail" == "no" ]]; then
+            printf "Shutting down $comp..."
+            sleep 5
+            echo "done."
+        else
+            printf "Shutting down $comp..."
+            sleep 30
+        fi
+            ;;
+            
+esac
+# meaningless  rc
+exit 99
