@@ -116,8 +116,8 @@ function mz_init()
     mz_user="${OCF_RESKEY_USER:-mzuser}"
     mz_component="platform"
     # TODO: chacnge mz_dir from 'current directory' tto the mz installation directory once we could test/check that
-    mz_base_dir="$PWD"
-    mz_bin_dir="$mz_base_dir/bin"
+    mz_base_dir=$( cd ..; echo "$PWD" )
+    mz_bin_dir="$mz_base_dir/test"
     mz_shell="mzsh"
 }
 
