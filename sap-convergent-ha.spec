@@ -46,6 +46,9 @@ Authors:
 Group:          Productivity/Clustering/HA
 Summary:        Resource agents to control the convergent mediation control zone
 
+%description mz
+mz shell simulator not to be used for production, only for internal development
+
 %prep
 tar xf %{S:0}
 
@@ -59,7 +62,7 @@ mkdir -p %{buildroot}/usr/lib/ocf/resource.d/suse
 install -m 0755 ra/SAP* %{buildroot}/usr/lib/ocf/resource.d/suse/
 
 mkdir -p %{buildroot}/usr/bin
-install -m 0755 test/mzsh %{buildroot}/usr/bin
+install -m 0755 test/bin/mzsh %{buildroot}/usr/bin
 
 # manual pages
 mkdir -p %{buildroot}%{_mandir}/man7
