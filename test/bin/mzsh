@@ -1,36 +1,44 @@
 #!/usr/bin/bash
-set -x
+#set -x
 
 action="$1"
 comp="$2"
 
-(( a = $(date +'%S') % 2 ))
-if [[ "$a" == 0 ]]; then
-    is_fail="no"
-else
+services="platform ui bla-bla blub-blub"
+
+file_of_fail_base="/dev/shm/mzsh_fail_"
+file_of_status="/dev/shm/mzsh_status"
+
+if [ -e "${file_of_fail_base}${action}" ]; then
     is_fail="yes"
-fi
+    rm "${file_of_fail_base}${action}"
+else
+    is_fail="no"
+fi 
 
 case "$action" in
     status )  
+            
             if [[ "$is_fail" == "yes" ]]; then
-                echo "ec1 is running
-platform is not running
-ui is running
-wd1 is running"
-              else
-                echo "ec1 is running
-platform is running
-ui is running
-wd1 is running"
-
-              fi
+                echo "blala is not running"
+                echo "blubblub is not running"
+                sleep 60
+            else
+                for srv in $services; do
+                    if [ -e /dev/shm/mzsh_status_$srv ]; then
+                        cat /dev/shm/mzsh_status_$srv
+                    else
+                        echo "$srv is not running"
+                    fi
+                done
+            fi
                 ;;
     startup )
         if [[ "$is_fail" == "no" ]]; then
             printf "starting $comp..."
             sleep 10
             echo "done."
+            echo "$comp is running" > /dev/shm/mzsh_status_$comp
         else
             printf "starting $comp..."
             sleep 30
@@ -41,6 +49,7 @@ wd1 is running"
             printf "Shutting down $comp..."
             sleep 5
             echo "done."
+            echo "$comp is not running" > /dev/shm/mzsh_status_$comp
         else
             printf "Shutting down $comp..."
             sleep 30
