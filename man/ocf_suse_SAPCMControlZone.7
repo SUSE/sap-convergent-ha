@@ -321,7 +321,8 @@ are resolved by remote service, local caching is neccessary. Substitute user
 (su) to $MZ_USER (e.g. "mzadmin") needs to work reliable and without customized
 actions or messages.
 .PP
-* Strict time synchronization between the cluster nodes, e.g. NTP.
+* Strict time synchronization between the cluster nodes, e.g. NTP. All nodes of
+a cluster are in the same timezone.
 .PP
 * Needed NFS shares (e.g. /mnt/platform/) mounted statically or by automounter. 
 No client-side write caching.
