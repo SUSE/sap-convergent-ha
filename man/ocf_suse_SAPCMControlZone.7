@@ -1,6 +1,6 @@
 .\" Version: 0.1
 .\"
-.TH ocf_suse_SAPCMControlZone 7 "23 Oct 2023" "" "SAPCMControlZone"
+.TH ocf_suse_SAPCMControlZone 7 "23 Nov 2023" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -15,26 +15,28 @@ SAPCMControlZone \- Manages the Convergent Mediation ControlZone platform for a 
 .SH DESCRIPTION
 .\"
 SAPCMControlZone is a resource agent for managing the Convergent Mediation (CM)
-ControlZone platform for a single instance as HA resource.
+ControlZone platform and ui for a single instance as HA resources. 
 .PP
-The CM application contains a central ControlZone platform.
-TODO
-This ControlZone platform is handled as active/passive resource.
+The CM application contains a central ControlZone platform service and an ui
+service.
+.\" TODO 
+This ControlZone services can be handled as active/passive resources.
 .PP
 NFS shares with working directories can be mounted statically on all nodes. The
 HA cluster does not need to control that filesystems.
 .PP
-The resource agent uses the following interfaces provided by the ControlZone
+The resource agent uses the following interface provided by the ControlZone
 component:
 .PP
-mzsh startup platform
+mzsh startup \fISERVICE\fP
 .PP
-mzsh status platform
+mzsh status \fISERVICE\fP
 .PP
-mzsh shutdown platform
+mzsh shutdown \fISERVICE\fP
 .PP
-mzsh kill platform
-.\" .PP
+mzsh kill \fISERVICE\fP
+.PP
+Currently supported services are "platform" and "ui".
 .\" TODO output
 .PP
 Please see also the REQUIREMENTS section below.
@@ -53,7 +55,7 @@ Optional. Unique, string. Default value: "mzadmin".
 .PP
 \fBSERVICE\fP
 .RS 4
-The ControlZone component to be managed by the resoure agent.
+The ControlZone service to be managed by the resoure agent.
 .br
 Optional. Unique, [ platform | ui ]. Default value: "platform".
 .RE
@@ -68,9 +70,9 @@ Optional. Unique, string. Default value: "/usr/bin/mzsh".
 .PP
 \fBCALL_TIMEOUT\fP
 .RS 4
-Define timeout how long calls to the ControlZone platform for checking the status can take.
-If you increase this timeout for ControllZone calls you should also adjust the operation
-timeouts of your Linux cluster resources.
+Define timeout how long calls to the ControlZone platform for checking the
+status can take. If you increase this timeout for ControllZone calls you should 
+also adjust the operation timeouts of your Linux cluster resources.
 .br
 Optional. Unique, integer. Default value: 60.
 .RE
@@ -78,8 +80,8 @@ Optional. Unique, integer. Default value: 60.
 \fBSHUTDOWN_RETRIES\fP
 .RS 4
 Number of retries to check for process shutdown. Passed to mzsh.
-If you increase the number of shutdown retries you should also adjust the stop operation
-timeouts of your Linux cluster resources.
+If you increase the number of shutdown retries you should also adjust the stop
+operation timeouts of your Linux cluster resources.
 .br
 Optional. Unique, integer. Default value: 20.
 .RE
@@ -210,12 +212,12 @@ This filesystem holds working directories. It must not be confused with the
 ControlZone application itself. Client-side write caching has to be disabled.
 .PP
 A Filesystem resource is configured for a bind-mount of the real NFS share.
-This resource is grouped with the ControlZone and IP address. In case of
-filesystem failures, the whole group gets restarted.
+This resource is grouped with the ControlZone platform and IP address. In case
+of filesystem failures, the whole group gets restarted.
 No mount or umount on the real NFS share is done.
-Example for the real NFS share is /mnt/platform/check/, example for the bind-mount
-is /mnt/check/. Both mount points have to be created before the cluster resource
-is activated. 
+Example for the real NFS share is /mnt/platform/check/, example for the
+bind-mount is /mnt/check/. Both mount points have to be created before the
+cluster resource is activated. 
 See also man page SAPCMControlZone_basic_cluster(7), ocf_heartbeat_Filesystem(7)
 and nfs(5).
 .PP
@@ -241,7 +243,7 @@ group grp_C11 \\
  rsc_fs_C11 rsc_ip_C11 rsc_cz_C11
 .RE
 .PP
-\fB* Show configuration of ControlZone resource and resource group.\fR
+\fB* Show configuration of ControlZone platform resource and resource group.\fR
 .PP
 Resource is rsc_cz_C11, resource group is grp_C11.
 .PP
@@ -318,8 +320,8 @@ filesystem, the binaries are copied into both cluster nodes´ local filesystems.
 .PP
 * Technical users and groups are defined locally in the Linux system. If users
 are resolved by remote service, local caching is neccessary. Substitute user
-(su) to $MZ_USER (e.g. "mzadmin") needs to work reliable and without customized
-actions or messages.
+(su) to the mz-user (e.g. "mzadmin") needs to work reliable and without
+customized actions or messages.
 .PP
 * Strict time synchronization between the cluster nodes, e.g. NTP. All nodes of
 a cluster have configured the same timezone.
@@ -333,8 +335,8 @@ No client-side write caching.
 OS and Linux cluster. The infrastructure needs to allow these call-outs to
 return in time.
 .PP
-* The is not started/stopped by OS. Thus there is no SystemV, systemd or
-cron job.
+* The ControlZone application is not started/stopped by OS. Thus there is no
+SystemV, systemd or cron job.
 .PP
 * As long as the ControlZone application is managed by the Linux cluster, the
 application is not started/stopped/moved from outside. Thus no manual actions
@@ -364,7 +366,7 @@ Please report feedback and suggestions to feedback@suse.com.
 \fBSAPCMControlZone_maintenance_examples\fP(7),
 \fBocf_heartbeat_IPaddr2\fP(7) , \fBocf_heartbeat_Filesystem\fP(7) ,
 \fBcrm\fP(8) , \fBcrm_mon\fP(8) ,
-\fBnfs\fP(5) , \fBmount\fP(8) , 
+\fBnfs\fP(5) , \fBmount\fP(8) ,
 .br
 http://clusterlabs.org/doc/en-US/Pacemaker/1.1/html/Pacemaker_Explained/s-ocf-return-codes.html ,
 .br
