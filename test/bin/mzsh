@@ -7,7 +7,7 @@ comp="$2"
 services="platform ui bla-bla blub-blub"
 
 file_of_fail_base="/dev/shm/mzsh_fail_"
-file_of_status="/dev/shm/mzsh_status"
+file_of_status="/dev/shm/mzsh_status_"
 
 if [ -e "${file_of_fail_base}${action}" ]; then
     is_fail="yes"
@@ -25,8 +25,8 @@ case "$action" in
                 sleep 60
             else
                 for srv in $services; do
-                    if [ -e /dev/shm/mzsh_status_$srv ]; then
-                        cat /dev/shm/mzsh_status_$srv
+                    if [ -e "${file_of_status}${srv}" ]; then
+                        cat "${file_of_status}${srv}"
                     else
                         echo "$srv is not running"
                     fi
@@ -38,7 +38,7 @@ case "$action" in
             printf "starting $comp..."
             sleep 10
             echo "done."
-            echo "$comp is running" > /dev/shm/mzsh_status_$comp
+            echo "$comp is running" > "${file_of_status}${comp}"
         else
             printf "starting $comp..."
             sleep 30
@@ -49,7 +49,7 @@ case "$action" in
             printf "Shutting down $comp..."
             sleep 5
             echo "done."
-            echo "$comp is not running" > /dev/shm/mzsh_status_$comp
+            echo "$comp is not running" > "${file_of_status}${comp}"
         else
             printf "Shutting down $comp..."
             sleep 30
