@@ -17,9 +17,12 @@ SAPCMControlZone \- Manages the Convergent Mediation ControlZone platform for a 
 SAPCMControlZone is a resource agent for managing the Convergent Mediation (CM)
 ControlZone platform and ui for a single instance as HA resources. 
 .PP
-.\" The CM application contains a central ControlZone platform service and an ui
-service.
-.\" TODO 
+The CM central ControlZone platform is responsible for providing services to
+other instances. Several platform containers may exist in a CM system, for high
+availability, but only one is active at a time.
+.\" see https://infozone.atlassian.net/wiki/spaces/MD9/pages/4863840/Terminology
+The CM central ControlZone UI is used to query, edit, import, and export data.
+.\" see https://infozone.atlassian.net/wiki/spaces/MD83/pages/5966420/3.+Web+UI
 This ControlZone services can be handled as active/passive resources.
 .PP
 NFS shares with work directories can be mounted statically on all nodes. The
@@ -303,11 +306,15 @@ Note: Understand the impact before trying.
 /usr/lib/ocf/resource.d/suse/SAPCMControlZone
 the resource agent
 .TP
+$MZ_HOME, e.g. /opt/mz/
+the installation directory of a ControlZone service
+.TP
 $MZ_HOME/bin/mzsh
 the mzshell, used as API for managing ControlZone components
 .TP
-$MZ_HOME, e.g. /opt/mz/
-TODO
+$MZ_HOME/tmp/
+temporary files of a ControlZone service
+.\" see https://infozone.atlassian.net/wiki/spaces/MD9/pages/4863840/Terminology
 .PP
 .\"
 .SH REQUIREMENTS
