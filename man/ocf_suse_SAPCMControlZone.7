@@ -96,8 +96,6 @@ Enables verbose mode. Passed to mzsh.
 Optional. Unique, [ yes | no ]. Default value: no.
 .RE
 .PP
-
-.PP
 .\"
 .SH SUPPORTED ACTIONS
 .\"
@@ -107,6 +105,7 @@ This resource agent supports the following actions (operations):
 .RS 4
 Starts the ControlZone platform resource.
 .br
+Timeout might be adapted to match expected application timing.
 Suggested minimum timeout: 120\&.
 .RE
 .PP
@@ -114,15 +113,17 @@ Suggested minimum timeout: 120\&.
 .RS 4
 Stops the ControlZone platform resource.
 .br
+Timeout might be adapted to match expected application timing.
 Suggested minimum timeout: 120\&.
 .RE
 .PP
 \fBmonitor\fR
 .RS 4
-TODO
-Might be adapted to be greater than expected infrastructure timeouts.
+Regularly checks the ControlZone platform resource status.
+Timeout might be adapted to be greater than expected infrastructure timeouts.
 .br
-Suggested minimum timeout: 120\&.
+Suggested minimum timeout: 120, suggested interval: 120,
+suggested action on-fail=restart\&. 
 .RE
 .PP
 \fBvalidate\-all\fR
