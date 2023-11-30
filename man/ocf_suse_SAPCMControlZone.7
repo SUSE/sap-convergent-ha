@@ -167,17 +167,17 @@ OCF definition on the website mentioned below.
 Configuration and basic checks for ControlZone platform resources in Linux clusters.
 See also man page SAPCMControlZone_maintenance_examples(7).
 .PP
-\fB* Example configuration for resource group with ControlZone and IP address.\fR
+\fB* Example configuration for resource group with ControlZone platform and IP address.\fR
 .PP
-A ControlZone resoure rsc_cz_C11 is configured, handled by OS user c11adm.
-This resource is grouped with an IP address resource rsc_ip_C11 into group
-grp_C11. The IP address starts first. The resource group might run on either
-node, but never in parallel.
+A ControlZone platform resoure rsc_cz_C11 is configured, handled by OS user
+c11adm. This resource is grouped with an IP address resource rsc_ip_C11 into
+group grp_cz_C11. The IP address starts first. The resource group might run on
+either node, but never in parallel.
 .PP
-In case of ControlZone failure (or monitor timeout), the resource group gets
-restarted until it gains success or migration-threshold is reached. If
-migration-threshold is exceeded, or if the node where the group runs fails, the
-group will be moved to the other node.
+In case of ControlZone platform failure (or monitor timeout), the resource
+group gets restarted until it gains success or migration-threshold is reached.
+If migration-threshold is exceeded, or if the node where the group runs fails,
+the group will be moved to the other node.
 A priority is configured for correct fencing in split-brain situations.
 See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPAddr2(7).
 .PP
@@ -204,11 +204,37 @@ primitive rsc_ip_C11 ocf:heartbeat:IPaddr2 \\
 .RE
 .PP
 .RS 2
-group grp_C11 \\
+group grp_cz_C11 \\
 .br
  rsc_ip_C11 rsc_cz_C11
 .PP
 .RE
+.PP
+\fB* Example configuration for resource ControlZone UI.\fR
+.PP
+A ControlZone UI resoure rsc_ui_C11 is configured, handled by OS user c11adm.
+The resource might run on either node, but never in parallel.
+In case of ControlZone UI failure (or monitor timeout), the resource gets
+restarted until it gains success or migration-threshold is reached. If
+migration-threshold is exceeded, or if the node where the resource fails, the
+resource will be moved to the other node.
+See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPAddr2(7).
+.br
+Note: This resource might be grouped with an IP address resource, like in the
+above platform example.
+.PP
+.RS 2
+primitive rsc_UI_C11 ocf:suse:SAPCMControlZone \\
+.br
+ params MZ_USER=c11adm SERVICE=ui \\
+.br
+ op monitor interval=120 timeout=120 on-fail=restart \\
+.br
+ op start timeout=120 \\
+.br
+ op stop timeout=120
+.RE
+.PP
 \fB* Optional Filesystem resource for monitoring NFS shares.\fR
 .PP
 A shared filesystem migth be statically mounted by OS on both cluster nodes.
@@ -242,7 +268,7 @@ primitive rsc_fs_C11 ocf:heartbeat:Filesystem \\
 .RE
 .PP
 .RS 2
-group grp_C11 \\
+group grp_cz_C11 \\
 .br
  rsc_fs_C11 rsc_ip_C11 rsc_cz_C11
 .RE
