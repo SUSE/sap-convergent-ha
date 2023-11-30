@@ -17,12 +17,12 @@ SAPCMControlZone \- Manages the Convergent Mediation ControlZone platform for a 
 SAPCMControlZone is a resource agent for managing the Convergent Mediation (CM)
 ControlZone platform and ui for a single instance as HA resources. 
 .PP
-The CM application contains a central ControlZone platform service and an ui
+.\" The CM application contains a central ControlZone platform service and an ui
 service.
 .\" TODO 
 This ControlZone services can be handled as active/passive resources.
 .PP
-NFS shares with working directories can be mounted statically on all nodes. The
+NFS shares with work directories can be mounted statically on all nodes. The
 HA cluster does not need to control that filesystems.
 .PP
 The resource agent uses the following interface provided by the ControlZone
@@ -147,7 +147,7 @@ Suggested minimum timeout: 5\&.
 .RS 4
 Change parameters without forcing a recover of the resource.
 .br
-Suggested minimum timeout: TODO\&.
+Suggested minimum timeout: 5\&.
 .RE
 .PP
 .\"
@@ -208,7 +208,7 @@ group grp_C11 \\
 \fB* Optional Filesystem resource for monitoring NFS shares.\fR
 .PP
 A shared filesystem migth be statically mounted by OS on both cluster nodes.
-This filesystem holds working directories. It must not be confused with the
+This filesystem holds work directories. It must not be confused with the
 ControlZone application itself. Client-side write caching has to be disabled.
 .PP
 A Filesystem resource is configured for a bind-mount of the real NFS share.

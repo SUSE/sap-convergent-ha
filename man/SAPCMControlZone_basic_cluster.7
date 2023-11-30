@@ -1,6 +1,6 @@
 .\" Version: 0.1
 .\"
-.TH SAPCMControlZone_basic_cluster 7 "06 Oct 2023" "" "SAPCMControlZone"
+.TH SAPCMControlZone_basic_cluster 7 "23 Nov 2023" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -29,12 +29,13 @@ locally on all cluster nodes. See man page hosts(5).
 \fBTime synchronization\fR
 
 Strict time synchronization between the cluster nodes is mandatory, e.g. NTP.
-See man page chrony.conf(5).
+See man page chrony.conf(5). Further, the nodes should have configured the same
+timezone.
 
 \fBNFS mounted filesystem\fR
 
 A shared filesystem for ControlZone data can be statically mounted on both cluster
-nodes. This filesystem holds working directories, e.g. for batch processing.
+nodes. This filesystem holds work directories, e.g. for batch processing.
 This NFS share is optional. It must not be confused with the ControlZone
 application itself. The application is installed at both cluster nodes on local
 filesystems. Client-side write caching has to be disabled for the NFS shares
@@ -95,7 +96,7 @@ pcmk_delay_max.
 .\"
 .\" TODO OS network tcp_retries2=8 (8..10)
 .\"
-\fB* CRM basic configuration\fR
+\fB* CRM basic configuration.\fR
 
 This example has been taken from a two-node cluster SLE-HA 15 SP4 with
 disk-based SBD. Priority fecing is configured and the SBD pcmk_delay_max has
@@ -140,7 +141,7 @@ op_defaults op-options: \\
  record-pending=true 
 .RE
 .PP
-\fB* Statically mounted NFS share for ControlZone platform data\fR
+\fB* Statically mounted NFS share for ControlZone platform data.\fR
 
 Below is an fstab example for a shared filesystem holding application data.
 The filesystem is statically mounted on all nodes of the cluster.
@@ -155,7 +156,7 @@ Note: The NFS share might be monitored, but not mounted/umounted by the HA
 cluster. See ocf_suse_SAPCMControlZone(7) for details.
 
 .PP
-\fB* Ping cluster resource for checking connectivity\fR
+\fB* Ping cluster resource for checking connectivity.\fR
 
 Below is an example of an optional ping resource for checking connectivity to
 the outer world. If the nodes have only one network interface, shared between
