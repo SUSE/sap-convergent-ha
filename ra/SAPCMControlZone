@@ -1,12 +1,12 @@
 #!/bin/bash
 #
-# SAPHanaController
+# SAPCMControlZone
 #
 # Description:  Manages SAP Convergent Mediation Control Zone
 #
 ##############################################################################
 #
-# SAPHanaController (short saphana)
+# SAPCMControlZone (short mz)
 # Author:       Fabian Herschel, October 2023
 # Support:      linux@sap.com
 # License:      GNU General Public License (GPL)
@@ -22,6 +22,7 @@
 #
 #######################################################################
 SAPHanaControllerVersion="0.0.2"
+echo "SAPCMControlZone $SAPHanaControllerVersion"
 #
 # Initialization:
 export raType="mz_"
@@ -36,21 +37,32 @@ function mz_component_startup()
 {
     local user="$1" component="$2" rc=0
     su - "$user" "$mz_shell" startup "$component" | grep -qi "starting $component...done."; rc="$?"
-    exit "$rc"
+    return "$rc"
 }
+export -f mz_component_startup
 
 function mz_component_shutdown()
 {
     local user="$1" component="$2" rc=0
     su - "$user" "$mz_shell" shutdown "$component" | grep -q "Shutting down $component...done."; rc="$?"
-    exit "$rc"
+    return "$rc"
 }
+export -f mz_component_shutdown
+
+function mz_component_status()
+{
+    local component="$1" rc=0
+    "$mz_shell"  status | grep -q "$component is running"; rs="$?"
+    return "$rc"
+}
+export mz_component_status
 
 function mz_call()
 {
     # TODO: Check, if we need to switch user (su) for the mzshell action or if we (at least for status-check) could call it as user root to avoid problems with e.g. active directory
     # TODO: Implement 'timeout'
-    local rc="$OCF_ERR_GENERIC" timeout=0, user="$mz_user", action="status", component="platform"
+    # TODO: 'timeout' default value (non zero)?
+    local rc="$OCF_ERR_GENERIC" timeout=3000, user="$mz_user", action="status", component="platform" call_rc=0
     while [ $# -gt 0 ]; do
         case "$1" in
             --user=* )  user=${1#*=} ;;
@@ -65,13 +77,15 @@ function mz_call()
         status )
                 # we might need 1-2 retries, lets check if we only need to retry, if the status runs into a timeout
                 # can be called WITHOUT su
-                if "$mz_shell"  status | grep -q "$component is running"; then
-                    ocf_log info "mz_call: $component is running"
-                    rc="$OCF_SUCCESS"
-                else
-                    ocf_log info "mz_call: $component is NOT running"
-                    rc="$OCF_NOT_RUNNING"
-                fi
+                timeout "$timeout" bash -c "mz_component_status $component"; call_rc="$?"
+                case "$call_rc" in
+                    0 ) ocf_log info "mz_call: $component is running"
+                        rc="$OCF_SUCCESS";;
+                    1 ) ocf_log info "mz_call: $component is NOT running"
+                        rc="$OCF_NOT_RUNNING";;
+                    * ) ocf_log info "mz_call: $component is unclear (call_rc=$?)"
+                        rc="$OCF_ERR_GENERIC";;
+                esac
                 ;;
         startup )
                 # needs to switch-user to <mzadmin>
