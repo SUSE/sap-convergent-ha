@@ -21,11 +21,11 @@
 #   OCF_RESKEY_VERBOSE_STATUS   (optional, defaults to no)
 #
 #######################################################################
-SAPHanaControllerVersion="0.0.2"
-echo "SAPCMControlZone $SAPHanaControllerVersion"
+SAPCMControlZoneVersion="0.0.2"
+echo "SAPCMControlZone $SAPCMControlZoneVersion"
 #
 # Initialization:
-export raType="mz_"
+raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
@@ -39,7 +39,7 @@ function mz_component_startup()
     su - "$user" "$mz_shell" startup "$component" | grep -qi "starting $component...done."; rc="$?"
     return "$rc"
 }
-export -f mz_component_startup
+#export -f mz_component_startup
 
 function mz_component_shutdown()
 {
@@ -47,15 +47,15 @@ function mz_component_shutdown()
     su - "$user" "$mz_shell" shutdown "$component" | grep -q "Shutting down $component...done."; rc="$?"
     return "$rc"
 }
-export -f mz_component_shutdown
+#export -f mz_component_shutdown
 
 function mz_component_status()
 {
     local component="$1" rc=0
-    "$mz_shell"  status | grep -q "$component is running"; rs="$?"
+    "$mz_shell"  status | grep -q "$component is running"; rc="$?"
     return "$rc"
 }
-export mz_component_status
+export -f mz_component_status
 
 function mz_call()
 {
@@ -75,15 +75,18 @@ function mz_call()
 
     case "$action" in
         status )
+		export mz_shell component
                 # we might need 1-2 retries, lets check if we only need to retry, if the status runs into a timeout
                 # can be called WITHOUT su
+                #timeout "$timeout" bash -c "mz_component_status $component"; call_rc="$?"
                 timeout "$timeout" bash -c "mz_component_status $component"; call_rc="$?"
+                # mz_component_status "$component"; call_rc="$?"
                 case "$call_rc" in
                     0 ) ocf_log info "mz_call: $component is running"
                         rc="$OCF_SUCCESS";;
                     1 ) ocf_log info "mz_call: $component is NOT running"
                         rc="$OCF_NOT_RUNNING";;
-                    * ) ocf_log info "mz_call: $component is unclear (call_rc=$?)"
+                    * ) ocf_log info "mz_call: $component is unclear (call_rc=$call_rc)"
                         rc="$OCF_ERR_GENERIC";;
                 esac
                 ;;
@@ -197,7 +200,6 @@ function mz_check_params()
     #if  [ -z "$OCF_RESKEY_SID" ]
     #then
     #    ocf_log err "ACT: Please set parameter SID!"
-    #    exit "$OCF_ERR_ARGS"
     #fi
     return "$rc"
 }
