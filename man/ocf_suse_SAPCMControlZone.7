@@ -184,7 +184,7 @@ See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPAddr2(7).
 .RS 2
 primitive rsc_cz_C11 ocf:suse:SAPCMControlZone \\
 .br
- params MZ_USER=c11adm \\
+ params USER=c11adm \\
 .br
  op monitor interval=120 timeout=120 on-fail=restart \\
 .br
@@ -226,7 +226,7 @@ above platform example.
 .RS 2
 primitive rsc_UI_C11 ocf:suse:SAPCMControlZone \\
 .br
- params MZ_USER=c11adm SERVICE=ui \\
+ params USER=c11adm SERVICE=ui \\
 .br
  op monitor interval=120 timeout=120 on-fail=restart \\
 .br
