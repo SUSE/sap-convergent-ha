@@ -155,7 +155,7 @@ function mz_usage()
 function mz_init()
 {
     # TODO: init variables
-    mz_user="${OCF_RESKEY_USER:-mzuser}"
+    mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_shell="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
 }
