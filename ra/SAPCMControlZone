@@ -52,7 +52,7 @@ function mz_component_shutdown()
 function mz_component_status()
 {
     local component="$1" rc=0
-    "$mz_shell"  status | grep -q "$component is running"; rc="$?"
+    "$mz_shell" status | grep -q "$component is running"; rc="$?"
     return "$rc"
 }
 export -f mz_component_status
