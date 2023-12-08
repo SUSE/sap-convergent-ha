@@ -16,15 +16,15 @@
 #      See usage() function below for more details.
 #
 # OCF instance parameters:
-#   OCF_RESKEY_USER             - optional parameter Linux user to control the ControlZone (default: mzadmin)
-#   OCF_RESKEY_MZSHELL          - optional parameter path to the mz-shell (default: /usr/bin/mzsh)
-#   OCF_RESKEY_SERVICE          - optional parameter name of ControlZone service to manage (default: platform)
+#   OCF_RESKEY_USER             - optional, Linux user to control the ControlZone (default: mzadmin)
+#   OCF_RESKEY_MZSHELL          - optional, path to the mz-shell (default: /usr/bin/mzsh)
+#   OCF_RESKEY_SERVICE          - optional, name of ControlZone service to manage (default: platform)
 #
 # OCF instance parameters currently not implemented:
 #   OCF_RESKEY_CALL_TIMEOUT	- optional
 #   OCF_RESKEY_SHUTDOWN_RETRIES - optional, passed to mzsh (default: 20), do not mix-up with cluster migration threshold
 #
-# OCF instance parameters not planned to be implemented (let them here as reminders)
+# OCF instance parameters not planned to be implemented:
 #   OCF_RESKEY_VERBOSE_STATUS   - optional (default: no)
 #
 #######################################################################
