@@ -16,12 +16,17 @@
 #      See usage() function below for more details...
 #
 # OCF instance parameters:
-#   OCF_RESKEY_USER             - the linux user to control the CM control-zone
-#   OCF_RESKEY_SHUTDOWN_RETRIES (optional, do not mix-up with migration threshold)
+#   OCF_RESKEY_USER             - optional parameter linux user to control the CM control-zone (default mzadmin)
+#   OCF_RESKEY_MZSHELL          - optional parameter path to the mz-shell (default /usr/bin/mzsh)
+#   OCF_RESKEY_SERVICE          - optional parameter service/component name of mz (default to platform)
+#
+# OCF instance parameters currently not planned to be implemented (let them here as reminders)
 #   OCF_RESKEY_VERBOSE_STATUS   (optional, defaults to no)
+#   OCF_RESKEY_SHUTDOWN_RETRIES (optional, do not mix-up with migration threshold) => should be either per action type or for all actions (startup,shutdown,status)
+#   OCF_RESKEY_CALL_TIMEOUT (optional, do not mix-up with RA action timeout => should be either per action type or for all actions (startup,shutdown,status))
 #
 #######################################################################
-SAPCMControlZoneVersion="0.0.3"
+SAPCMControlZoneVersion="0.0.4"
 logger --id -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 #
 # Initialization:
@@ -33,6 +38,11 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 #######################################################################
 #
 
+#
+######################################################################
+#
+# mz-side of the RA
+#
 function mz_component_startup()
 {
     local user="$1" component="$2" rc=0
@@ -157,9 +167,19 @@ function mz_call()
     return "$rc"
 }
 
+#
+######################################################################
+#
+# cluster-side of the RA
+#
 function mz_usage()
 {
-    echo "usage: ..."
+    echo "usage: $0 [start|stop|monitor|meta-data|reload|methods|usage]"
+}
+
+function mz_methods()
+{
+    echo "start stop monitor meta-data reload methods usage"
 }
 
 function mz_init()
@@ -180,21 +200,26 @@ function mz_meta_data()
 <shortdesc lang="en">Manages SAP convergent Mediation Control Zone.</shortdesc>
 <longdesc lang="en">Manages SAP convergent Mediation Control Zone.</longdesc>
 <parameters>
-<parameter name="USER" unique="0" required="1">
+<parameter name="USER" unique="0" required="0">
     <longdesc lang="en">Linux user to control the CM component.</longdesc>
     <shortdesc lang="en">Linux user to control the CM component.</shortdesc>
-    <content type="string" default="" />
+    <content type="string" default="mzadmin" />
 </parameter>
-<parameter name="SERVICE" unique="0" required="1">
-    <longdesc lang="en">convergent mediation service/component</longdesc>
+<parameter name="SERVICE" unique="0" required="0">
+    <longdesc lang="en">convergent mediation service/component. Values: "platform" or "ui" </longdesc>
     <shortdesc lang="en">convergent mediation service/component</shortdesc>
-    <content type="string" default="" />
+    <content type="string" default="platform" />
+</parameter>
+<parameter name="MZ_SHELL" unique="0" required="0">
+    <longdesc lang="en">path to the convergent mediation shell to be called. Values: full path to the shell. </longdesc>
+    <shortdesc lang="en">convergent mediation shell</shortdesc>
+    <content type="string" default="/usr/bin/mzsh" />
 </parameter>
 </parameters>
 <actions>
     <action name="start"   timeout="120" />
     <action name="stop"    timeout="120" />
-    <action name="monitor" timeout="60" interval="120" />
+    <action name="monitor" timeout="120" interval="120" />
     <action name="validate-all" timeout="5" />
     <action name="meta-data" timeout="5" />
     <action name="methods" timeout="5" />
@@ -208,10 +233,37 @@ function mz_check_params()
 {
     local rc="$OCF_SUCCESS"
     # TODO: Change this fucntion to check the really needed parameters
-    #if  [ -z "$OCF_RESKEY_SID" ]
-    #then
-    #    ocf_log err "ACT: Please set parameter SID!"
-    #fi
+    if [[ -n "$OCF_RESKEY_USER" ]]; then
+        if id "$OCF_RESKEY_USER" 1>/dev/null 2>/dev/null; then
+            logger --id -s -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
+        else
+            logger --id -s -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' does NOT exist"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+    if [[ -n "$OCF_RESKEY_MZSHELL" ]]; then
+        if [[ -x "$OCF_RESKEY_MZSHELL" ]]; then
+            logger --id -s -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' exists and is executable"
+        else
+            logger --id -s -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' either does NOT exist or is NOT executable"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+    if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
+        if [[ "$OCF_RESKEY_SERVICE" =~ ^(platform|ui)$ ]]; then
+            logger --id -s -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does match list ['platform', 'ui']"
+        else
+            logger --id -s -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+    return "$rc"
+}
+
+function mz_validate()
+{
+    local rc="$OCF_SUCCESS"
+    mz_check_params; rc="$?"
     return "$rc"
 }
 
@@ -272,6 +324,10 @@ case "$ACTION" in
                     exit "$OCF_SUCCESS";;
     notify)         # just ignore
                     exit "$OCF_SUCCESS";;
+    validate-all)
+        "${raType}"validate; ra_rc="$?"
+        exit "$ra_rc"
+        ;;
 esac
 "${raType}"init
 
@@ -289,10 +345,6 @@ ra_rc="$OCF_ERR_UNIMPLEMENTED"
 case "$ACTION" in
     start|stop|monitor|promote|demote) # Standard controlling actions
         "${raType}""$ACTION$CLACT"
-        ra_rc="$?"
-        ;;
-    validate-all)
-        "${raType}"validate
         ra_rc="$?"
         ;;
     reload)
