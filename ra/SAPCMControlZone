@@ -205,9 +205,9 @@ function mz_meta_data()
 <longdesc lang="en">The SAPCMControlZone RA manages SAP Convergent Mediation ControlZone services platform or UI as active/passive resources.</longdesc>
 <parameters>
 <parameter name="CALL_TIMEOUT" unique="0" required="0">
-   <shortdesc lang="en">How long calls to the ControlZone shell can take.</shortdesc>
-   <longdesc lang="en">How long calls to the ControlZone shell for checking the status can take. If you increase this timeout, you should also adjust the operation timeouts of your Linux cluster resources.</longdesc>
-    <content type="string" default="" />
+   <shortdesc lang="en">How long calls to the ControlZone shell can take. Not yet implemented.</shortdesc>
+   <longdesc lang="en">How long calls to the ControlZone shell for checking the status can take. If you increase this timeout, you should also adjust the operation timeout of your Linux cluster resource.</longdesc>
+    <content type="string" default="60" />
 </parameter>
 <parameter name="MZSHELL" unique="0" required="0">
     <shortdesc lang="en">ControlZone shell</shortdesc>
@@ -215,10 +215,10 @@ function mz_meta_data()
     <content type="string" default="/usr/bin/mzsh" />
 </parameter>
 <parameter name="SHUTDOWN_RETRIES" unique="0" required="0">
-    <shortdesc lang="en">Number of retries to check for process shutdown.</shortdesc>
-    <longdesc lang="en">Number of retries to check for process shutdown. If you increase the number of shutdown retries, you should also adjust the stop
-operation timeouts of your Linux cluster resources.</longdesc>
+    <shortdesc lang="en">Number of retries to check for process shutdown. Not yet implemented.</shortdesc>
+    <longdesc lang="en">Number of retries to check for process shutdown. If you increase the number of shutdown retries, you should also adjust the stop operation timeout of your Linux cluster resource.</longdesc>
     <content type="string" default="" />
+</parameter>
 <parameter name="USER" unique="0" required="1">
     <shortdesc lang="en">Linux user to control the ControlZone service.</shortdesc>
     <longdesc lang="en">Linux user to control the ControlZone service.</longdesc>
@@ -235,6 +235,8 @@ operation timeouts of your Linux cluster resources.</longdesc>
     <action name="stop"    timeout="120" />
     <action name="monitor" timeout="120" interval="120" />
     <action name="meta-data" timeout="5" />
+    <action name="methods" timeout="5" />
+    <action name="usage" timeout="5" />
     <action name="reload" timeout="5" />
 </actions>
 </resource-agent>'
