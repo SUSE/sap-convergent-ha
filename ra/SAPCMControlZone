@@ -21,11 +21,11 @@
 #   OCF_RESKEY_VERBOSE_STATUS   (optional, defaults to no)
 #
 #######################################################################
-SAPHanaControllerVersion="0.0.2"
-echo "SAPCMControlZone $SAPHanaControllerVersion"
+SAPCMControlZoneVersion="0.0.3"
+logger --id -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 #
 # Initialization:
-export raType="mz_"
+raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
@@ -39,7 +39,7 @@ function mz_component_startup()
     su - "$user" "$mz_shell" startup "$component" | grep -qi "starting $component...done."; rc="$?"
     return "$rc"
 }
-export -f mz_component_startup
+#export -f mz_component_startup
 
 function mz_component_shutdown()
 {
@@ -47,20 +47,19 @@ function mz_component_shutdown()
     su - "$user" "$mz_shell" shutdown "$component" | grep -q "Shutting down $component...done."; rc="$?"
     return "$rc"
 }
-export -f mz_component_shutdown
+#export -f mz_component_shutdown
 
 function mz_component_status()
 {
     local component="$1" rc=0
-    "$mz_shell"  status | grep -q "$component is running"; rs="$?"
+    "$mz_shell" status | grep -q "$component is running"; rc="$?"
     return "$rc"
 }
-export mz_component_status
+export -f mz_component_status
 
 function mz_call()
 {
     # TODO: Check, if we need to switch user (su) for the mzshell action or if we (at least for status-check) could call it as user root to avoid problems with e.g. active directory
-    # TODO: Implement 'timeout'
     # TODO: 'timeout' default value (non zero)?
     local rc="$OCF_ERR_GENERIC" timeout=3000, user="$mz_user", action="status", component="platform" call_rc=0
     while [ $# -gt 0 ]; do
@@ -75,49 +74,63 @@ function mz_call()
 
     case "$action" in
         status )
+                export mz_shell component
+                retry_sleep=10
+                max_retry=2
+                retry_count=0
                 # we might need 1-2 retries, lets check if we only need to retry, if the status runs into a timeout
                 # can be called WITHOUT su
-                timeout "$timeout" bash -c "mz_component_status $component"; call_rc="$?"
-                case "$call_rc" in
-                    0 ) ocf_log info "mz_call: $component is running"
-                        rc="$OCF_SUCCESS";;
-                    1 ) ocf_log info "mz_call: $component is NOT running"
-                        rc="$OCF_NOT_RUNNING";;
-                    * ) ocf_log info "mz_call: $component is unclear (call_rc=$?)"
-                        rc="$OCF_ERR_GENERIC";;
-                esac
+                while [[ "$retry_count" -lt "$max_retry" ]]; do
+                    (( retry_count++ ))
+                    timeout "$timeout" bash -c "mz_component_status $component"; call_rc="$?"
+                    case "$call_rc" in
+                        0 ) ocf_log info "mz_call: $component is running"
+                            rc="$OCF_SUCCESS"
+                            break;;
+                        1 ) ocf_log info "mz_call: $component is NOT running"
+                            rc="$OCF_NOT_RUNNING";;
+                        * ) ocf_log info "mz_call: $component is unclear (call_rc=$call_rc)"
+                            rc="$OCF_ERR_GENERIC";;
+                    esac
+                    sleep "$retry_sleep"
+                done
                 ;;
         startup )
                 # needs to switch-user to <mzadmin>
-                if mz_component_startup "$user" "$component"; then
-                    ocf_log info "mz_call: $component is started"
-                    rc="$OCF_SUCCESS"
-                else
-                    # second try to start mz component
+                retry_sleep=10
+                max_retry=2
+                retry_count=0
+                while [[ "$retry_count" -lt "$max_retry" ]]; do
+                    (( retry_count++ ))
                     if mz_component_startup "$user" "$component"; then
                         ocf_log info "mz_call: $component is started"
                         rc="$OCF_SUCCESS"
+                        break
                     else
                         ocf_log info "mz_call: $component is NOT started"
                         rc="$OCF_NOT_RUNNING"
                     fi
-                fi
+                    sleep "$retry_sleep"
+                done
                 ;;
         shutdown )
                 # needs to switch-user to <mzadmin>
-                if mz_component_shutdown "$user" "$component"; then
-                    ocf_log info "mz_call: $component is stopped"
-                    rc="$OCF_SUCCESS"
-                else
+                retry_sleep=10
+                max_retry=2
+                retry_count=0
+                while [[ "$retry_count" -lt "$max_retry" ]]; do
+                    (( retry_count++ ))
                     # second try to stop mz component
                     if mz_component_shutdown "$user" "$component"; then
                         ocf_log info "mz_call: $component is stopped"
                         rc="$OCF_SUCCESS"
+                        break
                     else
                         ocf_log info "mz_call: $component is still NOT stopped"
                         rc="$OCF_ERR_GENERIC"
                     fi
-                fi
+                    sleep "$retry_sleep"
+                done
                 ;;
         restart )
                 # needs to switch-user to <mzadmin>
@@ -152,13 +165,14 @@ function mz_usage()
 function mz_init()
 {
     # TODO: init variables
-    mz_user="${OCF_RESKEY_USER:-mzuser}"
+    mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_shell="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
 }
 
 function mz_meta_data()
 {
+   # shellcheck disable=SC2016
    echo '<?xml version="1.0"?>
 <!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
 <resource-agent name="SAPCMControlZone" version="$raVersion">
@@ -197,7 +211,6 @@ function mz_check_params()
     #if  [ -z "$OCF_RESKEY_SID" ]
     #then
     #    ocf_log err "ACT: Please set parameter SID!"
-    #    exit "$OCF_ERR_ARGS"
     #fi
     return "$rc"
 }
@@ -251,6 +264,7 @@ if [ "$ACTION" = "status" ]; then
 fi
 
 # These operations don't require OCF parameters to be set
+logger --id -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
 case "$ACTION" in
     usage|methods)  "${raType}""$ACTION"
                     exit "$OCF_SUCCESS";;

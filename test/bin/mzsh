@@ -6,11 +6,15 @@ comp="$2"
 
 services="platform ui bla-bla blub-blub"
 
+logger --id -t "mzsh" "mzsh version 0.0.3 - action=$action"
+
 file_of_fail_base="/dev/shm/mzsh_fail_"
 file_of_status="/dev/shm/mzsh_status_"
 
+# action could be status, startup or shutdown
 if [ -e "${file_of_fail_base}${action}" ]; then
     is_fail="yes"
+    logger --id -t "mzsh" "mzsh action=$action file_of_fail found :) (removing)"
     rm "${file_of_fail_base}${action}"
 else
     is_fail="no"
@@ -18,7 +22,7 @@ fi
 
 case "$action" in
     status )  
-            
+            logger --id -t "mzsh" "mzsh process action=$action"
             if [[ "$is_fail" == "yes" ]]; then
                 echo "blala is not running"
                 echo "blubblub is not running"
@@ -32,30 +36,31 @@ case "$action" in
                     fi
                 done
             fi
-                ;;
+            ;;
     startup )
-        if [[ "$is_fail" == "no" ]]; then
-            printf "starting $comp..."
-            sleep 10
-            echo "done."
-            echo "$comp is running" > "${file_of_status}${comp}"
-        else
-            printf "starting $comp..."
-            sleep 30
-        fi
+            logger --id -t "mzsh" "mzsh process action=$action component=$comp"
+            if [[ "$is_fail" == "no" ]]; then
+                printf "starting %s..." "$comp"
+                sleep 10
+                echo "done."
+                echo "$comp is running" > "${file_of_status}${comp}"
+            else
+                printf "starting %s..." "$comp"
+                sleep 30
+            fi
             ;;
     shutdown )
-        if [[ "$is_fail" == "no" ]]; then
-            printf "Shutting down $comp..."
-            sleep 5
-            echo "done."
-            echo "$comp is not running" > "${file_of_status}${comp}"
-        else
-            printf "Shutting down $comp..."
-            sleep 30
-        fi
+            logger --id -t "mzsh" "mzsh process action=$action component=$comp"
+            if [[ "$is_fail" == "no" ]]; then
+                printf "Shutting down %s..." "$comp"
+                sleep 5
+                echo "done."
+                echo "$comp is not running" > "${file_of_status}${comp}"
+            else
+                printf "Shutting down %s..." "$comp"
+                sleep 30
+            fi
             ;;
-            
 esac
 # meaningless  rc
 exit 99
