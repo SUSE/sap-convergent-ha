@@ -1,16 +1,15 @@
 .\" Version: 0.1
 .\"
-.TH ocf_suse_SAPCMControlZone 7 "23 Nov 2023" "" "SAPCMControlZone"
+.TH ocf_suse_SAPCMControlZone 7 "06 Dec 2023" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
-SAPCMControlZone \- Manages the Convergent Mediation ControlZone platform for a single instance as HA resource.
+SAPCMControlZone \- Manages Convergent Mediation ControlZone platform services for a single instance as HA resource.
 .PP
 .\"
 .SH SYNOPSYS
 .\"
-\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | reload | usage ]
-.\" \fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | validate\-all | methods | reload | usage ]
+\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | reload | methods | usage ]
 .PP
 .\"
 .SH DESCRIPTION
@@ -141,13 +140,13 @@ Retrieves resource agent metadata (internal use only).
 Suggested minimum timeout: 5\&.
 .RE
 .PP
-.\" \fBmethods\fR
-.\" .RS 4
-.\" Reports on the methods, the RA supports.
-.\" .br
-.\" Suggested minimum timeout: 5\&.
-.\" .RE
-.\" .PP
+\fBmethods\fR
+.RS 4
+Reports on the methods, the RA supports.
+.br
+Suggested minimum timeout: 5\&.
+.RE
+.PP
 \fBreload\fR
 .RS 4
 Change parameters without forcing a recover of the resource.

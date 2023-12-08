@@ -13,17 +13,19 @@
 # Copyright:    (c) 2023 SUSE LLC
 #
 # An example usage:
-#      See usage() function below for more details...
+#      See usage() function below for more details.
 #
 # OCF instance parameters:
-#   OCF_RESKEY_USER             - optional parameter linux user to control the CM control-zone (default mzadmin)
-#   OCF_RESKEY_MZSHELL          - optional parameter path to the mz-shell (default /usr/bin/mzsh)
-#   OCF_RESKEY_SERVICE          - optional parameter service/component name of mz (default to platform)
+#   OCF_RESKEY_USER             - optional parameter, linux user to control the CM control-zone (default: mzadmin)
+#   OCF_RESKEY_MZSHELL          - optional parameter, path to the mz-shell (default: /usr/bin/mzsh)
+#   OCF_RESKEY_SERVICE          - optional parameter, service/component name of mz (default: platform)
 #
-# OCF instance parameters currently not planned to be implemented (let them here as reminders)
-#   OCF_RESKEY_VERBOSE_STATUS   (optional, defaults to no)
-#   OCF_RESKEY_SHUTDOWN_RETRIES (optional, do not mix-up with migration threshold) => should be either per action type or for all actions (startup,shutdown,status)
-#   OCF_RESKEY_CALL_TIMEOUT (optional, do not mix-up with RA action timeout => should be either per action type or for all actions (startup,shutdown,status))
+# OCF instance parameters currently not implemented:
+#   OCF_RESKEY_SHUTDOWN_RETRIES - optional parameter, passed to mzsh (default: unset - use mzsh internal default)
+#   OCF_RESKEY_CALL_TIMEOUT     - optional parameter, do not mix-up with RA action timeout => should be either per action type or for all actions (startup,shutdown,status))
+#
+# OCF instance parameters not planned to be implemented:
+#   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
 SAPCMControlZoneVersion="0.0.4"
@@ -188,8 +190,7 @@ function mz_init()
     mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_shell="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
-    mz_shutdown_retries="${OCF_RESKEY_SHUTDOWN_RETRIES:-20}"
-    mz_verbose_status="${OCF_RESKEY_VERBOSE_STATUS:-no}"
+    mz_shutdown_retries="${OCF_RESKEY_SHUTDOWN_RETRIES:+-r $OCF_RESKEY_SHUTDOWN_RETRIES}" # empty, if OCF_RESKEY_SHUTDOWN_RETRIES} is usnet, otherwise "-r $OCF_RESKEY_SHUTDOWN_RETRIES"
     mz_call_timeout="${OCF_RESKEY_CALL_TIMEOUT:-60}"
 }
 
@@ -203,31 +204,30 @@ function mz_meta_data()
 <shortdesc lang="en">Manages SAP Convergent Mediation ControlZone.</shortdesc>
 <longdesc lang="en">The SAPCMControlZone RA manages SAP Convergent Mediation ControlZone services platform or UI as active/passive resources.</longdesc>
 <parameters>
-<parameter name="USER" unique="0" required="0">
-    <longdesc lang="en">Linux user to control the CM component.</longdesc>
-    <shortdesc lang="en">Linux user to control the CM component.</shortdesc>
-    <content type="string" default="mzadmin" />
-</parameter>
-<parameter name="SERVICE" unique="0" required="0">
-    <shortdesc lang="en">Convergent Mediation ControlZone service to manage. Either platform or UI.</shortdesc>
-    <longdesc lang="en">Convergent Mediation ControlZone service to manage.</longdesc>
-    <content type="string" default="" />
-</parameter>
-<parameter name="MZ_SHELL" unique="0" required="0">
-    <longdesc lang="en">path to the convergent mediation shell to be called. Values: full path to the shell. </longdesc>
-    <shortdesc lang="en">convergent mediation shell</shortdesc>
-    <content type="string" default="/usr/bin/mzsh" />
-</parameter>
 <parameter name="CALL_TIMEOUT" unique="0" required="0">
    <shortdesc lang="en">Currently not implemented: How long calls to the ControlZone platform can take.</shortdesc>
    <longdesc lang="en">How long calls to the ControlZone platform for checking the status can take. If you increase this timeout, you should also adjust the operation timeouts of your Linux cluster resources.</longdesc>
-    <content type="string" default="" />
+    <content type="string" default="60" />
+</parameter>
+<parameter name="MZSHELL" unique="0" required="0">
+    <shortdesc lang="en">ControlZone shell</shortdesc>
+    <longdesc lang="en">Path to the CM ControlZone commandline shell to be called. Values: full path to the shell.</longdesc>
+    <content type="string" default="/usr/bin/mzsh" />
+</parameter>
+<parameter name="SERVICE" unique="0" required="0">
+    <shortdesc lang="en">Convergent Mediation ControlZone service to manage.</shortdesc>
+    <longdesc lang="en">Convergent Mediation ControlZone service to manage. Either platform or UI.</longdesc>
+    <content type="string" default="platform" />
 </parameter>
 <parameter name="SHUTDOWN_RETRIES" unique="0" required="0">
-    <shortdesc lang="en">Number of retries to check for process shutdown.</shortdesc>
-    <longdesc lang="en">Number of retries to check for process shutdown. If you increase the number of shutdown retries, you should also adjust the stop
-operation timeouts of your Linux cluster resources.</longdesc>
+    <shortdesc lang="en">Number of retries to check for process shutdown. Not yet implemented.</shortdesc>
+    <longdesc lang="en">Number of retries to check for process shutdown. If you increase the number of shutdown retries, you should also adjust the stop operation timeout of your Linux cluster resource.</longdesc>
     <content type="string" default="" />
+</parameter>
+<parameter name="USER" unique="0" required="0">
+    <shortdesc lang="en">Linux user to control the CM component.</shortdesc>
+    <longdesc lang="en">Linux user to control the CM component.</longdesc>
+    <content type="string" default="mzadmin" />
 </parameter>
 <parameter name="VERBOSE_STATUS" unique="0" required="0">
     <shortdesc lang="en">Currently not implemented: Verbose status output.</shortdesc>
@@ -239,9 +239,9 @@ operation timeouts of your Linux cluster resources.</longdesc>
     <action name="start"   timeout="120" />
     <action name="stop"    timeout="120" />
     <action name="monitor" timeout="120" interval="120" />
-    <action name="validate-all" timeout="5" />
     <action name="meta-data" timeout="5" />
     <action name="methods" timeout="5" />
+    <action name="usage" timeout="5" />
     <action name="reload" timeout="5" />
 </actions>
 </resource-agent>'
@@ -361,7 +361,6 @@ then
     ocf_log err "ACT: $0 must be run as root"
     exit "$OCF_ERR_PERM"
 fi
-
 
 # parameter check
 "${raType}check_params" --quiet
