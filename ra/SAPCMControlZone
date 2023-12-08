@@ -1,0 +1,369 @@
+#!/bin/bash
+#
+# SAPCMControlZone
+#
+# Description:  Manages SAP Convergent Mediation ControlZone
+#
+##############################################################################
+#
+# SAPCMControlZone (short mz)
+# Author:       Fabian Herschel, October 2023
+# Support:      linux@sap.com
+# License:      GNU General Public License (GPL)
+# Copyright:    (c) 2023 SUSE LLC
+#
+# An example usage:
+#      See usage() function below for more details.
+#
+# OCF instance parameters:
+#   OCF_RESKEY_USER             - optional parameter Linux user to control the ControlZone (default: mzadmin)
+#   OCF_RESKEY_MZSHELL          - optional parameter path to the mz-shell (default: /usr/bin/mzsh)
+#   OCF_RESKEY_SERVICE          - optional parameter name of ControlZone service to manage (default: platform)
+#
+# OCF instance parameters currently not implemented:
+#   OCF_RESKEY_CALL_TIMEOUT	- optional
+#   OCF_RESKEY_SHUTDOWN_RETRIES - optional, passed to mzsh (default: 20), do not mix-up with cluster migration threshold
+#
+# OCF instance parameters not planned to be implemented (let them here as reminders)
+#   OCF_RESKEY_VERBOSE_STATUS   - optional (default: no)
+#
+#######################################################################
+SAPCMControlZoneVersion="0.0.4"
+logger --id -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
+#
+# Initialization:
+raType="mz_"
+OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
+# shellcheck source=/dev/null
+source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
+#
+#######################################################################
+#
+
+#
+######################################################################
+#
+# mz-side of the RA
+#
+function mz_component_startup()
+{
+    local user="$1" component="$2" rc=0
+    su - "$user" "$mz_shell" startup "$component" | grep -qi "starting $component...done."; rc="$?"
+    return "$rc"
+}
+#export -f mz_component_startup
+
+function mz_component_shutdown()
+{
+    local user="$1" component="$2" rc=0
+    su - "$user" "$mz_shell" shutdown "$component" | grep -q "Shutting down $component...done."; rc="$?"
+    return "$rc"
+}
+#export -f mz_component_shutdown
+
+function mz_component_status()
+{
+    local component="$1" rc=0
+    "$mz_shell" status | grep -q "$component is running"; rc="$?"
+    return "$rc"
+}
+export -f mz_component_status
+
+function mz_call()
+{
+    # TODO: Check, if we need to switch user (su) for the mzshell action or if we (at least for status-check) could call it as user root to avoid problems with e.g. active directory
+    # TODO: 'timeout' default value (non zero), see OCF_RESKEY_CALL_TIMEOUT?
+    local rc="$OCF_ERR_GENERIC" timeout=3000, user="$mz_user", action="status", component="platform" call_rc=0
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --user=* )  user=${1#*=} ;;
+            --action=* )  action=${1#*=} ;;
+            --timeout=* )  timeout=${1#*=} ;;
+            --component=* )  component=${1#*=} ;;
+        esac
+        shift
+    done
+
+    case "$action" in
+        status )
+                export mz_shell component
+                retry_sleep=10
+                max_retry=2
+                retry_count=0
+                # we might need 1-2 retries, lets check if we only need to retry, if the status runs into a timeout
+                # can be called WITHOUT su
+                while [[ "$retry_count" -lt "$max_retry" ]]; do
+                    (( retry_count++ ))
+                    timeout "$timeout" bash -c "mz_component_status $component"; call_rc="$?"
+                    case "$call_rc" in
+                        0 ) ocf_log info "mz_call: $component is running"
+                            rc="$OCF_SUCCESS"
+                            break;;
+                        1 ) ocf_log info "mz_call: $component is NOT running"
+                            rc="$OCF_NOT_RUNNING";;
+                        * ) ocf_log info "mz_call: $component is unclear (call_rc=$call_rc)"
+                            rc="$OCF_ERR_GENERIC";;
+                    esac
+                    sleep "$retry_sleep"
+                done
+                ;;
+        startup )
+                # needs to switch-user to <mzadmin>
+                retry_sleep=10
+                max_retry=2
+                retry_count=0
+                while [[ "$retry_count" -lt "$max_retry" ]]; do
+                    (( retry_count++ ))
+                    if mz_component_startup "$user" "$component"; then
+                        ocf_log info "mz_call: $component is started"
+                        rc="$OCF_SUCCESS"
+                        break
+                    else
+                        ocf_log info "mz_call: $component is NOT started"
+                        rc="$OCF_NOT_RUNNING"
+                    fi
+                    sleep "$retry_sleep"
+                done
+                ;;
+        shutdown )
+                # needs to switch-user to <mzadmin>
+                retry_sleep=10
+                max_retry=2
+                retry_count=0
+                while [[ "$retry_count" -lt "$max_retry" ]]; do
+                    (( retry_count++ ))
+                    # second try to stop mz component
+                    if mz_component_shutdown "$user" "$component"; then
+                        ocf_log info "mz_call: $component is stopped"
+                        rc="$OCF_SUCCESS"
+                        break
+                    else
+                        ocf_log info "mz_call: $component is still NOT stopped"
+                        rc="$OCF_ERR_GENERIC"
+                    fi
+                    sleep "$retry_sleep"
+                done
+                ;;
+        restart )
+                # needs to switch-user to <mzadmin>
+                if su - "$user" "$mz_shell" restart "$component" | grep -q "Starting $component...done."; then
+                    rc="$OCF_SUCCESS"
+                else
+                    rc="$OCF_ERR_GENERIC"
+                fi
+                ;;
+        kill )
+                # needs to switch-user to <mzadmin>
+                if su - "$user" "$mz_shell"  kill "$component" | grep -q "killing $component\.*done."; then
+                    ocf_log info "mz_call: killing $component successful"
+                    rc="$OCF_SUCCESS"
+                else
+                    ocf_log info "mz_call: killing $component NOT successful"
+                    rc="$OCF_ERR_GENERIC"
+                fi
+                ;;
+        * ) 
+                # not implemented
+                rc="$OCF_ERR_UNIMPLEMENTED"
+    esac
+    return "$rc"
+}
+
+#
+######################################################################
+#
+# cluster-side of the RA
+#
+function mz_usage()
+{
+    echo "usage: $0 [start|stop|monitor|meta-data|reload|methods|usage]"
+}
+
+function mz_methods()
+{
+    echo "start stop monitor meta-data reload methods usage"
+}
+
+function mz_init()
+{
+    # TODO: init variables
+    mz_user="${OCF_RESKEY_USER:-mzadmin}"
+    mz_shell="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
+    mz_component="${OCF_RESKEY_SERVICE:-platform}"
+    mz_shutdown_retries="${OCF_RESKEY_SHUTDOWN_RETRIES:-20}"
+    mz_call_timeout="${OCF_RESKEY_CALL_TIMEOUT:-60}"
+}
+
+function mz_meta_data()
+{
+   # shellcheck disable=SC2016
+   echo '<?xml version="1.0"?>
+<!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
+<resource-agent name="SAPCMControlZone" version="$raVersion">
+<version>1.1</version>
+<shortdesc lang="en">Manages SAP Convergent Mediation ControlZone.</shortdesc>
+<longdesc lang="en">The SAPCMControlZone RA manages SAP Convergent Mediation ControlZone services platform or UI as active/passive resources.</longdesc>
+<parameters>
+<parameter name="CALL_TIMEOUT" unique="0" required="0">
+   <shortdesc lang="en">How long calls to the ControlZone shell can take.</shortdesc>
+   <longdesc lang="en">How long calls to the ControlZone shell for checking the status can take. If you increase this timeout, you should also adjust the operation timeouts of your Linux cluster resources.</longdesc>
+    <content type="string" default="" />
+</parameter>
+<parameter name="MZSHELL" unique="0" required="0">
+    <shortdesc lang="en">ControlZone shell</shortdesc>
+    <longdesc lang="en">Path to the CM ControlZone commandline shell to be called. Values: full path to the shell.</longdesc>
+    <content type="string" default="/usr/bin/mzsh" />
+</parameter>
+<parameter name="SHUTDOWN_RETRIES" unique="0" required="0">
+    <shortdesc lang="en">Number of retries to check for process shutdown.</shortdesc>
+    <longdesc lang="en">Number of retries to check for process shutdown. If you increase the number of shutdown retries, you should also adjust the stop
+operation timeouts of your Linux cluster resources.</longdesc>
+    <content type="string" default="" />
+<parameter name="USER" unique="0" required="1">
+    <shortdesc lang="en">Linux user to control the ControlZone service.</shortdesc>
+    <longdesc lang="en">Linux user to control the ControlZone service.</longdesc>
+    <content type="string" default="" />
+</parameter>
+<parameter name="SERVICE" unique="0" required="0">
+    <shortdesc lang="en">ControlZone service to manage.</shortdesc>
+    <longdesc lang="en">ControlZone service to manage. Values: "platform" or "ui" </longdesc>
+    <content type="string" default="platform" />
+</parameter>
+</parameters>
+<actions>
+    <action name="start"   timeout="120" />
+    <action name="stop"    timeout="120" />
+    <action name="monitor" timeout="120" interval="120" />
+    <action name="meta-data" timeout="5" />
+    <action name="reload" timeout="5" />
+</actions>
+</resource-agent>'
+}
+
+function mz_check_params()
+{
+    local rc="$OCF_SUCCESS"
+    # TODO: Change this fucntion to check the really needed parameters
+    if [[ -n "$OCF_RESKEY_USER" ]]; then
+        if id "$OCF_RESKEY_USER" 1>/dev/null 2>/dev/null; then
+            logger --id -s -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
+        else
+            logger --id -s -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' does NOT exist"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+    if [[ -n "$OCF_RESKEY_MZSHELL" ]]; then
+        if [[ -x "$OCF_RESKEY_MZSHELL" ]]; then
+            logger --id -s -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' exists and is executable"
+        else
+            logger --id -s -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' either does NOT exist or is NOT executable"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+    if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
+        if [[ "$OCF_RESKEY_SERVICE" =~ ^(platform|ui)$ ]]; then
+            logger --id -s -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does match list ['platform', 'ui']"
+        else
+            logger --id -s -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+    return "$rc"
+}
+
+function mz_validate()
+{
+    local rc="$OCF_SUCCESS"
+    mz_check_params; rc="$?"
+    return "$rc"
+}
+
+function mz_start()
+{
+    local rc="$OCF_SUCCESS"
+    mz_call --timeout=60 --action=startup --component="$mz_component" --user="$mz_user"; rc="$?"
+    # TODO; map to cluster return code (OCF_*)
+    return "$rc"
+}
+
+function mz_stop()
+{
+    local rc="$OCF_SUCCESS"
+    # TODO: retry 
+    mz_call --timeout=60 --action=shutdown --component="$mz_component" --user="$mz_user"; rc="$?"
+    # TODO; map to cluster return code (OCF_*)
+    return "$rc"
+}
+
+function mz_reload()
+{
+    local rc="$OCF_SUCCESS"
+    return "$rc"
+}
+
+function mz_monitor()
+{
+    local rc="$OCF_SUCCESS"
+    # TODO: retry 
+    mz_call --timeout=60 --action=status --component="$mz_component" --user="$mz_user"; rc="$?"
+    # TODO; map to cluster return code (OCF_*)
+    return "$rc"
+}
+
+# function: main - main function to operate
+# params:   ACTION
+# globals:  OCF_*(r), CLACT(w), ra_rc(rw), $0(r)
+#
+
+if [ "$#" != "1" ]
+then
+    "${raType}"usage
+    exit "$OCF_ERR_ARGS"
+fi
+
+ACTION="$1"
+if [ "$ACTION" = "status" ]; then
+    ACTION=monitor
+fi
+
+# These operations don't require OCF parameters to be set
+logger --id -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
+case "$ACTION" in
+    usage|methods)  "${raType}""$ACTION"
+                    exit "$OCF_SUCCESS";;
+    meta-data)      "${raType}"meta_data
+                    exit "$OCF_SUCCESS";;
+    notify)         # just ignore
+                    exit "$OCF_SUCCESS";;
+    validate-all)
+        "${raType}"validate; ra_rc="$?"
+        exit "$ra_rc"
+        ;;
+esac
+"${raType}"init
+
+# check for root user
+if ! ocf_is_root
+then
+    ocf_log err "ACT: $0 must be run as root"
+    exit "$OCF_ERR_PERM"
+fi
+
+# parameter check
+"${raType}check_params"
+ra_rc="$OCF_ERR_UNIMPLEMENTED"
+case "$ACTION" in
+    start|stop|monitor|promote|demote) # Standard controlling actions
+        "${raType}""$ACTION$CLACT"
+        ra_rc="$?"
+        ;;
+    reload)
+        ra_rc="$OCF_SUCCESS"
+        ;;
+    *)  # seems to be an unknown request
+        "${raType}"methods
+        ra_rc="$OCF_ERR_UNIMPLEMENTED"
+        ;;
+esac
+exit "${ra_rc}"
+# set ts=4 sw=4 sts=4 et
