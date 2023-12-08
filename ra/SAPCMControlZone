@@ -160,7 +160,7 @@ function mz_call()
                     rc="$OCF_ERR_GENERIC"
                 fi
                 ;;
-        * ) 
+        * )
                 # not implemented
                 rc="$OCF_ERR_UNIMPLEMENTED"
     esac
@@ -249,29 +249,35 @@ operation timeouts of your Linux cluster resources.</longdesc>
 
 function mz_check_params()
 {
-    local rc="$OCF_SUCCESS"
+    local rc="$OCF_SUCCESS" log_stderr="-s"
+    while  [[ "$#" -gt 1 ]]; do
+        case "$1" in
+            --quiet ) log_stderr="" ;;
+        esac
+    done
+
     # TODO: Change this fucntion to check the really needed parameters
     if [[ -n "$OCF_RESKEY_USER" ]]; then
         if id "$OCF_RESKEY_USER" 1>/dev/null 2>/dev/null; then
-            logger --id -s -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
+            logger --id "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
         else
-            logger --id -s -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' does NOT exist"
+            logger --id "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' does NOT exist"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$OCF_RESKEY_MZSHELL" ]]; then
         if [[ -x "$OCF_RESKEY_MZSHELL" ]]; then
-            logger --id -s -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' exists and is executable"
+            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' exists and is executable"
         else
-            logger --id -s -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' either does NOT exist or is NOT executable"
+            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' either does NOT exist or is NOT executable"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
         if [[ "$OCF_RESKEY_SERVICE" =~ ^(platform|ui)$ ]]; then
-            logger --id -s -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does match list ['platform', 'ui']"
+            logger --id "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does match list ['platform', 'ui']"
         else
-            logger --id -s -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
+            logger --id "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
@@ -296,7 +302,7 @@ function mz_start()
 function mz_stop()
 {
     local rc="$OCF_SUCCESS"
-    # TODO: retry 
+    # TODO: retry
     mz_call --timeout=60 --action=shutdown --component="$mz_component" --user="$mz_user"; rc="$?"
     # TODO; map to cluster return code (OCF_*)
     return "$rc"
@@ -311,7 +317,7 @@ function mz_reload()
 function mz_monitor()
 {
     local rc="$OCF_SUCCESS"
-    # TODO: retry 
+    # TODO: retry
     mz_call --timeout=60 --action=status --component="$mz_component" --user="$mz_user"; rc="$?"
     # TODO; map to cluster return code (OCF_*)
     return "$rc"
@@ -358,7 +364,7 @@ fi
 
 
 # parameter check
-"${raType}check_params"
+"${raType}check_params" --quiet
 ra_rc="$OCF_ERR_UNIMPLEMENTED"
 case "$ACTION" in
     start|stop|monitor|promote|demote) # Standard controlling actions
