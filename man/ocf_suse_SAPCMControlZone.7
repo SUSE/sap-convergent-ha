@@ -1,6 +1,6 @@
 .\" Version: 0.1
 .\"
-.TH ocf_suse_SAPCMControlZone 7 "06 Oct 2023" "" "SAPCMControlZone"
+.TH ocf_suse_SAPCMControlZone 7 "23 Nov 2023" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -9,32 +9,38 @@ SAPCMControlZone \- Manages the Convergent Mediation ControlZone platform for a 
 .\"
 .SH SYNOPSYS
 .\"
-\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | validate\-all | methods | reload | usage ]
+\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | reload | usage ]
+.\" \fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | validate\-all | methods | reload | usage ]
 .PP
 .\"
 .SH DESCRIPTION
 .\"
 SAPCMControlZone is a resource agent for managing the Convergent Mediation (CM)
-ControlZone platform for a single instance as HA resource.
+ControlZone platform and ui for a single instance as HA resources. 
 .PP
-The CM application contains a central ControlZone platform.
-TODO
-This ControlZone platform is handled as active/passive resource.
+The CM central ControlZone platform is responsible for providing services to
+other instances. Several platform containers may exist in a CM system, for high
+availability, but only one is active at a time.
+.\" see https://infozone.atlassian.net/wiki/spaces/MD9/pages/4863840/Terminology
+The CM central ControlZone UI is used to query, edit, import, and export data.
+.\" see https://infozone.atlassian.net/wiki/spaces/MD83/pages/5966420/3.+Web+UI
+This ControlZone services can be handled as active/passive resources.
 .PP
-NFS shares with working directories can be mounted statically on all nodes. The
+NFS shares with work directories can be mounted statically on all nodes. The
 HA cluster does not need to control that filesystems.
 .PP
-The resource agent uses the following interfaces provided by the ControlZone
-component:
+The resource agent uses the following interface provided by the ControlZone
+command shell:
 .PP
-mzsh startup platform
+mzsh startup \fISERVICE\fP
 .PP
-mzsh status platform
+mzsh status \fISERVICE\fP
 .PP
-mzsh shutdown platform
+mzsh shutdown \fISERVICE\fP
 .PP
-mzsh kill platform
-.\" .PP
+mzsh kill \fISERVICE\fP
+.PP
+Currently supported services are "platform" and "ui".
 .\" TODO output
 .PP
 Please see also the REQUIREMENTS section below.
@@ -44,26 +50,33 @@ Please see also the REQUIREMENTS section below.
 .\"
 This resource agent supports the following parameters:
 .PP
-\fBMZ_USER\fP
+\fBUSER\fP
 .RS 4
 OS user who calls mzsh, owner of $MZ_HOME.
 .br
 Optional. Unique, string. Default value: "mzadmin".
 .RE
 .PP
-\fBMZ_HOME\fP
+\fBSERVICE\fP
 .RS 4
-Home directory of $MZ_USER and path to mzsh. Should be defined for the OS user
-and not needed for the RA.
+The ControlZone service to be managed by the resoure agent.
 .br
-Optinal. Unique, string. Default value: "/opt/mz/".
+Optional. Unique, [ platform | ui ]. Default value: "platform".
 .RE
 .PP
-\fBMZ_CALL_TIMEOUT\fP
+\fBMZSHELL\fP
 .RS 4
-Define timeout how long calls to the ControlZone platform for checking the status can take.
-If you increase this timeout for ControllZone calls you should also adjust the operation
-timeouts of your Linux cluster resources.
+Path to mzsh.
+.br
+.\" TODO /opt/mz/bin/mzsh
+Optional. Unique, string. Default value: "/usr/bin/mzsh".
+.RE
+.PP
+\fBCALL_TIMEOUT\fP
+.RS 4
+Define timeout how long calls to the ControlZone platform for checking the
+status can take. If the timeout is reached, the return code will be 124. If you
+increase this timeout for ControlZone calls, you should also adjust the monitoroperation timeout of your Linux cluster resources.
 .br
 Optional. Unique, integer. Default value: 60.
 .RE
@@ -71,21 +84,19 @@ Optional. Unique, integer. Default value: 60.
 \fBSHUTDOWN_RETRIES\fP
 .RS 4
 Number of retries to check for process shutdown. Passed to mzsh.
-If you increase the number of shutdown retries you should also adjust the stop operation
-timeouts of your Linux cluster resources.
+If you increase the number of shutdown retries, you should also adjust the stop
+operation timeout of your Linux cluster resources.
 .br
 Optional. Unique, integer. Default value: 20.
 .RE
 .PP
-\fBVERBOSE_STATUS\fP
-.RS 4
-Enables verbose mode. Passed to mzsh.
-.br
-Optional. Unique, [ yes | no ]. Default value: no.
-.RE
-.PP
-
-.PP
+.\" \fBVERBOSE_STATUS\fP
+.\" .RS 4
+.\" Enables verbose mode. Passed to mzsh.
+.\" .br
+.\" Optional. Unique, [ yes | no ]. Default value: no.
+.\" .RE
+.\" .PP
 .\"
 .SH SUPPORTED ACTIONS
 .\"
@@ -95,6 +106,7 @@ This resource agent supports the following actions (operations):
 .RS 4
 Starts the ControlZone platform resource.
 .br
+Timeout might be adapted to match expected application timing.
 Suggested minimum timeout: 120\&.
 .RE
 .PP
@@ -102,24 +114,26 @@ Suggested minimum timeout: 120\&.
 .RS 4
 Stops the ControlZone platform resource.
 .br
+Timeout might be adapted to match expected application timing.
 Suggested minimum timeout: 120\&.
 .RE
 .PP
 \fBmonitor\fR
 .RS 4
-TODO
-Might be adapted to be greater than expected infrastructure timeouts.
+Regularly checks the ControlZone platform resource status.
+Timeout might be adapted to be greater than expected infrastructure timeouts.
 .br
-Suggested minimum timeout: 120\&.
+Suggested minimum timeout: 120, suggested interval: 120,
+suggested action on-fail=restart\&. 
 .RE
 .PP
-\fBvalidate\-all\fR
-.RS 4
-Performs a validation of the resource configuration.
-.br
-Suggested minimum timeout: 5\&.
-.RE
-.PP
+.\" \fBvalidate\-all\fR
+.\" .RS 4
+.\" Performs a validation of the resource configuration.
+.\" .br
+.\" Suggested minimum timeout: 5\&.
+.\" .RE
+.\" .PP
 \fBmeta\-data\fR
 .RS 4
 Retrieves resource agent metadata (internal use only).
@@ -127,25 +141,27 @@ Retrieves resource agent metadata (internal use only).
 Suggested minimum timeout: 5\&.
 .RE
 .PP
-\fBmethods\fR
-.RS 4
-Reports on the methods, the RA supports.
-.br
-Suggested minimum timeout: 5\&.
-.RE
-.PP
+.\" \fBmethods\fR
+.\" .RS 4
+.\" Reports on the methods, the RA supports.
+.\" .br
+.\" Suggested minimum timeout: 5\&.
+.\" .RE
+.\" .PP
 \fBreload\fR
 .RS 4
 Change parameters without forcing a recover of the resource.
 .br
-Suggested minimum timeout: TODO\&.
+Suggested minimum timeout: 5\&.
 .RE
 .PP
 .\"
 .SH RETURN CODES
 .\"
 The return codes are defined by the OCF cluster framework. Please refer to the
-OCF definition on the website mentioned below.
+OCF definition on the website mentioned below. In addition return code 124 will 
+be logged if CALL_TIMEOUT has been exceeded. Also log entries are written, which
+can be scanned by using a pattern like "SAPCMControlZone.*RA.*rc=[1-7,9]" for errors. Regular operations might be found with "SAPHanaControlZone.*RA.*rc=0".
 .RE
 .PP
 .\"
@@ -154,24 +170,24 @@ OCF definition on the website mentioned below.
 Configuration and basic checks for ControlZone platform resources in Linux clusters.
 See also man page SAPCMControlZone_maintenance_examples(7).
 .PP
-\fB* Example configuration for resource group with ControlZone and IP address.\fR
+\fB* Example configuration for resource group with ControlZone platform and IP address.\fR
 .PP
-A ControlZone resoure rsc_cz_C11 is configured, handled by OS user c11adm.
-This resource is grouped with an IP address resource rsc_ip_C11 into group
-grp_C11. The IP address starts first. The resource group might run on either
-node, but never in parallel.
+A ControlZone platform resoure rsc_cz_C11 is configured, handled by OS user
+c11adm. This resource is grouped with an IP address resource rsc_ip_C11 into
+group grp_cz_C11. The IP address starts first. The resource group might run on
+either node, but never in parallel.
 .PP
-In case of ControlZone failure (or monitor timeout), the resource group gets
-restarted until it gains success or migration-threshold is reached. If
-migration-threshold is exceeded, or if the node where the group runs fails, the
-group will be moved to the other node.
+In case of ControlZone platform failure (or monitor timeout), the resource
+group gets restarted until it gains success or migration-threshold is reached.
+If migration-threshold is exceeded, or if the node where the group runs fails,
+the group will be moved to the other node.
 A priority is configured for correct fencing in split-brain situations.
 See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPAddr2(7).
 .PP
 .RS 2
 primitive rsc_cz_C11 ocf:suse:SAPCMControlZone \\
 .br
- params MZ_USER=c11adm \\
+ params USER=c11adm \\
 .br
  op monitor interval=120 timeout=120 on-fail=restart \\
 .br
@@ -191,24 +207,50 @@ primitive rsc_ip_C11 ocf:heartbeat:IPaddr2 \\
 .RE
 .PP
 .RS 2
-group grp_C11 \\
+group grp_cz_C11 \\
 .br
  rsc_ip_C11 rsc_cz_C11
 .PP
 .RE
+.PP
+\fB* Example configuration for resource ControlZone UI.\fR
+.PP
+A ControlZone UI resoure rsc_ui_C11 is configured, handled by OS user c11adm.
+The resource might run on either node, but never in parallel.
+In case of ControlZone UI failure (or monitor timeout), the resource gets
+restarted until it gains success or migration-threshold is reached. If
+migration-threshold is exceeded, or if the node where the resource fails, the
+resource will be moved to the other node.
+See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPAddr2(7).
+.br
+Note: This resource might be grouped with an IP address resource, like in the
+above platform example.
+.PP
+.RS 2
+primitive rsc_UI_C11 ocf:suse:SAPCMControlZone \\
+.br
+ params USER=c11adm SERVICE=ui \\
+.br
+ op monitor interval=120 timeout=120 on-fail=restart \\
+.br
+ op start timeout=120 \\
+.br
+ op stop timeout=120
+.RE
+.PP
 \fB* Optional Filesystem resource for monitoring NFS shares.\fR
 .PP
 A shared filesystem migth be statically mounted by OS on both cluster nodes.
-This filesystem holds working directories. It must not be confused with the
+This filesystem holds work directories. It must not be confused with the
 ControlZone application itself. Client-side write caching has to be disabled.
 .PP
 A Filesystem resource is configured for a bind-mount of the real NFS share.
-This resource is grouped with the ControlZone and IP address. In case of
-filesystem failures, the whole group gets restarted.
+This resource is grouped with the ControlZone platform and IP address. In case
+of filesystem failures, the whole group gets restarted.
 No mount or umount on the real NFS share is done.
-Example for the real NFS share is /mnt/platform/check/, example for the bind-mount
-is /mnt/check/. Both mount points have to be created before the cluster resource
-is activated. 
+Example for the real NFS share is /mnt/platform/check/, example for the
+bind-mount is /mnt/check/. Both mount points have to be created before the
+cluster resource is activated. 
 See also man page SAPCMControlZone_basic_cluster(7), ocf_heartbeat_Filesystem(7)
 and nfs(5).
 .PP
@@ -229,12 +271,12 @@ primitive rsc_fs_C11 ocf:heartbeat:Filesystem \\
 .RE
 .PP
 .RS 2
-group grp_C11 \\
+group grp_cz_C11 \\
 .br
  rsc_fs_C11 rsc_ip_C11 rsc_cz_C11
 .RE
 .PP
-\fB* Show configuration of ControlZone resource and resource group.\fR
+\fB* Show configuration of ControlZone platform resource and resource group.\fR
 .PP
 Resource is rsc_cz_C11, resource group is grp_C11.
 .PP
@@ -294,26 +336,32 @@ Note: Understand the impact before trying.
 /usr/lib/ocf/resource.d/suse/SAPCMControlZone
 the resource agent
 .TP
-$MZ_HOME/TODO/mzsh
-TODO
-.TP
 $MZ_HOME, e.g. /opt/mz/
-TODO
+the installation directory of a ControlZone service
+.TP
+$MZ_HOME/bin/mzsh
+the mzshell, used as API for managing ControlZone components
+.TP
+$MZ_HOME/tmp/
+temporary files of a ControlZone service
+.\" see https://infozone.atlassian.net/wiki/spaces/MD9/pages/4863840/Terminology
 .PP
 .\"
 .SH REQUIREMENTS
 .\"
 * Convergent Mediation ControlZone version 9.0.0.0 or higher is installed and
-configured on both cluster nodes.
+configured on both cluster nodes. If the software is installed into a shared NFS
+filesystem, the binaries are copied into both cluster nodes´ local filesystems. 
 .PP
 * Only one ControlZone instance per Linux cluster.
 .PP
 * Technical users and groups are defined locally in the Linux system. If users
 are resolved by remote service, local caching is neccessary. Substitute user
-(su) to $MZ_USER (e.g. "mzadmin") needs to work reliable and without customized
-actions or messages.
+(su) to the mz-user (e.g. "mzadmin") needs to work reliable and without
+customized actions or messages.
 .PP
-* Strict time synchronization between the cluster nodes, e.g. NTP.
+* Strict time synchronization between the cluster nodes, e.g. NTP. All nodes of
+a cluster have configured the same timezone.
 .PP
 * Needed NFS shares (e.g. /mnt/platform/) mounted statically or by automounter. 
 No client-side write caching.
@@ -332,8 +380,13 @@ application is not started/stopped/moved from outside. Thus no manual actions
 are done.
 .PP
 * Interface for the RA to the ControlZone platform is the command mzsh. The
-mzsh is called with the arguments startup, shutdown, status and kill. Its
+mzsh is accessed on the cluster nodes´ local filesystems.
+The mzsh is called with the arguments startup, shutdown, status and kill. Its
 output is parsed by the RA. Thus the command and its output needs to be stable.
+.PP
+* The mzsh is called on the active node with a defined interval for regular
+resource monitor operations. It also is called on the active or passive node in
+certain situations. Those calls might run in parallel.
 .PP
 .\"
 .SH BUGS
@@ -350,7 +403,7 @@ Please report feedback and suggestions to feedback@suse.com.
 \fBSAPCMControlZone_maintenance_examples\fP(7),
 \fBocf_heartbeat_IPaddr2\fP(7) , \fBocf_heartbeat_Filesystem\fP(7) ,
 \fBcrm\fP(8) , \fBcrm_mon\fP(8) ,
-\fBnfs\fP(5) , \fBmount\fP(8) , 
+\fBnfs\fP(5) , \fBmount\fP(8) ,
 .br
 http://clusterlabs.org/doc/en-US/Pacemaker/1.1/html/Pacemaker_Explained/s-ocf-return-codes.html ,
 .br

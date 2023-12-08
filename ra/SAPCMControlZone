@@ -2,7 +2,7 @@
 #
 # SAPCMControlZone
 #
-# Description:  Manages SAP Convergent Mediation Control Zone
+# Description:  Manages SAP Convergent Mediation ControlZone
 #
 ##############################################################################
 #
@@ -70,7 +70,7 @@ export -f mz_component_status
 function mz_call()
 {
     # TODO: Check, if we need to switch user (su) for the mzshell action or if we (at least for status-check) could call it as user root to avoid problems with e.g. active directory
-    # TODO: 'timeout' default value (non zero)?
+    # TODO: 'timeout' default value (non zero), see OCF_RESKEY_CALL_TIMEOUT?
     local rc="$OCF_ERR_GENERIC" timeout=3000, user="$mz_user", action="status", component="platform" call_rc=0
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -188,6 +188,9 @@ function mz_init()
     mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_shell="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
+    mz_shutdown_retries="${OCF_RESKEY_SHUTDOWN_RETRIES:-20}"
+    mz_verbose_status="${OCF_RESKEY_VERBOSE_STATUS:-no}"
+    mz_call_timeout="${OCF_RESKEY_CALL_TIMEOUT:-60}"
 }
 
 function mz_meta_data()
@@ -197,8 +200,8 @@ function mz_meta_data()
 <!DOCTYPE resource-agent SYSTEM "ra-api-1.dtd">
 <resource-agent name="SAPCMControlZone" version="$raVersion">
 <version>1.1</version>
-<shortdesc lang="en">Manages SAP convergent Mediation Control Zone.</shortdesc>
-<longdesc lang="en">Manages SAP convergent Mediation Control Zone.</longdesc>
+<shortdesc lang="en">Manages SAP Convergent Mediation ControlZone.</shortdesc>
+<longdesc lang="en">The SAPCMControlZone RA manages SAP Convergent Mediation ControlZone services platform or UI as active/passive resources.</longdesc>
 <parameters>
 <parameter name="USER" unique="0" required="0">
     <longdesc lang="en">Linux user to control the CM component.</longdesc>
@@ -206,14 +209,30 @@ function mz_meta_data()
     <content type="string" default="mzadmin" />
 </parameter>
 <parameter name="SERVICE" unique="0" required="0">
-    <longdesc lang="en">convergent mediation service/component. Values: "platform" or "ui" </longdesc>
-    <shortdesc lang="en">convergent mediation service/component</shortdesc>
-    <content type="string" default="platform" />
+    <shortdesc lang="en">Convergent Mediation ControlZone service to manage. Either platform or UI.</shortdesc>
+    <longdesc lang="en">Convergent Mediation ControlZone service to manage.</longdesc>
+    <content type="string" default="" />
 </parameter>
 <parameter name="MZ_SHELL" unique="0" required="0">
     <longdesc lang="en">path to the convergent mediation shell to be called. Values: full path to the shell. </longdesc>
     <shortdesc lang="en">convergent mediation shell</shortdesc>
     <content type="string" default="/usr/bin/mzsh" />
+</parameter>
+<parameter name="CALL_TIMEOUT" unique="0" required="0">
+   <shortdesc lang="en">Currently not implemented: How long calls to the ControlZone platform can take.</shortdesc>
+   <longdesc lang="en">How long calls to the ControlZone platform for checking the status can take. If you increase this timeout, you should also adjust the operation timeouts of your Linux cluster resources.</longdesc>
+    <content type="string" default="" />
+</parameter>
+<parameter name="SHUTDOWN_RETRIES" unique="0" required="0">
+    <shortdesc lang="en">Number of retries to check for process shutdown.</shortdesc>
+    <longdesc lang="en">Number of retries to check for process shutdown. If you increase the number of shutdown retries, you should also adjust the stop
+operation timeouts of your Linux cluster resources.</longdesc>
+    <content type="string" default="" />
+</parameter>
+<parameter name="VERBOSE_STATUS" unique="0" required="0">
+    <shortdesc lang="en">Currently not implemented: Verbose status output.</shortdesc>
+    <longdesc lang="en">Verbose status output.</longdesc>
+    <content type="string" default="" />
 </parameter>
 </parameters>
 <actions>
@@ -225,8 +244,7 @@ function mz_meta_data()
     <action name="methods" timeout="5" />
     <action name="reload" timeout="5" />
 </actions>
-</resource-agent>
-   '
+</resource-agent>'
 }
 
 function mz_check_params()
