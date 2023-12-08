@@ -1,5 +1,5 @@
 #
-# spec file for package sap-convergent-ha
+# spec file for package sap-convergent-resource-agents
 #
 # Copyright (c) 2023 SUSE LLC
 #
@@ -15,8 +15,8 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 #
 
-Name:           sap-convergent-ha
-Version:        0.0.1
+Name:           sap-convergent-resource-agents
+Version:        0.0.0
 Release:        0
 Group:          Productivity/Clustering/HA
 Summary:        Resource agents to control the convergent mediation control zone
