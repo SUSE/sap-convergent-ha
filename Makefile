@@ -9,7 +9,7 @@ FILE_LIST = LICENSE \
 		ra \
 		test
 
-PKG = sap-convergent-ha
+PKG = sap-convergent-resource-agents
 SPECFILE = ${PKG}.spec
 VERSION = $(strip $(patsubst Version:,,$(shell grep '^Version:' $(SPECFILE))))
 
