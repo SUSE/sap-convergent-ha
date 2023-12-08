@@ -74,8 +74,9 @@ Optional. Unique, string. Default value: "/usr/bin/mzsh".
 \fBCALL_TIMEOUT\fP
 .RS 4
 Define timeout how long calls to the ControlZone platform for checking the
-status can take. If you increase this timeout for ControllZone calls you should 
-also adjust the operation timeouts of your Linux cluster resources.
+status can take. If you increase this timeout for ControllZone calls, you
+should also adjust the monitor operation timeout of your Linux cluster
+resources.
 .br
 Optional. Unique, integer. Default value: 60.
 .RE
@@ -83,8 +84,8 @@ Optional. Unique, integer. Default value: 60.
 \fBSHUTDOWN_RETRIES\fP
 .RS 4
 Number of retries to check for process shutdown. Passed to mzsh.
-If you increase the number of shutdown retries you should also adjust the stop
-operation timeouts of your Linux cluster resources.
+If you increase the number of shutdown retries, you should also adjust the stop
+operation timeout of your Linux cluster resources.
 .br
 Optional. Unique, integer. Default value: 20.
 .RE
