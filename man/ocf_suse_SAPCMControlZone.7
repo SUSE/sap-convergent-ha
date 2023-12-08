@@ -9,7 +9,8 @@ SAPCMControlZone \- Manages the Convergent Mediation ControlZone platform for a 
 .\"
 .SH SYNOPSYS
 .\"
-\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | validate\-all | methods | reload | usage ]
+\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | reload | usage ]
+.\" \fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | validate\-all | methods | reload | usage ]
 .PP
 .\"
 .SH DESCRIPTION
@@ -29,7 +30,7 @@ NFS shares with work directories can be mounted statically on all nodes. The
 HA cluster does not need to control that filesystems.
 .PP
 The resource agent uses the following interface provided by the ControlZone
-component:
+command shell:
 .PP
 mzsh startup \fISERVICE\fP
 .PP
@@ -74,9 +75,8 @@ Optional. Unique, string. Default value: "/usr/bin/mzsh".
 \fBCALL_TIMEOUT\fP
 .RS 4
 Define timeout how long calls to the ControlZone platform for checking the
-status can take. If you increase this timeout for ControllZone calls, you
-should also adjust the monitor operation timeout of your Linux cluster
-resources.
+status can take. If the timeout is reached, the return code will be 124. If you
+increase this timeout for ControllZone calls, you should also adjust the monitoroperation timeout of your Linux cluster resources.
 .br
 Optional. Unique, integer. Default value: 60.
 .RE
@@ -90,13 +90,13 @@ operation timeout of your Linux cluster resources.
 Optional. Unique, integer. Default value: 20.
 .RE
 .PP
-\fBVERBOSE_STATUS\fP
-.RS 4
-Enables verbose mode. Passed to mzsh.
-.br
-Optional. Unique, [ yes | no ]. Default value: no.
-.RE
-.PP
+.\" \fBVERBOSE_STATUS\fP
+.\" .RS 4
+.\" Enables verbose mode. Passed to mzsh.
+.\" .br
+.\" Optional. Unique, [ yes | no ]. Default value: no.
+.\" .RE
+.\" .PP
 .\"
 .SH SUPPORTED ACTIONS
 .\"
@@ -127,13 +127,13 @@ Suggested minimum timeout: 120, suggested interval: 120,
 suggested action on-fail=restart\&. 
 .RE
 .PP
-\fBvalidate\-all\fR
-.RS 4
-Performs a validation of the resource configuration.
-.br
-Suggested minimum timeout: 5\&.
-.RE
-.PP
+.\" \fBvalidate\-all\fR
+.\" .RS 4
+.\" Performs a validation of the resource configuration.
+.\" .br
+.\" Suggested minimum timeout: 5\&.
+.\" .RE
+.\" .PP
 \fBmeta\-data\fR
 .RS 4
 Retrieves resource agent metadata (internal use only).
@@ -141,13 +141,13 @@ Retrieves resource agent metadata (internal use only).
 Suggested minimum timeout: 5\&.
 .RE
 .PP
-\fBmethods\fR
-.RS 4
-Reports on the methods, the RA supports.
-.br
-Suggested minimum timeout: 5\&.
-.RE
-.PP
+.\" \fBmethods\fR
+.\" .RS 4
+.\" Reports on the methods, the RA supports.
+.\" .br
+.\" Suggested minimum timeout: 5\&.
+.\" .RE
+.\" .PP
 \fBreload\fR
 .RS 4
 Change parameters without forcing a recover of the resource.
@@ -159,7 +159,9 @@ Suggested minimum timeout: 5\&.
 .SH RETURN CODES
 .\"
 The return codes are defined by the OCF cluster framework. Please refer to the
-OCF definition on the website mentioned below.
+OCF definition on the website mentioned below. In addition return code 124 will 
+be logged if CALL_TIMEOUT has been exceeded. Also log entries are written, whic
+can be scanned by using a pattern like "SAPCMControlZone.*RA.*rc=[1-7,9]" for errors. Regular operations might be found with "SAPHanaControlZone.*RA.*rc=0".
 .RE
 .PP
 .\"
