@@ -9,7 +9,7 @@ SAPCMControlZone \- Manages Convergent Mediation ControlZone platform services f
 .\"
 .SH SYNOPSYS
 .\"
-\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | reload | methods | usage ]
+\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | methods | reload | usage | validate\-all ]
 .PP
 .\"
 .SH DESCRIPTION
@@ -75,7 +75,7 @@ Optional. Unique, string. Default value: "/usr/bin/mzsh".
 .RS 4
 Define timeout how long calls to the ControlZone platform for checking the
 status can take. If the timeout is reached, the return code will be 124. If you
-increase this timeout for ControlZone calls, you should also adjust the monitoroperation timeout of your Linux cluster resources.
+increase this timeout for ControlZone calls, you should also adjust the monitoroperation timeout of your Linux cluster resources. (Not yet implemented.)
 .br
 Optional. Unique, integer. Default value: 60.
 .RE
@@ -84,14 +84,14 @@ Optional. Unique, integer. Default value: 60.
 .RS 4
 Number of retries to check for process shutdown. Passed to mzsh.
 If you increase the number of shutdown retries, you should also adjust the stop
-operation timeout of your Linux cluster resources.
+operation timeout of your Linux cluster resources. (Not yet implemented.)
 .br
-Optional. Unique, integer. Default value: 20.
+Optional. Unique, integer. Default: mzsh builtin value.
 .RE
 .PP
 .\" \fBVERBOSE_STATUS\fP
 .\" .RS 4
-.\" Enables verbose mode. Passed to mzsh.
+.\" Enables verbose mode. Passed to mzsh. (Not yet implemented.)
 .\" .br
 .\" Optional. Unique, [ yes | no ]. Default value: no.
 .\" .RE
@@ -126,13 +126,14 @@ Suggested minimum timeout: 120, suggested interval: 120,
 suggested action on-fail=restart\&. 
 .RE
 .PP
-.\" \fBvalidate\-all\fR
-.\" .RS 4
-.\" Performs a validation of the resource configuration.
-.\" .br
-.\" Suggested minimum timeout: 5\&.
-.\" .RE
-.\" .PP
+\fBvalidate\-all\fR
+.RS 4
+Performs a validation of the resource configuration. It does basic checking of
+given USER, MZSHELL and SERVICE.
+.br
+Suggested minimum timeout: 5\&.
+.RE
+.PP
 \fBmeta\-data\fR
 .RS 4
 Retrieves resource agent metadata (internal use only).
@@ -303,6 +304,18 @@ Resource is rsc_cz_C11, resource group is grp_C11.
 OCF_RESKEY_CRM_meta_interval=0 \\
 .br
 /usr/lib/ocf/resource.d/suse/SAPCMControlZone monitor
+.RE
+.PP
+\fB* Basic validation of SAPCMControlZone configuration.\fR
+.PP
+The USER, MZSHELL and SERVICE are looked up in the installed system.
+.PP
+.RS 2
+# OCF_ROOT=/usr/lib/ocf/ \\
+.br
+OCF_RESKEY_CRM_meta_interval=0 \\
+.br
+/usr/lib/ocf/resource.d/suse/SAPCMControlZone validate\-all
 .RE
 .PP
 \fB* Example for testing the SAPCMControlZone RA.\fR
