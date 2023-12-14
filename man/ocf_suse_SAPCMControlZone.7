@@ -113,7 +113,6 @@ Suggested minimum timeout: 120\&.
 \fBstop\fR
 .RS 4
 Stops the ControlZone platform resource.
-.br
 Timeout might be adapted to match expected application timing.
 Suggested minimum timeout: 120\&.
 .RE
@@ -122,7 +121,6 @@ Suggested minimum timeout: 120\&.
 .RS 4
 Regularly checks the ControlZone platform resource status.
 Timeout might be adapted to be greater than expected infrastructure timeouts.
-.br
 Suggested minimum timeout: 120, suggested interval: 120,
 suggested action on-fail=restart\&. 
 .RE
@@ -131,28 +129,24 @@ suggested action on-fail=restart\&.
 .RS 4
 Performs a validation of the resource configuration. It does basic checking of
 given USER, MZSHELL and SERVICE.
-.br
 Suggested minimum timeout: 5\&.
 .RE
 .PP
 \fBmeta\-data\fR
 .RS 4
 Retrieves resource agent metadata (internal use only).
-.br
 Suggested minimum timeout: 5\&.
 .RE
 .PP
 \fBmethods\fR
 .RS 4
-Reports on the methods, the RA supports.
-.br
+Reports which methods (operations) the resource agent supports.
 Suggested minimum timeout: 5\&.
 .RE
 .PP
 \fBreload\fR
 .RS 4
 Change parameters without forcing a recover of the resource.
-.br
 Suggested minimum timeout: 5\&.
 .RE
 .PP
