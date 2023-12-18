@@ -15,7 +15,7 @@ SAPCMControlZone \- Manages Convergent Mediation ControlZone platform services f
 .SH DESCRIPTION
 .\"
 SAPCMControlZone is a resource agent for managing the Convergent Mediation (CM)
-ControlZone platform and ui for a single instance as HA resources. 
+ControlZone platform and UI for a single instance as HA resources. 
 .PP
 The CM central ControlZone platform is responsible for providing services to
 other instances. Several platform containers may exist in a CM system, for high
@@ -33,7 +33,7 @@ command shell:
 .PP
 mzsh startup \fISERVICE\fP
 .PP
-mzsh status \fISERVICE\fP
+mzsh status
 .PP
 mzsh shutdown \fISERVICE\fP
 .PP
@@ -157,6 +157,7 @@ The return codes are defined by the OCF cluster framework. Please refer to the
 OCF definition on the website mentioned below. In addition return code 124 will 
 be logged if CALL_TIMEOUT has been exceeded. Also log entries are written, which
 can be scanned by using a pattern like "SAPCMControlZone.*RA.*rc=[1-7,9]" for errors. Regular operations might be found with "SAPHanaControlZone.*RA.*rc=0".
+See SUSE TID 7022678 for maximum RA tracing.
 .RE
 .PP
 .\"
