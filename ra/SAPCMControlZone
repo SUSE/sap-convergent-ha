@@ -255,8 +255,6 @@ function mz_check_params()
             --quiet ) log_stderr="" ;;
         esac
     done
-
-    # TODO: Change this fucntion to check the really needed parameters
     if [[ -n "$OCF_RESKEY_USER" ]]; then
         if id "$OCF_RESKEY_USER" 1>/dev/null 2>/dev/null; then
             logger --id "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
