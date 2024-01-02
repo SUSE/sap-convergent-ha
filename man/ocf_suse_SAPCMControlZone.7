@@ -1,6 +1,6 @@
 .\" Version: 0.1
 .\"
-.TH ocf_suse_SAPCMControlZone 7 "06 Dec 2023" "" "SAPCMControlZone"
+.TH ocf_suse_SAPCMControlZone 7 "02 Jan 2024" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -9,13 +9,13 @@ SAPCMControlZone \- Manages Convergent Mediation ControlZone platform services f
 .\"
 .SH SYNOPSYS
 .\"
-\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | reload | methods | usage ]
+\fBSAPCMControlZone\fP [ start | stop | monitor | meta\-data | methods | reload | usage | validate\-all ]
 .PP
 .\"
 .SH DESCRIPTION
 .\"
 SAPCMControlZone is a resource agent for managing the Convergent Mediation (CM)
-ControlZone platform and ui for a single instance as HA resources. 
+ControlZone platform and UI for a single instance as HA resources. 
 .PP
 The CM central ControlZone platform is responsible for providing services to
 other instances. Several platform containers may exist in a CM system, for high
@@ -33,7 +33,7 @@ command shell:
 .PP
 mzsh startup \fISERVICE\fP
 .PP
-mzsh status \fISERVICE\fP
+mzsh status
 .PP
 mzsh shutdown \fISERVICE\fP
 .PP
@@ -75,7 +75,8 @@ Optional. Unique, string. Default value: "/usr/bin/mzsh".
 .RS 4
 Define timeout how long calls to the ControlZone platform for checking the
 status can take. If the timeout is reached, the return code will be 124. If you
-increase this timeout for ControlZone calls, you should also adjust the monitoroperation timeout of your Linux cluster resources.
+increase this timeout for ControlZone calls, you should also adjust the monitor
+operation timeout of your Linux cluster resources. (Not yet implemented.)
 .br
 Optional. Unique, integer. Default value: 60.
 .RE
@@ -84,14 +85,14 @@ Optional. Unique, integer. Default value: 60.
 .RS 4
 Number of retries to check for process shutdown. Passed to mzsh.
 If you increase the number of shutdown retries, you should also adjust the stop
-operation timeout of your Linux cluster resources.
+operation timeout of your Linux cluster resources. (Not yet implemented.)
 .br
-Optional. Unique, integer. Default value: 20.
+Optional. Unique, integer. Default: mzsh builtin value.
 .RE
 .PP
 .\" \fBVERBOSE_STATUS\fP
 .\" .RS 4
-.\" Enables verbose mode. Passed to mzsh.
+.\" Enables verbose mode. Passed to mzsh. (Not yet implemented.)
 .\" .br
 .\" Optional. Unique, [ yes | no ]. Default value: no.
 .\" .RE
@@ -112,7 +113,6 @@ Suggested minimum timeout: 120\&.
 \fBstop\fR
 .RS 4
 Stops the ControlZone platform resource.
-.br
 Timeout might be adapted to match expected application timing.
 Suggested minimum timeout: 120\&.
 .RE
@@ -121,36 +121,32 @@ Suggested minimum timeout: 120\&.
 .RS 4
 Regularly checks the ControlZone platform resource status.
 Timeout might be adapted to be greater than expected infrastructure timeouts.
-.br
 Suggested minimum timeout: 120, suggested interval: 120,
 suggested action on-fail=restart\&. 
 .RE
 .PP
-.\" \fBvalidate\-all\fR
-.\" .RS 4
-.\" Performs a validation of the resource configuration.
-.\" .br
-.\" Suggested minimum timeout: 5\&.
-.\" .RE
-.\" .PP
+\fBvalidate\-all\fR
+.RS 4
+Performs a validation of the resource configuration. It does basic checking of
+given USER, MZSHELL and SERVICE.
+Suggested minimum timeout: 5\&.
+.RE
+.PP
 \fBmeta\-data\fR
 .RS 4
 Retrieves resource agent metadata (internal use only).
-.br
 Suggested minimum timeout: 5\&.
 .RE
 .PP
 \fBmethods\fR
 .RS 4
-Reports on the methods, the RA supports.
-.br
+Reports which methods (operations) the resource agent supports.
 Suggested minimum timeout: 5\&.
 .RE
 .PP
 \fBreload\fR
 .RS 4
 Change parameters without forcing a recover of the resource.
-.br
 Suggested minimum timeout: 5\&.
 .RE
 .PP
@@ -161,6 +157,7 @@ The return codes are defined by the OCF cluster framework. Please refer to the
 OCF definition on the website mentioned below. In addition return code 124 will 
 be logged if CALL_TIMEOUT has been exceeded. Also log entries are written, which
 can be scanned by using a pattern like "SAPCMControlZone.*RA.*rc=[1-7,9]" for errors. Regular operations might be found with "SAPHanaControlZone.*RA.*rc=0".
+See SUSE TID 7022678 for maximum RA tracing.
 .RE
 .PP
 .\"
@@ -305,6 +302,18 @@ OCF_RESKEY_CRM_meta_interval=0 \\
 /usr/lib/ocf/resource.d/suse/SAPCMControlZone monitor
 .RE
 .PP
+\fB* Basic validation of SAPCMControlZone configuration.\fR
+.PP
+The USER, MZSHELL and SERVICE are looked up in the installed system.
+.PP
+.RS 2
+# OCF_ROOT=/usr/lib/ocf/ \\
+.br
+OCF_RESKEY_CRM_meta_interval=0 \\
+.br
+/usr/lib/ocf/resource.d/suse/SAPCMControlZone validate\-all
+.RE
+.PP
 \fB* Example for testing the SAPCMControlZone RA.\fR
 .PP
 The ControlZone platform will be terminated, while controlled by the
@@ -412,6 +421,8 @@ https://documentation.suse.com/sbp/sap/ ,
 .br
 https://documentation.suse.com/#sle-ha ,
 .br
+https://www.suse.com/support/kb/doc/?id=000019138 ,
+.br
 https://www.suse.com/support/kb/doc/?id=000019722 ,
 .br
 https://launchpad.support.sap.com/#/notes/1552925 ,
@@ -426,7 +437,7 @@ F.Herschel, L.Pinne
 .\"
 .SH COPYRIGHT
 .\"
-(c) 2023 SUSE LLC
+(c) 2023-2024 SUSE LLC
 .br
 SAPCMControlZone comes with ABSOLUTELY NO WARRANTY.
 .br
