@@ -286,10 +286,15 @@ Resource is rsc_cz_C11, resource group is grp_C11.
 # grep "SAPCMControlZone.*RA.*rc=[1-7,9]" /var/log/messages
 .RE
 .PP
-\fB* Show failcount for resource rsc_cz_C11.\fR
+\fB* Show and delete failcount for resource.\fR
+.PP
+Resource is rsc_cz_C11, node is node22. Useful after a failure has been fixed,
+and for testing.
 .PP
 .RS 2
-# cibadmin -Ql | grep rsc_cz_C1.*fail-count
+# crm resource failcount rsc_cz_C11 show node22.
+.br
+# crm resource failcount rsc_cz_C11 delete node22.
 .RE
 .PP
 \fB* Manually trigger a SAPCMControlZone probe action.\fR
