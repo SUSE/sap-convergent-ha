@@ -372,7 +372,8 @@ customized actions or messages.
 a cluster have configured the same timezone.
 .PP
 * Needed NFS shares (e.g. /mnt/platform/) mounted statically or by automounter. 
-No client-side write caching.
+No client-side write caching. File locking might be configured for application
+needs.
 .PP
 * The RA monitoring operations have to be active.
 .PP
@@ -385,7 +386,9 @@ SystemV, systemd or cron job.
 .PP
 * As long as the ControlZone application is managed by the Linux cluster, the
 application is not started/stopped/moved from outside. Thus no manual actions
-are done.
+are done. The Linux cluster does not prevent from administrative mistakes.
+However, if the Linux cluster detects the application running at both sites in
+parallel, it will stop both and restart one.
 .PP
 * Interface for the RA to the ControlZone platform is the command mzsh. The
 mzsh is accessed on the cluster nodes´ local filesystems.
