@@ -1,0 +1,8 @@
+#
+primitive rsc_cz_C11 ocf:suse:SAPCMControlZone \
+        params USER=mzadmin SERVICE=platform MZSHELL="/opt/mz/bin/mzsh" \
+        op monitor interval=60 timeout=120 on-fail=restart \
+        op start timeout=120 interval=0 \
+        op stop timeout=120 interval=0 \
+        meta priority=100 maintenance=true
+#

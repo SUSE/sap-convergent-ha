@@ -1,0 +1,6 @@
+#
+rsc_defaults rsc-options: \
+        resource-stickiness=1 \
+        migration-threshold=3 \
+        failure-timeout=86400
+#

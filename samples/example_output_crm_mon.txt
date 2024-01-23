@@ -1,0 +1,18 @@
+Every 5.0s: crm_mon -1r                         hugin: Mon Jan  8 09:49:52 2024
+
+Cluster Summary:
+  * Stack: corosync
+  * Current DC: hugin (version 2.1.2...ada5c3b36) - partition with quorum
+  * Last updated: Mon Jan  8 09:49:52 2024
+  * Last change:  Mon Jan  8 09:48:55 2024 by root via cibadmin on hugin
+  * 2 nodes configured
+  * 7 resource instances configured
+
+Node List:
+  * Online: [ hugin munin ]
+
+Full List of Resources:
+  * rsc_stonith_sbd     (stonith:external/sbd):  Started hugin
+  * Resource Group: grp_cz_C11:
+    * rsc_ip_C11        (ocf::heartbeat:IPaddr2):        Started hugin
+    * rsc_cz_C11        (ocf::suse:SAPCMControlZone):    Started munin 

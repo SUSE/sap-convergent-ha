@@ -1,0 +1,11 @@
+#
+property cib-bootstrap-options: \
+        have-watchdog=true \
+        cluster-infrastructure=corosync \
+        cluster-name=hacluster \
+        dc-deadtime=20 \
+        stonith-enabled=true \
+        stonith-timeout=150 \
+        priority-fencing-delay=30 \
+        stonith-action=reboot
+#
