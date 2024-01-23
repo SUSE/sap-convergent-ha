@@ -1,0 +1,5 @@
+mkdir -p ./osc/sap-convergent-resource-agents
+make copy REL=15 OBSPROJ=./osc/sap-convergent-resource-agents
+make copy REL=15 OBSPROJ=./ibs/sap-convergent-resource-agents
+# make -f Makefile-tester copy REL=15 OBSPROJ=./osc/SAPHanaSR-tester
+

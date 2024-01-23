@@ -1,6 +1,6 @@
 .\" Version: 0.1
 .\"
-.TH SAPCMControlZone_basic_cluster 7 "29 Sep 2023" "" "SAPCMControlZone"
+.TH SAPCMControlZone_basic_cluster 7 "23 Nov 2023" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -10,7 +10,7 @@ SAPCMControlZone_basic_cluster \- basic settings to make SAPCMControlZone work.
 .SH DESCRIPTION
 .\"
 The Convergent Mediation (CM) component ControlZone needs a certain basic
-cluster configuration. Besides necessary settings, additional configurations
+cluster configuration. Besides neccessary settings, additional configurations
 might match specific needs.
 
 .PP
@@ -29,16 +29,17 @@ locally on all cluster nodes. See man page hosts(5).
 \fBTime synchronization\fR
 
 Strict time synchronization between the cluster nodes is mandatory, e.g. NTP.
-See man page chrony.conf(5).
+See man page chrony.conf(5). Further, the nodes should have configured the same
+timezone.
 
 \fBNFS mounted filesystem\fR
 
-A shared filesystem for TODO can be statically mounted on both cluster nodes.
-This filesystem holds working directories, e.g. for batch processing. This NFS
-share is optional. It must not be confused with the ControlZone application
-itself. The application is installed at both cluster nodes on local filesystems.
-Client-side write caching has to be disabled for the NFS shares containing
-customer data. See man page fstab(5) and example below.
+A shared filesystem for ControlZone data can be statically mounted on both cluster
+nodes. This filesystem holds work directories, e.g. for batch processing.
+This NFS share is optional. It must not be confused with the ControlZone
+application itself. The application is installed at both cluster nodes on local
+filesystems. Client-side write caching has to be disabled for the NFS shares
+containing customer data. See man page fstab(5) and example below.
 
 .PP
 \fB* CRM Basics\fR
@@ -54,7 +55,7 @@ The value 'true' is one pre-requisite for having a cluster supported.
 
 The crm rsc_default parameter migration-threshold defines how many errors on a
 resource can be detected before this resource will be moved to another node.
-Avalue greater than 1 is needed for resource monitor option on-fail=restart.
+A value greater than 1 is needed for resource monitor option on-fail=restart.
 See also failure-timeout.
 
 \fBrecord-pending = true\fR
@@ -95,11 +96,12 @@ pcmk_delay_max.
 .\"
 .\" TODO OS network tcp_retries2=8 (8..10)
 .\"
-\fB* CRM basic configuration\fR
+\fB* CRM basic configuration.\fR
 
 This example has been taken from a two-node cluster SLE-HA 15 SP4 with
-disk-based SBD. Ppriority fecing is configured and the SBD pcmk_delay_max has
-been reduced accordingly.
+disk-based SBD. Priority fencing is configured and the SBD pcmk_delay_max has
+been reduced accordingly. The stonith-timeout is adjusted to SBD on-disk
+msgwait. The migration-threshold is set to 3. The failure-timeout is 86400.
 .PP
 .RS 2 
 primitive rsc_stonith_sbd stonith:external/sbd \\
@@ -139,24 +141,22 @@ op_defaults op-options: \\
  record-pending=true 
 .RE
 .PP
-\fB* Statically mounted NFS share for TODO filesystem\fR
+\fB* Statically mounted NFS share for ControlZone platform data.\fR
 
-Below is an fstab example for filesystems TODO.
-The filesystems are statically mounted on all nodes of the cluster. 
-The parent directory TODO resides on each node locally.
+Below is an fstab example for a shared filesystem holding application data.
+The filesystem is statically mounted on all nodes of the cluster.
 The correct mount options are depending on the NFS server.
 However, client-side write caching has to be disabled in any case.
 .PP
 .RS 2
-.\" TODO check NFS options
-nfs1:/s/TODO /TODO nfs4 rw,noac,sync,default 0 0
+nfs1:/s/c11/platform /mnt/platform nfs4 rw,noac,sync,default 0 0
 .RE
 .PP
 Note: The NFS share might be monitored, but not mounted/umounted by the HA
 cluster. See ocf_suse_SAPCMControlZone(7) for details.
 
 .PP
-\fB* Ping cluster resource for checking connectivity\fR
+\fB* Ping cluster resource for checking connectivity.\fR
 
 Below is an example of an optional ping resource for checking connectivity to
 the outer world. If the nodes have only one network interface, shared between
@@ -226,7 +226,9 @@ https://documentation.suse.com/sbp/sap/ ,
 .br
 https://documentation.suse.com/#sle-ha ,
 .br
-https://www.suse.com/es-es/support/kb/doc/?id=000019722 ,
+https://www.suse.com/support/kb/doc/?id=000019722 ,
+.br
+https://launchpad.support.sap.com/#/notes/1552925 ,
 .br
 https://launchpad.support.sap.com/#/notes/3079845
 .PP

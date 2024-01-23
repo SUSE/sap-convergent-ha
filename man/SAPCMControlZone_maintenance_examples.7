@@ -1,6 +1,6 @@
 .\ Version: 0.1
 .\"
-.TH SAPCMControlZone_maintenance_examples 7 "29 Sep 2023" "" "SAPCMControlZone"
+.TH SAPCMControlZone_maintenance_examples 7 "23 Nov 2023" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -23,7 +23,7 @@ after something has been done.
 Example user is mzadmin.
 .PP
 .RS 2 
-# su - mzadmin "mzsh status"
+# su - mzadmin -c "mzsh status"
 .br
 # crm_mon -1r
 .br
@@ -34,10 +34,14 @@ Example user is mzadmin.
 .PP
 \fB* Example for manual takeover using Linux cluster.\fR
 .PP
+ControlZone application and Linux cluster are checked for clean and idle state.
+The ControlZone resources are moved to the other node. The related location rule
+is removed after the takeover took place.
+ControlZone application and Linux cluster are checked for clean and idle state.
 Resource group is grp_C11, user is mzadmin.
 .PP
 .RS 2
-# su - mzadmin "mzsh status"
+# su - mzadmin -c "mzsh status"
 .br
 # crm_mon -1r
 .br
@@ -55,19 +59,22 @@ Resource group is grp_C11, user is mzadmin.
 .br
 # crm configure show | grep cli-
 .br
-# su - mzadmin "mzsh status"
+# su - mzadmin -c "mzsh status"
 .RE
 .PP
 \fB* Example for generic maintenance procedure.\fR
 .PP
+ControlZone application and Linux cluster are checked for clean and idle state.
 The ControlZone resource group is set into maintenance mode.
 This is needed to allow manual actions on the resources.
 After the manual actions are done, the resource group is put back under cluster
 control. It is neccessary to wait for each step to complete and to check the
-result. Resource group is grp_C11, user is mzadmin. See also example above.
+result.
+ControlZone application and Linux cluster are checked for clean and idle state.
+Resource group is grp_C11, user is mzadmin. See also example above.
 .PP
 .RS 2
-# su - mzadmin "mzsh status"
+# su - mzadmin -c "mzsh status"
 .br
 # crm_mon -1r
 .br
@@ -87,11 +94,12 @@ result. Resource group is grp_C11, user is mzadmin. See also example above.
 .br
 # cs_wait_for_idle -s 6; crm_mon -1r
 .br
-# su - mzadmin "mzsh status"
+# su - mzadmin -c "mzsh status"
 .RE
 .PP
 \fB* Set whole Linux cluster into maintenance.\fR
 .PP
+.\" TODO
 .RS 2
 # crm configure property maintenance-mode=true
 .br
@@ -101,7 +109,6 @@ result. Resource group is grp_C11, user is mzadmin. See also example above.
 \fB* Remove left-over maintenance attribute from overall Linux cluster.\fR
 .PP
 This could be done to avoid confusion caused by different maintenance procedures.
-See overview on maintenance procedures whith running Linux cluster.
 Before doing so, check for cluster attribute maintenance-mode="false".
 .PP
 .RS 2
@@ -113,7 +120,6 @@ Before doing so, check for cluster attribute maintenance-mode="false".
 \fB* Remove left-over standby attribute from Linux cluster nodes.\fR
 .PP
 This could be done to avoid confusion caused by different maintenance procedures.
-See overview on maintenance procedures whith running Linux cluster.
 Before doing so for all nodes, check for node attribute standby="off" on all nodes. Example node is node1.
 .PP
 .RS 2 
@@ -125,7 +131,6 @@ Before doing so for all nodes, check for node attribute standby="off" on all nod
 \fB* Remove left-over maintenance attribute from resource.\fR
 .PP
 This should usually not be needed.
-See overview on maintenance procedures whith running Linux cluster.
 Resource group is grp_C11.
 .PP
 .RS 2
