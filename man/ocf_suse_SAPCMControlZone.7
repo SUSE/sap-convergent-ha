@@ -67,8 +67,8 @@ Optional. Unique, [ platform | ui ]. Default value: "platform".
 .RS 4
 Path to mzsh.
 .br
-.\" TODO /opt/mz/bin/mzsh
-Optional. Unique, string. Default value: "/usr/bin/mzsh".
+.\" TODO /opt/cm9/bin/mzsh ?
+Optional. Unique, string. Default value: "/opt/mz/bin/mzsh".
 .RE
 .PP
 \fBCALL_TIMEOUT\fP
@@ -363,8 +363,9 @@ temporary files of a ControlZone service
 .SH REQUIREMENTS
 .\"
 * Convergent Mediation ControlZone version 9.0.0.0 or higher is installed and
-configured on both cluster nodes. If the software is installed into a shared NFS
-filesystem, the binaries are copied into both cluster nodes´ local filesystems. 
+configured on both cluster nodes. The software is installed once into a shared
+NFS filesystem. Then the binaries are copied into both cluster nodes´ local
+filesystems.
 .PP
 * Only one ControlZone instance per Linux cluster.
 .PP
