@@ -34,10 +34,11 @@ timezone.
 
 \fBNFS mounted filesystem\fR
 
-A shared filesystem for ControlZone data can be statically mounted on both cluster
-nodes. This filesystem holds work directories, e.g. for batch processing.
+A shared filesystem for ControlZone data can be statically mounted on both
+cluster nodes. This filesystem holds work directories, e.g. for batch
+processing.
 This NFS share is optional. It must not be confused with the ControlZone
-application itself. The application is installed at both cluster nodes on local
+application itself. The application is copied to both cluster nodes into local
 filesystems. Client-side write caching has to be disabled for the NFS shares
 containing customer data. See man page fstab(5) and example below.
 
