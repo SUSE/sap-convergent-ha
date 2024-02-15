@@ -45,6 +45,8 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 #
 # mz-side of the RA
 #
+echo 123
+
 function mz_component_startup()
 {
     local user="$1" component="$2" rc=0
@@ -328,7 +330,7 @@ function mz_monitor()
 
 if [ "$#" != "1" ]
 then
-    "${raType}"usage
+    mz_usage
     exit "$OCF_ERR_ARGS"
 fi
 
