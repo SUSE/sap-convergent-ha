@@ -325,7 +325,7 @@ function mz_monitor()
 
 # function: main - main function to operate
 # params:   ACTION
-# globals:  OCF_*(r), CLACT(w), ra_rc(rw), $0(r)
+# globals:  OCF_*(r), ra_rc(rw), $0(r)
 #
 
 if [ "$#" != "1" ]
@@ -366,13 +366,18 @@ fi
 "${raType}check_params" --quiet
 ra_rc="$OCF_ERR_UNIMPLEMENTED"
 case "$ACTION" in
-    start|stop|monitor|promote|demote) # Standard controlling actions
-        "${raType}""$ACTION$CLACT"
-        ra_rc="$?"
-        ;;
+    start)
+        mz_start; ra_rc="$?";;
+    stop)
+        mz_stop; ra_rc="$?";;
+    monitor)
+        mz_monitor; ra_rc="$?";;
+    promote)
+        mz_promote; ra_rc="$?";;
+    demote)
+        mz_demote; ra_rc="$?";;
     reload)
-        ra_rc="$OCF_SUCCESS"
-        ;;
+        ra_rc="$OCF_SUCCESS";;
     *)  # seems to be an unknown request
         "${raType}"methods
         ra_rc="$OCF_ERR_UNIMPLEMENTED"
