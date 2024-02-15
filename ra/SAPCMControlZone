@@ -380,7 +380,7 @@ case "$ACTION" in
         mz_reload
         ra_rc="$OCF_SUCCESS";;
     validate)
-        mz_reload
+        mz_validate
         ra_rc="$OCF_SUCCESS";;
     *)  # seems to be an unknown request
         "${raType}"methods
