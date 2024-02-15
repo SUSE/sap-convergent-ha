@@ -4,9 +4,9 @@ name: checkers_and_linters
 on:
   # Triggers the workflow on push or pull request events but only for some branches
   push:
-    branches: [ main, first-steps ]
+    branches: [ main, angi ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, stable, angi ]
 
 jobs:
   # This workflow contains a single job called "checksAndlinters"
