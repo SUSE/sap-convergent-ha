@@ -345,14 +345,16 @@ fi
 # These operations don't require OCF parameters to be set
 logger --id -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
 case "$ACTION" in
-    usage|methods)  "${raType}""$ACTION"
+    usage)          mz_usage
                     exit "$OCF_SUCCESS";;
-    meta-data)      "${raType}"meta_data
+    methods)        mz_methods
+                    exit "$OCF_SUCCESS";;
+    meta-data)      mz_meta_data
                     exit "$OCF_SUCCESS";;
     notify)         # just ignore
                     exit "$OCF_SUCCESS";;
     validate-all)
-        "${raType}"validate; ra_rc="$?"
+        mz_validate; ra_rc="$?"
         exit "$ra_rc"
         ;;
 esac
