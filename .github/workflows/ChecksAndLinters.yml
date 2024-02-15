@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
           echo "Running Shellcheck..."
-          find ra tools -type f  -name '*' -exec awk ' /^#!.*bash/{print FILENAME} {nextfile}' {} + | xargs shellcheck -a -x -s bash && echo "Everything is OK!"
+          find ra test -type f  -name '*' -exec awk ' /^#!.*bash/{print FILENAME} {nextfile}' {} + | xargs shellcheck -a -x -s bash && echo "Everything is OK!"
         continue-on-error: false
 
       # Runs a perl linter
