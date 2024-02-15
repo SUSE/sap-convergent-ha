@@ -377,6 +377,10 @@ case "$ACTION" in
     demote)
         mz_demote; ra_rc="$?";;
     reload)
+        mz_reload
+        ra_rc="$OCF_SUCCESS";;
+    validate)
+        mz_reload
         ra_rc="$OCF_SUCCESS";;
     *)  # seems to be an unknown request
         "${raType}"methods
