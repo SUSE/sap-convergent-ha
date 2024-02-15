@@ -63,6 +63,7 @@ function mz_component_shutdown()
 }
 #export -f mz_component_shutdown
 
+# shellcheck disable=SC2317
 function mz_component_status()
 {
     local component="$1" rc=0
@@ -192,7 +193,9 @@ function mz_init()
     mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_shell="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
+    # shellcheck disable=SC2034  # variable for future usage
     mz_shutdown_retries="${OCF_RESKEY_SHUTDOWN_RETRIES:+-r $OCF_RESKEY_SHUTDOWN_RETRIES}" # empty, if OCF_RESKEY_SHUTDOWN_RETRIES} is usnet, otherwise "-r $OCF_RESKEY_SHUTDOWN_RETRIES"
+    # shellcheck disable=SC2034  # variable for future usage
     mz_call_timeout="${OCF_RESKEY_CALL_TIMEOUT:-60}"
 }
 
@@ -358,7 +361,7 @@ case "$ACTION" in
         exit "$ra_rc"
         ;;
 esac
-"${raType}"init
+mz_init
 
 # check for root user
 if ! ocf_is_root
