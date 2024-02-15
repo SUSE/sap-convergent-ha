@@ -45,7 +45,6 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 #
 # mz-side of the RA
 #
-echo 123
 
 function mz_component_startup()
 {
