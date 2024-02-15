@@ -45,6 +45,7 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 #
 # mz-side of the RA
 #
+
 function mz_component_startup()
 {
     local user="$1" component="$2" rc=0
@@ -61,6 +62,7 @@ function mz_component_shutdown()
 }
 #export -f mz_component_shutdown
 
+# shellcheck disable=SC2317
 function mz_component_status()
 {
     local component="$1" rc=0
@@ -190,7 +192,9 @@ function mz_init()
     mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_shell="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
+    # shellcheck disable=SC2034  # variable for future usage
     mz_shutdown_retries="${OCF_RESKEY_SHUTDOWN_RETRIES:+-r $OCF_RESKEY_SHUTDOWN_RETRIES}" # empty, if OCF_RESKEY_SHUTDOWN_RETRIES} is usnet, otherwise "-r $OCF_RESKEY_SHUTDOWN_RETRIES"
+    # shellcheck disable=SC2034  # variable for future usage
     mz_call_timeout="${OCF_RESKEY_CALL_TIMEOUT:-60}"
 }
 
@@ -247,6 +251,8 @@ function mz_meta_data()
 </resource-agent>'
 }
 
+
+# shellcheck disable=SC2120
 function mz_check_params()
 {
     local rc="$OCF_SUCCESS" log_stderr="-s"
@@ -285,6 +291,7 @@ function mz_check_params()
 function mz_validate()
 {
     local rc="$OCF_SUCCESS"
+    # shellcheck disable=SC2119
     mz_check_params; rc="$?"
     return "$rc"
 }
@@ -323,12 +330,12 @@ function mz_monitor()
 
 # function: main - main function to operate
 # params:   ACTION
-# globals:  OCF_*(r), CLACT(w), ra_rc(rw), $0(r)
+# globals:  OCF_*(r), ra_rc(rw), $0(r)
 #
 
 if [ "$#" != "1" ]
 then
-    "${raType}"usage
+    mz_usage
     exit "$OCF_ERR_ARGS"
 fi
 
@@ -340,18 +347,20 @@ fi
 # These operations don't require OCF parameters to be set
 logger --id -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
 case "$ACTION" in
-    usage|methods)  "${raType}""$ACTION"
+    usage)          mz_usage
                     exit "$OCF_SUCCESS";;
-    meta-data)      "${raType}"meta_data
+    methods)        mz_methods
+                    exit "$OCF_SUCCESS";;
+    meta-data)      mz_meta_data
                     exit "$OCF_SUCCESS";;
     notify)         # just ignore
                     exit "$OCF_SUCCESS";;
     validate-all)
-        "${raType}"validate; ra_rc="$?"
+        mz_validate; ra_rc="$?"
         exit "$ra_rc"
         ;;
 esac
-"${raType}"init
+mz_init
 
 # check for root user
 if ! ocf_is_root
@@ -364,13 +373,22 @@ fi
 "${raType}check_params" --quiet
 ra_rc="$OCF_ERR_UNIMPLEMENTED"
 case "$ACTION" in
-    start|stop|monitor|promote|demote) # Standard controlling actions
-        "${raType}""$ACTION$CLACT"
-        ra_rc="$?"
-        ;;
+    start)
+        mz_start; ra_rc="$?";;
+    stop)
+        mz_stop; ra_rc="$?";;
+    monitor)
+        mz_monitor; ra_rc="$?";;
+    promote)
+        mz_promote; ra_rc="$?";;
+    demote)
+        mz_demote; ra_rc="$?";;
     reload)
-        ra_rc="$OCF_SUCCESS"
-        ;;
+        mz_reload
+        ra_rc="$OCF_SUCCESS";;
+    validate)
+        mz_validate
+        ra_rc="$OCF_SUCCESS";;
     *)  # seems to be an unknown request
         "${raType}"methods
         ra_rc="$OCF_ERR_UNIMPLEMENTED"

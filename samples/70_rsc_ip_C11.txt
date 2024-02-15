@@ -1,0 +1,5 @@
+#
+primitive rsc_ip_C11 IPaddr2 \
+        params ip=192.168.178.234 \
+        op monitor interval=60 timeout=20 on-fail=restart
+#

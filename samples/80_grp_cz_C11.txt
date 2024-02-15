@@ -1,0 +1,4 @@
+#
+group grp_cz_C11 rsc_ip_C11 rsc_cz_C11 \
+        meta maintenance=true
+#

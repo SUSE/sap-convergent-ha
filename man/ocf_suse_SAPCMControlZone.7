@@ -286,10 +286,15 @@ Resource is rsc_cz_C11, resource group is grp_C11.
 # grep "SAPCMControlZone.*RA.*rc=[1-7,9]" /var/log/messages
 .RE
 .PP
-\fB* Show failcount for resource rsc_cz_C11.\fR
+\fB* Show and delete failcount for resource.\fR
+.PP
+Resource is rsc_cz_C11, node is node22. Useful after a failure has been fixed,
+and for testing.
 .PP
 .RS 2
-# cibadmin -Ql | grep rsc_cz_C1.*fail-count
+# crm resource failcount rsc_cz_C11 show node22.
+.br
+# crm resource failcount rsc_cz_C11 delete node22.
 .RE
 .PP
 \fB* Manually trigger a SAPCMControlZone probe action.\fR
@@ -372,7 +377,8 @@ customized actions or messages.
 a cluster have configured the same timezone.
 .PP
 * Needed NFS shares (e.g. /mnt/platform/) mounted statically or by automounter. 
-No client-side write caching.
+No client-side write caching. File locking might be configured for application
+needs.
 .PP
 * The RA monitoring operations have to be active.
 .PP
@@ -385,7 +391,9 @@ SystemV, systemd or cron job.
 .PP
 * As long as the ControlZone application is managed by the Linux cluster, the
 application is not started/stopped/moved from outside. Thus no manual actions
-are done.
+are done. The Linux cluster does not prevent from administrative mistakes.
+However, if the Linux cluster detects the application running at both sites in
+parallel, it will stop both and restart one.
 .PP
 * Interface for the RA to the ControlZone platform is the command mzsh. The
 mzsh is accessed on the cluster nodes´ local filesystems.
@@ -422,6 +430,8 @@ https://documentation.suse.com/sbp/sap/ ,
 https://documentation.suse.com/#sle-ha ,
 .br
 https://www.suse.com/support/kb/doc/?id=000019138 ,
+.br
+https://www.suse.com/support/kb/doc/?id=000019514 ,
 .br
 https://www.suse.com/support/kb/doc/?id=000019722 ,
 .br

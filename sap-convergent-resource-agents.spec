@@ -16,7 +16,7 @@
 #
 
 Name:           sap-convergent-resource-agents
-Version:        0.0.0
+Version:        0.0.3
 Release:        0
 Group:          Productivity/Clustering/HA
 Summary:        Resource agents to control the convergent mediation control zone
@@ -68,6 +68,10 @@ install -m 0755 test/bin/mzsh %{buildroot}/usr/bin
 mkdir -p %{buildroot}%{_mandir}/man7
 install -m 0444 man/*.7.gz %{buildroot}%{_mandir}/man7
 
+# samples
+mkdir -p %{buildroot}/usr/share/%{name}/samples
+install -m 0444 samples/* %{buildroot}/usr/share/%{name}/samples
+
 %post
 %postun
 
@@ -80,6 +84,10 @@ install -m 0444 man/*.7.gz %{buildroot}%{_mandir}/man7
 %license LICENSE
 %doc README.md
 %doc %{_mandir}/man7/*
+%dir /usr/share
+%dir /usr/share/%{name}
+%dir /usr/share/%{name}/samples
+%doc /usr/share/%{name}/samples/*
 
 %files mz
 /usr/bin/mzsh
