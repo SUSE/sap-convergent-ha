@@ -18,6 +18,7 @@
 # OCF instance parameters:
 #   OCF_RESKEY_USER             - optional parameter, linux user to control the CM control-zone (default: mzadmin)
 #   OCF_RESKEY_MZSHELL          - optional parameter, path to the mz-shell (default: /usr/bin/mzsh)
+#                               - could take TWO paths separated by a colon. Then the first is the local, te second the central mzsh (like /usr/sap/$SID/CMP$InstNumber/CM/bin/mzsh)
 #   OCF_RESKEY_SERVICE          - optional parameter, service/component name of mz (default: platform)
 #
 # OCF instance parameters currently not implemented:
@@ -28,14 +29,17 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.0.4"
+SAPCMControlZoneVersion="0.1.0"
 logger --id -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 #
 # Initialization:
+#
 raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
+# init a minimum set of variables, if the variable are not initialized so far
+OCF_SUCCESS="${OCF_SUCCESS:-0}"
 #
 #######################################################################
 #
@@ -49,7 +53,7 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 function mz_component_startup()
 {
     local user="$1" component="$2" rc=0
-    su - "$user" "$mz_shell" startup "$component" | grep -qi "starting $component...done."; rc="$?"
+    su - "$user" "$mz_shell_central" startup "$component" | grep -qi "starting $component...done."; rc="$?"
     return "$rc"
 }
 #export -f mz_component_startup
@@ -57,7 +61,7 @@ function mz_component_startup()
 function mz_component_shutdown()
 {
     local user="$1" component="$2" rc=0
-    su - "$user" "$mz_shell" shutdown "$component" | grep -q "Shutting down $component...done."; rc="$?"
+    su - "$user" "$mz_shell_central" shutdown "$component" | grep -q "Shutting down $component...done."; rc="$?"
     return "$rc"
 }
 #export -f mz_component_shutdown
@@ -66,7 +70,7 @@ function mz_component_shutdown()
 function mz_component_status()
 {
     local component="$1" rc=0
-    "$mz_shell" status | grep -q "$component is running"; rc="$?"
+    "$mz_shell_local" status | grep -q "$component is running"; rc="$?"
     return "$rc"
 }
 export -f mz_component_status
@@ -88,7 +92,7 @@ function mz_call()
 
     case "$action" in
         status )
-                export mz_shell component
+                export mz_shell_local mz_shell_central component
                 retry_sleep=10
                 max_retry=2
                 retry_count=0
@@ -148,7 +152,7 @@ function mz_call()
                 ;;
         restart )
                 # needs to switch-user to <mzadmin>
-                if su - "$user" "$mz_shell" restart "$component" | grep -q "Starting $component...done."; then
+                if su - "$user" "$mz_shell_central" restart "$component" | grep -q "Starting $component...done."; then
                     rc="$OCF_SUCCESS"
                 else
                     rc="$OCF_ERR_GENERIC"
@@ -156,7 +160,7 @@ function mz_call()
                 ;;
         kill )
                 # needs to switch-user to <mzadmin>
-                if su - "$user" "$mz_shell"  kill "$component" | grep -q "killing $component\.*done."; then
+                if su - "$user" "$mz_shell_central"  kill "$component" | grep -q "killing $component\.*done."; then
                     ocf_log info "mz_call: killing $component successful"
                     rc="$OCF_SUCCESS"
                 else
@@ -189,8 +193,20 @@ function mz_methods()
 function mz_init()
 {
     # TODO: init variables
+    declare -a mz_path_arr
     mz_user="${OCF_RESKEY_USER:-mzadmin}"
-    mz_shell="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
+    mz_path_str="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
+    IFS=: mz_path_arr=( $mz_path_str )
+    mz_shell_local="${mz_path_arr[0]}"
+    if [[ -n "${mz_path_arr[1]}" ]]; then
+        # first (0) path is local, second (1) is central
+        mz_shell_central="${mz_path_arr[1]}"
+    else
+        # first-and-only (0) path is local and central
+        mz_shell_central="$mz_shell_local"
+    fi
+    mz_shell="$mz_shell_local"
+    mz_search_list="/usr/bin:/usr/sap/[A-Z][A-Z0-9][A-Z0-9]/CMP[0-9][0-9]/CM/bin/"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
     # shellcheck disable=SC2034  # variable for future usage
     mz_shutdown_retries="${OCF_RESKEY_SHUTDOWN_RETRIES:+-r $OCF_RESKEY_SHUTDOWN_RETRIES}" # empty, if OCF_RESKEY_SHUTDOWN_RETRIES} is usnet, otherwise "-r $OCF_RESKEY_SHUTDOWN_RETRIES"
@@ -215,7 +231,7 @@ function mz_meta_data()
 </parameter>
 <parameter name="MZSHELL" unique="0" required="0">
     <shortdesc lang="en">ControlZone shell</shortdesc>
-    <longdesc lang="en">Path to the CM ControlZone commandline shell to be called. Values: full path to the shell.</longdesc>
+    <longdesc lang="en">Path to the CM ControlZone commandline shell to be called. Values: full path to the shell. The parameter could also take two different paths separarated by colon (:). In that case the first path must be the path of the "local" mzsh and the second must be the path of the "central/shared" mzsh. Format: PATH-LOCAL:PATH-CENTRAL</longdesc>
     <content type="string" default="/usr/bin/mzsh" />
 </parameter>
 <parameter name="SERVICE" unique="0" required="0">
@@ -269,11 +285,19 @@ function mz_check_params()
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
-    if [[ -n "$OCF_RESKEY_MZSHELL" ]]; then
-        if [[ -x "$OCF_RESKEY_MZSHELL" ]]; then
-            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' exists and is executable"
+    if [[ -n "$mz_shell_local" ]]; then
+        if [[ -x "$mz_shell_local" ]]; then
+            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' exists and is executable"
         else
-            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$OCF_RESKEY_MZSHELL' either does NOT exist or is NOT executable"
+            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' either does NOT exist or is NOT executable"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+    if [[ -n "$mz_shell_central" ]]; then
+        if [[ -x "$mz_shell_central" ]]; then
+            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' exists and is executable"
+        else
+            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' either does NOT exist or is NOT executable"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
@@ -356,6 +380,7 @@ case "$ACTION" in
     notify)         # just ignore
                     exit "$OCF_SUCCESS";;
     validate-all)
+        mz_init
         mz_validate; ra_rc="$?"
         exit "$ra_rc"
         ;;
