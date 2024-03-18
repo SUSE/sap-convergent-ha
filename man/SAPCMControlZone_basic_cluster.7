@@ -1,6 +1,6 @@
 .\" Version: 0.1
 .\"
-.TH SAPCMControlZone_basic_cluster 7 "23 Nov 2023" "" "SAPCMControlZone"
+.TH SAPCMControlZone_basic_cluster 7 "18 Mar 2024" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -36,9 +36,8 @@ timezone.
 
 A shared filesystem for ControlZone data can be statically mounted on both
 cluster nodes. This filesystem holds work directories, e.g. for batch
-processing.
-This NFS share is optional. It must not be confused with the ControlZone
-application itself. The application is copied to both cluster nodes into local
+processing. It must not be confused with the ControlZone application itself.
+The application is copied from NFS to both cluster nodes into local
 filesystems. Client-side write caching has to be disabled for the NFS shares
 containing customer data. See man page fstab(5) and example below.
 
@@ -243,7 +242,7 @@ F.Herschel, L.Pinne
 .\"
 .SH COPYRIGHT
 .\"
-(c) 2023 SUSE LLC
+(c) 2023-2024 SUSE LLC
 .br
 SAPCMControlZone comes with ABSOLUTELY NO WARRANTY.
 .br

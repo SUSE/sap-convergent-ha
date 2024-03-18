@@ -1,6 +1,6 @@
 .\ Version: 0.1
 .\"
-.TH SAPCMControlZone_maintenance_examples 7 "23 Nov 2023" "" "SAPCMControlZone"
+.TH SAPCMControlZone_maintenance_examples 7 "18 Mar 2024" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -155,7 +155,7 @@ Nevertheless a currently running cluster will keep running.
 \fB* Start Linux cluster on all cluster nodes.\fR
 .PP
 .RS 2
-# crm cluster run "crm cluster start"
+# crm cluster start --all
 .br
 # crm cluster run "systemctl status pacemaker" | grep pacemaker.service
 .RE
@@ -206,7 +206,7 @@ F.Herschel, L.Pinne
 .\"
 .SH COPYRIGHT
 .\"
-(c) 2023 SUSE LLC
+(c) 2024 SUSE LLC
 .br
 SAPCMControlZone comes with ABSOLUTELY NO WARRANTY.
 .br
