@@ -1,4 +1,4 @@
-# Makefile for SAPHanaSR package
+# Makefile for sap-convergent-resource-agents package
 # Author: Fabian Herschel 
 # License: GPL v 2.0+
 # thanks for template by Ilya Manyugin
@@ -8,7 +8,7 @@ FILE_LIST = LICENSE \
 		README.md \
 		man \
 		ra \
-        samples \
+        	samples \
 		test
 
 PKG = sap-convergent-resource-agents
