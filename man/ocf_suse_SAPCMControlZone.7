@@ -65,9 +65,11 @@ Optional. Unique, [ platform | ui ]. Default value: "platform".
 .PP
 \fBMZSHELL\fP
 .RS 4
-Path to mzsh. In case different paths are used for monitor action and
-start/stop/kill action, two paths are given, separated by a colon (:). The
-first is used for monitor, the second one for start/stop/kill.
+Path to mzsh. Could be one or two full paths. If one path is given, that path is
+used for all actions. In case two paths are given, the first one is used for monitor
+actions, the second one is used for start/stop/kill actions. If two paths are given,
+the first needs to be on local disk, the second needs to be on the central NFS share
+with the original CM ControlZone installation. Two paths are separated by a colon (:).
 .br
 .\" TODO default /opt/cm9/bin/mzsh ?
 Optional. Unique, string. Default value: "/usr/bin/mzsh".
