@@ -75,6 +75,20 @@ with the original CM ControlZone installation. Two paths are separated by a colo
 Optional. Unique, string. Default value: "/usr/bin/mzsh".
 .RE
 .PP
+\fBJAVA_HOME\fP
+.RS 4
+Path to Java virtual machine used by mzsh.
+Could be one or two full paths. If one path is given, that path is
+used for all actions. In case two paths are given, the first one is used for monitor
+actions, the second one is used for start/stop/kill actions. If two paths are given,
+the first needs to be on local disk, the second needs to be on the central NFS share
+with the original CM ControlZone installation. Two paths are separated by a colon (:). 
+(Not yet implemented.)
+.br
+.\" TODO default /opt/cm9/sapmachine17 or OS $JAVA_HOME ?
+Optional. Unique, string. Default value: "/usr/lib64/jvm/jre-17-openjdk".
+.RE
+.PP
 \fBCALL_TIMEOUT\fP
 .RS 4
 Define timeout how long calls to the ControlZone platform for checking the
@@ -193,6 +207,8 @@ primitive rsc_cz_C11 ocf:suse:SAPCMControlZone \\
  params USER=c11adm \\
 .br
  MZSHELL=/opt/cm9/c11/bin/mzsh:/usr/sap/c11/bin/mzsh \\
+.br
+ JAVA_HOME=/opt/cm9/c11/sapmachine17:/usr/sap/c11/sapmachine17 \\
 .br
  op monitor interval=120 timeout=120 on-fail=restart \\
 .br
@@ -374,8 +390,9 @@ temporary files of a ControlZone service
 .\"
 * Convergent Mediation ControlZone version 9.0.0.0 or higher is installed and
 configured on both cluster nodes. The software is installed once into a shared
-NFS filesystem. Then the binaries are copied into both cluster nodes´ local
-filesystems.
+NFS filesystem. Then binaries and configuration are copied into both cluster
+nodes´ local filesystems. Finally the local configuration has to be adjusted.
+Please refer to Convergent Mediation documentation for details.
 .PP
 * Only one ControlZone instance per Linux cluster.
 .PP
@@ -435,6 +452,8 @@ Please report feedback and suggestions to feedback@suse.com.
 http://clusterlabs.org/doc/en-US/Pacemaker/1.1/html/Pacemaker_Explained/s-ocf-return-codes.html ,
 .br
 https://infozone.atlassian.net/wiki/spaces/MD9/pages/4881672/mzsh ,
+.br
+https://infozone.atlassian.net/wiki/spaces/MD9/pages/4849693/Setting+Environment+Variables+for+Platform ,
 .br
 https://documentation.suse.com/sbp/sap/ ,
 .br
