@@ -167,7 +167,7 @@ function mz_call()
                 ;;
         restart )
                 # needs to switch-user to <mzadmin>
-                if su - "$user" "$mz_shell_central" restart "$component" | grep -q "Starting $component...done."; then
+                if su - "$user" -c "$mz_shell_central restart $component" | grep -q "Starting $component...done."; then
                     rc="$OCF_SUCCESS"
                 else
                     rc="$OCF_ERR_GENERIC"
@@ -177,7 +177,7 @@ function mz_call()
                 # needs to switch-user to <mzadmin>
                 # TODO PRIO1: How to treat that kill outputs "platform not running" (not killing)
                 #             This occures e.g. if the component is already down.
-                if su - "$user" "$mz_shell_central" kill "$component" | grep -q "killing $component\.*done."; then
+                if su - "$user" -c "$mz_shell_central kill $component" | grep -qi "killing $component\.*done."; then
                     ocf_log info "mz_call: killing $component successful"
                     rc="$OCF_SUCCESS"
                 else
