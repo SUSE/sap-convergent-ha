@@ -399,7 +399,7 @@ $MZ_HOME, e.g. /opt/cm/
 the installation directory of a ControlZone service
 .TP
 $MZ_HOME/bin/mzsh
-the default mzshell, used as API for managing ControlZone components
+the default mzshell, used as API for managing ControlZone components, contains paths and URL
 .TP
 $MZ_HOME/tmp/
 temporary files of a ControlZone service
@@ -407,6 +407,7 @@ temporary files of a ControlZone service
 $JAVA_HOME
 the JAVA virtual machine, used by mzsh
 .\" see https://infozone.atlassian.net/wiki/spaces/MD9/pages/4863840/Terminology
+.\" TODO logs?
 .PP
 .\"
 .SH REQUIREMENTS
@@ -432,7 +433,7 @@ cluster nodes and services are resolved locally in the Linux system.
 * Strict time synchronization between the cluster nodes, e.g. NTP. All nodes of
 a cluster have configured the same timezone.
 .PP
-* Needed NFS shares (e.g. /usr/sap/<sid>) are mounted statically or by automounter. 
+* Needed NFS shares (e.g. /usr/sap/<SID>) are mounted statically or by automounter. 
 No client-side write caching. File locking might be configured for application
 needs.
 .PP
