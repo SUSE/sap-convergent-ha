@@ -70,9 +70,24 @@ used for all actions. In case two paths are given, the first one is used for mon
 actions, the second one is used for start/stop/kill actions. If two paths are given,
 the first needs to be on local disk, the second needs to be on the central NFS share
 with the original CM ControlZone installation. Two paths are separated by a colon (:).
+The mzsh contains settings that need to be consistent with MZ_HOME and JAVA_HOME.
 .br
 .\" TODO default /opt/cm9/bin/mzsh ?
 Optional. Unique, string. Default value: "/usr/bin/mzsh".
+.RE
+.PP
+\fBMZ_HOME\fP
+.RS 4
+Path to Convergent Mediation installation dirctory, owned by the mz-user.
+Could be one or two full paths. If one path is given, that path is
+used for all actions. In case two paths are given, the first one is used for monitor
+actions, the second one is used for start/stop/kill actions. If two paths are given,
+the first needs to be on local disk, the second needs to be on the central NFS share
+with the original CM ControlZone installation. Two paths are separated by a colon (:). 
+(Not yet implemented.)
+.br
+.\" TODO default /opt/cm9/ ?
+Optional. Unique, string. Default value: "/opt/cm/".
 .RE
 .PP
 \fBJAVA_HOME\fP
@@ -208,8 +223,10 @@ primitive rsc_cz_C11 ocf:suse:SAPCMControlZone \\
 .br
  MZSHELL=/opt/cm9/c11/bin/mzsh:/usr/sap/c11/bin/mzsh \\
 .br
- JAVA_HOME=/opt/cm9/c11/sapmachine17:/usr/sap/c11/sapmachine17 \\
+ MZ_HOME=/opt/cm9/c11/:/usr/sap/c11/ \\
 .br
+ JAVA_HOME=/opt/cm9/c11/sapmachine17:/usr/sap/c11/sapmachine17 \\
+.br 
  op monitor interval=120 timeout=120 on-fail=restart \\
 .br
  op start timeout=120 \\
