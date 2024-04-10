@@ -377,7 +377,7 @@ Note: Understand the impact before trying.
 the resource agent
 .TP
 .\" TODO two paths
-$MZ_HOME, e.g. /opt/mz/
+$MZ_HOME, e.g. /opt/cm/
 the installation directory of a ControlZone service
 .TP
 $MZ_HOME/bin/mzsh
@@ -401,10 +401,15 @@ Please refer to Convergent Mediation documentation for details.
 .PP
 * Only one ControlZone instance per Linux cluster.
 .PP
+* Linux shell of the mz-user (e.g. "mzadmin") is /bin/bash.
+.PP
 * Technical users and groups are defined locally in the Linux system. If users
 are resolved by remote service, local caching is neccessary. Substitute user
-(su) to the mz-user (e.g. "mzadmin") needs to work reliable and without
-customized actions or messages.
+(su) to the mz-user needs to work reliable and without customized actions or
+messages.
+.PP
+* Name resolution for hostnames and virtual hostnames is crucial. Hostnames of
+cluster nodes and services are resolved locally in the Linux system.
 .PP
 * Strict time synchronization between the cluster nodes, e.g. NTP. All nodes of
 a cluster have configured the same timezone.
