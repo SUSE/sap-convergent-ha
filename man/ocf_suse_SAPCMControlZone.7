@@ -429,8 +429,16 @@ and for testing.
 .PP
 \fB* Manually trigger a SAPCMControlZone probe action.\fR
 .PP
+USER is mzadmin, SERVICE is platform, MZSHELL is /usr/sap/c11/bin/mzsh .
+.PP
 .RS 2
-# OCF_ROOT=/usr/lib/ocf/ \\
+# OCF_RESKEY_USER=mzadmin \\
+.br
+OCF_RESKEY_SERVICE=platform \\
+.br
+OCF_RESKEY_MZSHELL="/usr/sap/c11/bin/mzsh" \\
+.br
+OCF_ROOT=/usr/lib/ocf/ \\
 .br
 OCF_RESKEY_CRM_meta_interval=0 \\
 .br
