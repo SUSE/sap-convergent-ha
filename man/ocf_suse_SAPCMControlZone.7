@@ -20,7 +20,7 @@ SAPCMControlZone is a resource agent (RA) for managing the Convergent Mediation
 (CM) ControlZone platform and UI for a single instance as HA resources. 
 .PP
 The CM central ControlZone platform is responsible for providing services to
-other instances. Several platform containers may exist in a CM system, for high
+other CM instances. Several platform containers may exist in a CM system, for high
 availability, but only one is active at a time.
 .\" see https://infozone.atlassian.net/wiki/spaces/MD9/pages/4863840/Terminology
 The CM central ControlZone UI is used to query, edit, import, and export data.
@@ -57,9 +57,9 @@ the HA cluster does not need to control that filesystems. The SAPCMControlZone
 RA offers three ways for managing ControlZone services:
 .PP
 .RS 2
-- always calling mzsh from central shared NFS
+- calling mzsh always from central shared NFS
 .br
-- always calling mzsh from cluster node´s local filesystem
+- calling mzsh always from cluster node´s local filesystem
 .br
 - calling mzsh startup/shutdown centrally, but mzsh status locally
 .\" TODO kill better local?
@@ -67,7 +67,44 @@ RA offers three ways for managing ControlZone services:
 .PP
 Another option would be to install the ControlZone software into a cluster
 managed filesystem on shared storage. This might fit for on-premise systems
-backed by SAN infrastructure. We do not discuss this.
+backed by SAN storage infrastructure. From SAPCMControlZone RA´s perspective
+this would look like node´s local filesystem. We do not discuss storage details
+here.
+.PP
+\fBBest Practice\fP
+.PP
+* Use two independent corosync rings, at least one of them on bonded network.
+Resulting in at least three physical links. Unicast is preferred.
+.PP
+* Use Stonith Block Device (SBD), shared LUNs across all nodes on all sites.
+Of course, together with hardware watchdog.
+.PP
+* Align all timeouts in the Linux cluster with the timeouts of the underlying
+infrastructure - particuarly network and storage.
+.PP
+* Prefer cluster node´s local filesystem over NFS, whenever possible.
+.PP
+* Check the installation of OS and Linux cluster on all nodes before doing any
+functional tests.
+.PP
+* Carefully define, perform, and document tests for all scenarios that should be
+covered, as well as all maintenance procedures.
+.PP
+* Test ControlZone features without Linux cluster before doing the overall
+cluster tests.
+.PP
+* Test basic Linux cluster features without ControlZone before doing the overall
+cluster tests.
+.PP
+* Be patient. For detecting the overall ControlZone status, the Linux cluster
+needs a certain amount of time, depending on the ControlZone services and the
+configured intervals and timeouts.
+.PP
+* Before doing anything, always check for the Linux cluster's idle status,
+left-over migration constraints, and resource failures as well as the
+ControlZone status.
+.PP
+Please see also manual page SAPCMControlZone_maintenance_examples(7).
 .PP
 .\"
 .SH SUPPORTED PARAMETERS
