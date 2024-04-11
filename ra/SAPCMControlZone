@@ -58,7 +58,7 @@ function mz_component_startup()
     # TODO PRIO1: out for already started component is "platform is already running"
     # TODO PRIO1: Output like "FAILED\nStartable platform exited unexpectedly"
     # TODO PRIO1: Tested, but not committed API: RC==0 OK
-    su - "$user" -c "$mz_shell_central startup $component" | grep -q "Starting $component...done."; rc="$?"
+    su - "$user" -c "$mz_shell_central startup $component" | grep -q "Starting $component\.*done."; rc="$?"
     return "$rc"
 }
 #export -f mz_component_startup
@@ -68,12 +68,12 @@ function mz_component_shutdown()
     local user="$1" component="$2" rc=0
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: How to treat output like "Shutting down platform...\nShutdown failed. Trying kill instead.\ndone."
-    # TODO PRIO1: How to treat output with unequal 3 dots (Shutting down platform....done.)
-    # TODO PRIO1: Output fror already stopped component is "<component> is not running"
+    # DONE PRIO1: How to treat output with unequal 3 dots (Shutting down platform....done.)
+    # DONE PRIO1: Output fror already stopped component is "<component> is not running"
     # TODO PRIO1: Output like "Starting ui...FAILED"
     # TODO PRIO1: Output like "platfoam: no such server process"
     # TODO PRIO1: Tested, but not committed API: RC==0 OK
-    su - "$user" -c "$mz_shell_central shutdown $component" | grep -q "Shutting down $component....done."; rc="$?"
+    su - "$user" -c "$mz_shell_central shutdown $component" | grep -q -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
     return "$rc"
 }
 #export -f mz_component_shutdown
@@ -167,7 +167,7 @@ function mz_call()
                 ;;
         restart )
                 # needs to switch-user to <mzadmin>
-                if su - "$user" -c "$mz_shell_central restart $component" | grep -q "Starting $component...done."; then
+                if su - "$user" -c "$mz_shell_central restart $component" | grep -q "Starting $component\.*done."; then
                     rc="$OCF_SUCCESS"
                 else
                     rc="$OCF_ERR_GENERIC"
