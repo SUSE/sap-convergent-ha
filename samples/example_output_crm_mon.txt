@@ -14,5 +14,5 @@ Node List:
 Full List of Resources:
   * rsc_stonith_sbd     (stonith:external/sbd):  Started hugin
   * Resource Group: grp_cz_C11:
-    * rsc_ip_C11        (ocf::heartbeat:IPaddr2):        Started hugin
+    * rsc_ip_C11        (ocf::heartbeat:IPaddr2):        Started munin
     * rsc_cz_C11        (ocf::suse:SAPCMControlZone):    Started munin 
