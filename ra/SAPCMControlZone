@@ -417,13 +417,16 @@ then
     exit "$OCF_ERR_PERM"
 fi
 
-# parameter check
-#"${raType}check_params" --quiet
+# TODO PRIO2: Maybe add 'light' parameter check later
 ra_rc="$OCF_ERR_UNIMPLEMENTED"
 case "$ACTION" in
     start)
         mz_check_params
-        mz_start; ra_rc="$?";;
+logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone pre-start"
+        mz_start; 
+        ra_rc="$?"
+logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone post-start ra_rc='$ra_rc'"
+        ;;
     stop)
         mz_stop; ra_rc="$?";;
     monitor)
