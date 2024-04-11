@@ -47,12 +47,12 @@ case "$action" in
             # TODO: rc-handling (still to be confirmed)
             logger --id -t "mzsh" "mzsh process action=$action component=$comp"
             if [[ "$is_fail" == "no" ]]; then
-                printf "starting %s..." "$comp"
+                printf "Starting %s..." "$comp"
                 sleep 10
                 echo "done."
                 echo "$comp is running" > "${file_of_status}${comp}"
             else
-                printf "starting %s..." "$comp"
+                printf "Starting %s..." "$comp"
                 sleep 30
             fi
             ;;
