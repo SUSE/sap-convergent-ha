@@ -34,6 +34,7 @@ command shell:
 mzsh startup \fISERVICE\fP
 .PP
 mzsh status
+.\" TODO mzsh status \fISERVICE\fP
 .PP
 mzsh shutdown \fISERVICE\fP
 .PP
@@ -80,12 +81,13 @@ Optional. Unique, string. Default value: "/usr/bin/mzsh".
 \fBMZ_HOME\fP
 .RS 4
 Path to Convergent Mediation installation dirctory, owned by the mz-user.
-Could be one or two full paths. If one path is given, that path is
-used for all actions. In case two paths are given, the first one is used for monitor
-actions, the second one is used for start/stop/kill actions. If two paths are given,
-the first needs to be on local disk, the second needs to be on the central NFS share
-with the original CM ControlZone installation. Two paths are separated by a colon (:). 
-(Not yet implemented.)
+Could be one or two full paths. If one path is given, that path is used for all 
+actions. In case two paths are given, the first one is used for monitor actions,
+the second one is used for start/stop/kill actions. If two paths are given, the
+first needs to be on local disk, the second needs to be on the central NFS share
+with the original CM ControlZone installation. Two paths are separated by a
+colon (:).
+(Not yet implemented)
 .br
 .\" TODO default /opt/cm9/ ?
 Optional. Unique, string. Default value: "/opt/cm/".
@@ -94,15 +96,26 @@ Optional. Unique, string. Default value: "/opt/cm/".
 \fBJAVA_HOME\fP
 .RS 4
 Path to Java virtual machine used by mzsh.
-Could be one or two full paths. If one path is given, that path is
-used for all actions. In case two paths are given, the first one is used for monitor
-actions, the second one is used for start/stop/kill actions. If two paths are given,
-the first needs to be on local disk, the second needs to be on the central NFS share
-with the original CM ControlZone installation. Two paths are separated by a colon (:). 
-(Not yet implemented.)
+Could be one or two full paths. If one path is given, that path is used for all
+actions. In case two paths are given, the first one is used for monitor actions,
+the second one is used for start/stop/kill actions. If two paths are given, the
+first needs to be on local disk, the second needs to be on the central NFS share
+with the original CM ControlZone installation. Two paths are separated by a
+colon (:).
+(Not yet implemented)
 .br
 .\" TODO default /opt/cm9/sapmachine17 or OS $JAVA_HOME ?
 Optional. Unique, string. Default value: "/usr/lib64/jvm/jre-17-openjdk".
+.RE
+.PP
+\fBMZ_PLATFORM\fP
+.RS 4
+URL used by mzsh for connecting to Convergent Mediation components.
+Should usually not be changed. The service´s virtual hostname or virtual IP
+address managed by the cluster must never be used here.
+(Not yet implemented)
+.br
+Optional. Unique, string. Default value: "http://localhost:9000".
 .RE
 .PP
 \fBCALL_TIMEOUT\fP
@@ -110,7 +123,8 @@ Optional. Unique, string. Default value: "/usr/lib64/jvm/jre-17-openjdk".
 Define timeout how long calls to the ControlZone platform for checking the
 status can take. If the timeout is reached, the return code will be 124. If you
 increase this timeout for ControlZone calls, you should also adjust the monitor
-operation timeout of your Linux cluster resources. (Not yet implemented.)
+operation timeout of your Linux cluster resources.
+(Not yet implemented)
 .br
 Optional. Unique, integer. Default value: 60.
 .RE
@@ -119,14 +133,15 @@ Optional. Unique, integer. Default value: 60.
 .RS 4
 Number of retries to check for process shutdown. Passed to mzsh.
 If you increase the number of shutdown retries, you should also adjust the stop
-operation timeout of your Linux cluster resources. (Not yet implemented.)
+operation timeout of your Linux cluster resources.
+(Not yet implemented)
 .br
 Optional. Unique, integer. Default: mzsh builtin value.
 .RE
 .PP
 .\" \fBVERBOSE_STATUS\fP
 .\" .RS 4
-.\" Enables verbose mode. Passed to mzsh. (Not yet implemented.)
+.\" Enables verbose mode. Passed to mzsh. (Not yet implemented)
 .\" .br
 .\" Optional. Unique, [ yes | no ]. Default value: no.
 .\" .RE
@@ -212,8 +227,8 @@ either node, but never in parallel.
 .PP
 In case of ControlZone platform failure (or monitor timeout), the resource
 group gets restarted until it gains success or migration-threshold is reached.
-If migration-threshold is exceeded, or if the node where the group runs fails,
-the group will be moved to the other node.
+If migration-threshold is exceeded, or if the node fails where the group is
+running, the group will be moved to the other node.
 A priority is configured for correct fencing in split-brain situations.
 See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPaddr2(7).
 .PP
@@ -255,20 +270,22 @@ group grp_cz_C11 \\
 \fB* Example configuration for resource ControlZone UI.\fR
 .PP
 A ControlZone UI resoure rsc_ui_C11 is configured, handled by OS user c11adm.
-The default path to mzsh on central NFS share is used, no local copies are used
-(sub-optimal setup).
+The default path to mzsh 
+.\" TODO on central NFS share
+is used
+.\" TODO , no local copies are used (sub-optimal setup)
+.
 The resource might run on either node, but never in parallel.
 In case of ControlZone UI failure (or monitor timeout), the resource gets
 restarted until it gains success or migration-threshold is reached. If
-migration-threshold is exceeded, or if the node where the resource fails, the
-resource will be moved to the other node. 
+migration-threshold is exceeded, or if the node fails where the resource is
+running, the resource will be moved to the other node. 
+The resource rsc_ui_C11 will start after resource group grp_cz_C11 and run on
+the same node.
 See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPaddr2(7).
-.br
-Note: This resource might be grouped with an IP address resource, like in the
-above platform example.
 .PP
 .RS 2
-primitive rsc_UI_C11 ocf:suse:SAPCMControlZone \\
+primitive rsc_ui_C11 ocf:suse:SAPCMControlZone \\
 .br
  params USER=c11adm SERVICE=ui \\
 .br
@@ -277,7 +294,14 @@ primitive rsc_UI_C11 ocf:suse:SAPCMControlZone \\
  op start timeout=120 \\
 .br
  op stop timeout=120
+.PP
+order ord_cz_first Mandatory: grp_cz_C11:start rsc_ui_C11:start
+.PP
+colocation col_with_cz 2000: rsc_ui_C11:Started grp_cz_C11:Started
 .RE
+.PP
+Note: Instead of defining order and colocation, the resource rsc_ui_C11 might be
+just added to the resource group grp_cz_C11. This may impact the platform in some situations.
 .PP
 \fB* Optional Filesystem resource for monitoring NFS shares.\fR
 .PP
@@ -422,6 +446,10 @@ Please refer to Convergent Mediation documentation for details.
 .PP
 * Linux shell of the mz-user (e.g. "mzadmin") is /bin/bash.
 .PP
+* When called by resource agent, mzsh connnects to Convergent Mediation components
+at localhost. The service´s virtual hostname or virtual IP address managed by
+the cluster must never be used when called by RA. 
+.PP
 * Technical users and groups are defined locally in the Linux system. If users
 are resolved by remote service, local caching is neccessary. Substitute user
 (su) to the mz-user needs to work reliable and without customized actions or
@@ -433,9 +461,8 @@ cluster nodes and services are resolved locally in the Linux system.
 * Strict time synchronization between the cluster nodes, e.g. NTP. All nodes of
 a cluster have configured the same timezone.
 .PP
-* Needed NFS shares (e.g. /usr/sap/<SID>) are mounted statically or by automounter. 
-No client-side write caching. File locking might be configured for application
-needs.
+* Needed NFS shares (e.g. /usr/sap/<SID>) are mounted statically or by automounter. No client-side write caching. File locking might be configured for
+application needs.
 .PP
 * The RA monitoring operations have to be active.
 .PP
