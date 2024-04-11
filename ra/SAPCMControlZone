@@ -324,7 +324,7 @@ function mz_check_params()
     fi
     if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
         if [[ "$OCF_RESKEY_SERVICE" =~ ^(platform|ui)$ ]]; then
-            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does match list ['platform', 'ui']"
+            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui']"
         else
             logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
             rc="$OCF_ERR_CONFIGURED"
