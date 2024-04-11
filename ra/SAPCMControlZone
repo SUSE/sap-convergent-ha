@@ -30,7 +30,8 @@
 #
 #######################################################################
 SAPCMControlZoneVersion="0.1.0"
-logger --id -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
+logger_pid="$$"
+logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 #
 # Initialization:
 #
@@ -299,33 +300,33 @@ function mz_check_params()
     done
     if [[ -n "$OCF_RESKEY_USER" ]]; then
         if id "$OCF_RESKEY_USER" 1>/dev/null 2>/dev/null; then
-            logger --id "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
+            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
         else
-            logger --id "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' does NOT exist"
+            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' does NOT exist"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$mz_shell_local" ]]; then
         if [[ -x "$mz_shell_local" ]]; then
-            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' exists and is executable"
+            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' exists and is executable"
         else
-            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' either does NOT exist or is NOT executable"
+            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' either does NOT exist or is NOT executable"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$mz_shell_central" ]]; then
         if [[ -x "$mz_shell_central" ]]; then
-            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' exists and is executable"
+            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' exists and is executable"
         else
-            logger --id "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' either does NOT exist or is NOT executable"
+            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' either does NOT exist or is NOT executable"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
         if [[ "$OCF_RESKEY_SERVICE" =~ ^(platform|ui)$ ]]; then
-            logger --id "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does match list ['platform', 'ui']"
+            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does match list ['platform', 'ui']"
         else
-            logger --id "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
+            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
@@ -389,7 +390,7 @@ if [ "$ACTION" = "status" ]; then
 fi
 
 # These operations don't require OCF parameters to be set
-logger --id -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
+logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
 case "$ACTION" in
     usage)          mz_usage
                     exit "$OCF_SUCCESS";;
