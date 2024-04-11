@@ -76,7 +76,7 @@ here.
 * Use two independent corosync rings, at least one of them on bonded network.
 Resulting in at least three physical links. Unicast is preferred.
 .PP
-* Use Stonith Block Device (SBD), shared LUNs across all nodes on all sites.
+* Use three Stonith Block Device (SBD), shared LUNs across all nodes on all sites.
 Of course, together with hardware watchdog.
 .PP
 * Align all timeouts in the Linux cluster with the timeouts of the underlying
@@ -103,7 +103,6 @@ configured intervals and timeouts.
 * Before doing anything, always check for the Linux cluster's idle status,
 left-over migration constraints, and resource failures as well as the
 ControlZone status.
-.PP
 Please see also manual page SAPCMControlZone_maintenance_examples(7).
 .PP
 .\"
