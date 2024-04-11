@@ -58,6 +58,11 @@ case "$action" in
             ;;
     shutdown )
             # TODO: siluate differnt output if compunent is already down: '<component> is not running' (format still to be confirmed)
+            # TODO: simulate stop with escalation to kill (was a multi line output seen on our test cluster; format still to be confirmed)
+            #       something like:
+            #       Shutting down %s...
+            #       Escalated to call kill
+            #       done.
             # TODO: rc-handling (still to be confirmed)
             logger --id -t "mzsh" "mzsh process action=$action component=$comp"
             if [[ "$is_fail" == "no" ]]; then
