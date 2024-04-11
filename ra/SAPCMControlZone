@@ -214,6 +214,7 @@ function mz_init()
     declare -a mz_path_arr
     mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_path_str="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
+    # shellcheck disable=SC2206
     IFS=: mz_path_arr=( $mz_path_str )
     mz_shell_local="${mz_path_arr[0]}"
     if [[ -n "${mz_path_arr[1]}" ]]; then
@@ -223,7 +224,8 @@ function mz_init()
         # first-and-only (0) path is local and central
         mz_shell_central="$mz_shell_local"
     fi
-    mz_shell="$mz_shell_local"
+    # mz_shell="$mz_shell_local"
+    # shellcheck disable=SC2034
     mz_search_list="/usr/bin:/usr/sap/[A-Z][A-Z0-9][A-Z0-9]/CMP[0-9][0-9]/CM/bin/"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
     # shellcheck disable=SC2034  # variable for future usage
