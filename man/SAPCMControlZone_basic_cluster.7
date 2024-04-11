@@ -12,61 +12,59 @@ SAPCMControlZone_basic_cluster \- basic settings to make SAPCMControlZone work.
 The Convergent Mediation (CM) component ControlZone needs a certain basic
 cluster configuration. Besides neccessary settings, additional configurations
 might match specific needs.
-
 .PP
 \fB* Operating System Basics\fR
-
+.PP
 \fBUsers and groups\fR
-
+.PP
 Technical users and groups, such as "mzadmin" are defined locally in the Linux
 system. See man page passwd(5) and usermod(8.
-
+.PP
 \fBHostnames\fR
-
+.PP
 Name resolution of the cluster nodes and the virtual IP address must be done
 locally on all cluster nodes. See man page hosts(5).
-
+.PP
 \fBTime synchronization\fR
-
+.PP
 Strict time synchronization between the cluster nodes is mandatory, e.g. NTP.
 See man page chrony.conf(5). Further, the nodes should have configured the same
 timezone.
-
+.PP
 \fBNFS mounted filesystem\fR
-
+.PP
 A shared filesystem for ControlZone data can be statically mounted on both
 cluster nodes. This filesystem holds work directories, e.g. for batch
 processing. It must not be confused with the ControlZone application itself.
 The application is copied from NFS to both cluster nodes into local
 filesystems. Client-side write caching has to be disabled for the NFS shares
 containing customer data. See man page fstab(5) and example below.
-
 .PP
 \fB* CRM Basics\fR
-
+.PP
 \fBstonith-enabled = true\fR
-
+.PP
 The cib bootstrap option stonith-enabled is crucial for any reliable pacemaker
 cluster.
 .br
 The value 'true' is one pre-requisite for having a cluster supported.  
-
+.PP
 \fBmigration-threshold = 3\fR
-
+.PP
 The crm rsc_default parameter migration-threshold defines how many errors on a
 resource can be detected before this resource will be moved to another node.
 A value greater than 1 is needed for resource monitor option on-fail=restart.
 See also failure-timeout.
-
+.PP
 \fBrecord-pending = true\fR
-
+.PP
 The crm op_default record-pending defines, whether the intention of an action
 upon the resource is recorded in the Cluster Information Base (CIB).
 Setting this parameter to \'true\' allows the user to see pending actions like
 \'starting\' and \'stopping\' in crm_mon.
-
+.PP
 \fBfailure-timeout = 86400\fR
-
+.PP
 The crm op_default failure-timeout defines how long failed actions will
 be kept in the CIB. After that time the failure record will be deleted.
 Time unit is seconds. 
@@ -74,9 +72,9 @@ See also migration-threshold.
 .br
 The value '86400' means failure records will be cleaned automatically after
 one day.
-
+.PP
 \fBpriority-fencing-delay = 30\fP
-
+.PP
 The optional crm property priority-fencing-delay specified delay for the
 fencings that are targeting the lost nodes with the highest total resource
 priority in case we do not have the majority of the nodes in our cluster
@@ -97,7 +95,7 @@ pcmk_delay_max.
 .\" TODO OS network tcp_retries2=8 (8..10)
 .\"
 \fB* CRM basic configuration.\fR
-
+.PP
 This example has been taken from a two-node cluster SLE-HA 15 SP4 with
 disk-based SBD. Priority fencing is configured and the SBD pcmk_delay_max has
 been reduced accordingly. The stonith-timeout is adjusted to SBD on-disk
@@ -142,7 +140,7 @@ op_defaults op-options: \\
 .RE
 .PP
 \fB* Statically mounted NFS share for ControlZone platform data.\fR
-
+.PP
 Below is an fstab example for a shared filesystem holding application data.
 The filesystem is statically mounted on all nodes of the cluster.
 The correct mount options are depending on the NFS server.
@@ -154,10 +152,9 @@ nfs1:/s/c11/platform /mnt/platform nfs4 rw,noac,sync,default 0 0
 .PP
 Note: The NFS share might be monitored, but not mounted/umounted by the HA
 cluster. See ocf_suse_SAPCMControlZone(7) for details.
-
 .PP
 \fB* Ping cluster resource for checking connectivity.\fR
-
+.PP
 Below is an example of an optional ping resource for checking connectivity to
 the outer world. If the nodes have only one network interface, shared between
 HA cluster and application, this measure may not improve availability.
