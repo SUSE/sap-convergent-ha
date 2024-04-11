@@ -293,7 +293,7 @@ function mz_meta_data()
 function mz_check_params()
 {
     local rc="$OCF_SUCCESS" log_stderr="-s"
-logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone functions-stack: ${FUNCNAME[*]}"
+# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone functions-stack: ${FUNCNAME[*]}"
     while  [[ "$#" -gt 1 ]]; do
         case "$1" in
             --quiet ) log_stderr="" ;;
@@ -402,7 +402,7 @@ case "$ACTION" in
     notify)         # just ignore
                     exit "$OCF_SUCCESS";;
     validate-all)
-logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone VALIDATE-ALL"
+# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone VALIDATE-ALL"
         mz_init
         mz_validate; ra_rc="$?"
         exit "$ra_rc"
@@ -418,15 +418,16 @@ then
 fi
 
 # parameter check
-"${raType}check_params" --quiet
+#"${raType}check_params" --quiet
 ra_rc="$OCF_ERR_UNIMPLEMENTED"
 case "$ACTION" in
     start)
+        mz_check_params
         mz_start; ra_rc="$?";;
     stop)
         mz_stop; ra_rc="$?";;
     monitor)
-logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone MONITOR"
+# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone MONITOR"
         mz_monitor; ra_rc="$?";;
     promote)
         mz_promote; ra_rc="$?";;
@@ -436,11 +437,11 @@ logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone MONITOR"
         mz_reload
         ra_rc="$OCF_SUCCESS";;
     validate)
-logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone VALIDATE"
+# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone VALIDATE"
         mz_validate
         ra_rc="$OCF_SUCCESS";;
     *)  # seems to be an unknown request
-logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone UNKNOWN"
+# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone UNKNOWN"
         "${raType}"methods
         ra_rc="$OCF_ERR_UNIMPLEMENTED"
         ;;
