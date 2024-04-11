@@ -1,4 +1,4 @@
-## How to contribute to SAPHanaSR
+## How to contribute to sap-convergent-ha
 
 
 #### **Did you find a bug?**
