@@ -1,7 +1,7 @@
 #
 # spec file for package sap-convergent-resource-agents
 #
-# Copyright (c) 2023 SUSE LLC
+# Copyright (c) 2023-2024 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -16,7 +16,7 @@
 #
 
 Name:           sap-convergent-resource-agents
-Version:        0.1.0
+Version:        0.2.1
 Release:        0
 Group:          Productivity/Clustering/HA
 Summary:        Resource agents to control the convergent mediation control zone
