@@ -44,6 +44,7 @@ case "$action" in
     startup )
             # TODO: number of dots in 'starting %s...' can vary
             # TODO: simulate FAILURES (format of different output strings still to be confirmed)
+            # TODO: rc-handling (still to be confirmed)
             logger --id -t "mzsh" "mzsh process action=$action component=$comp"
             if [[ "$is_fail" == "no" ]]; then
                 printf "starting %s..." "$comp"
@@ -70,5 +71,9 @@ case "$action" in
             fi
             ;;
 esac
+# TODO: simulation of restart
+# TODO: simulation of 'kill'
+
+
 # meaningless  rc
 exit 99
