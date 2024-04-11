@@ -14,8 +14,10 @@ SAPCMControlZone \- Manages Convergent Mediation ControlZone platform services f
 .\"
 .SH DESCRIPTION
 .\"
-SAPCMControlZone is a resource agent for managing the Convergent Mediation (CM)
-ControlZone platform and UI for a single instance as HA resources. 
+\fBOverview\fP
+.PP
+SAPCMControlZone is a resource agent (RA) for managing the Convergent Mediation
+(CM) ControlZone platform and UI for a single instance as HA resources. 
 .PP
 The CM central ControlZone platform is responsible for providing services to
 other instances. Several platform containers may exist in a CM system, for high
@@ -23,27 +25,49 @@ availability, but only one is active at a time.
 .\" see https://infozone.atlassian.net/wiki/spaces/MD9/pages/4863840/Terminology
 The CM central ControlZone UI is used to query, edit, import, and export data.
 .\" see https://infozone.atlassian.net/wiki/spaces/MD83/pages/5966420/3.+Web+UI
-This ControlZone services can be handled as active/passive resources.
 .PP
-NFS shares with work directories can be mounted statically on all nodes. The
-HA cluster does not need to control that filesystems.
+The SAPCMControlZone RA manages platform services as active/passive resources.
+The RA relies on the mzsh command of ControlZone as interface.
+This calls are used:
 .PP
-The resource agent uses the following interface provided by the ControlZone
-command shell:
-.PP
-mzsh startup \fISERVICE\fP
-.PP
-mzsh status
+.RS 2
+- mzsh startup \fISERVICE\fP
+.br
+- mzsh status
 .\" TODO mzsh status \fISERVICE\fP
-.PP
-mzsh shutdown \fISERVICE\fP
-.PP
-mzsh kill \fISERVICE\fP
+.br
+- mzsh shutdown \fISERVICE\fP
+.br
+- mzsh kill \fISERVICE\fP
+.RE
 .PP
 Currently supported services are "platform" and "ui".
 .\" TODO output
-.PP
 Please see also the REQUIREMENTS section below.
+.PP
+\fBFilesystems\fP
+.PP
+NFS shares with work directories can be mounted statically on all nodes. The
+HA cluster does not need to control that filesystems. See also manual page
+SAPCMControlZone_basic_cluster(7).
+.PP
+The ControlZone software and Java runtime environment can be installed into a
+central NFS share, or into the cluster node´s local filesystems, or both. Again,
+the HA cluster does not need to control that filesystems. The SAPCMControlZone
+RA offers three ways for managing ControlZone services:
+.PP
+.RS 2
+- always calling mzsh from central shared NFS
+.br
+- always calling mzsh from cluster node´s local filesystem
+.br
+- calling mzsh startup/shutdown centrally, but mzsh status locally
+.\" TODO kill better local?
+.RE
+.PP
+Another option would be to install the ControlZone software into a cluster
+managed filesystem on shared storage. This might fit for on-premise systems
+backed by SAN infrastructure. We do not discuss this.
 .PP
 .\"
 .SH SUPPORTED PARAMETERS
@@ -80,7 +104,7 @@ Optional. Unique, string. Default value: "/usr/bin/mzsh".
 .PP
 \fBMZ_HOME\fP
 .RS 4
-Path to Convergent Mediation installation dirctory, owned by the mz-user.
+Path to CM ControlZone installation dirctory, owned by the mz-user.
 Could be one or two full paths. If one path is given, that path is used for all 
 actions. In case two paths are given, the first one is used for monitor actions,
 the second one is used for start/stop/kill actions. If two paths are given, the
@@ -95,7 +119,7 @@ Optional. Unique, string. Default value: "/opt/cm/".
 .PP
 \fBJAVA_HOME\fP
 .RS 4
-Path to Java virtual machine used by mzsh.
+Path to Java virtual machine used for CM ControlZone.
 Could be one or two full paths. If one path is given, that path is used for all
 actions. In case two paths are given, the first one is used for monitor actions,
 the second one is used for start/stop/kill actions. If two paths are given, the
@@ -110,7 +134,7 @@ Optional. Unique, string. Default value: "/usr/lib64/jvm/jre-17-openjdk".
 .PP
 \fBMZ_PLATFORM\fP
 .RS 4
-URL used by mzsh for connecting to Convergent Mediation components.
+URL used by mzsh for connecting to CM ControlZone services.
 Should usually not be changed. The service´s virtual hostname or virtual IP
 address managed by the cluster must never be used here.
 (Not yet implemented)
@@ -120,7 +144,7 @@ Optional. Unique, string. Default value: "http://localhost:9000".
 .PP
 \fBCALL_TIMEOUT\fP
 .RS 4
-Define timeout how long calls to the ControlZone platform for checking the
+Define timeout how long calls to the ControlZone service for checking the
 status can take. If the timeout is reached, the return code will be 124. If you
 increase this timeout for ControlZone calls, you should also adjust the monitor
 operation timeout of your Linux cluster resources.
@@ -420,13 +444,13 @@ the resource agent
 .TP
 .\" TODO two paths
 $MZ_HOME, e.g. /opt/cm/
-the installation directory of a ControlZone service
+the installation directory of a CM ControlZone service
 .TP
 $MZ_HOME/bin/mzsh
-the default mzshell, used as API for managing ControlZone components, contains paths and URL
+the default mzshell, used as API for managing CM ControlZone services, contains paths and URL
 .TP
 $MZ_HOME/tmp/
-temporary files of a ControlZone service
+temporary files of a CM ControlZone service
 .TP
 $JAVA_HOME
 the JAVA virtual machine, used by mzsh
@@ -437,8 +461,8 @@ the JAVA virtual machine, used by mzsh
 .SH REQUIREMENTS
 .\"
 * Convergent Mediation ControlZone version 9.0.0.0 or higher is installed and
-configured on both cluster nodes. The software is installed once into a shared
-NFS filesystem. Then binaries and configuration are copied into both cluster
+configured on both cluster nodes. Usually the software is installed once into a
+shared NFS filesystem. Then binaries and configuration are copied into both cluster
 nodes´ local filesystems. Finally the local configuration has to be adjusted.
 Please refer to Convergent Mediation documentation for details.
 .PP
@@ -446,9 +470,9 @@ Please refer to Convergent Mediation documentation for details.
 .PP
 * Linux shell of the mz-user (e.g. "mzadmin") is /bin/bash.
 .PP
-* When called by resource agent, mzsh connnects to Convergent Mediation components
-at localhost. The service´s virtual hostname or virtual IP address managed by
-the cluster must never be used when called by RA. 
+* When called by resource agent, mzsh connnects to CM ControlZone services at
+localhost. The service´s virtual hostname or virtual IP address managed by the
+cluster must never be used when called by RA. 
 .PP
 * Technical users and groups are defined locally in the Linux system. If users
 are resolved by remote service, local caching is neccessary. Substitute user
@@ -461,8 +485,8 @@ cluster nodes and services are resolved locally in the Linux system.
 * Strict time synchronization between the cluster nodes, e.g. NTP. All nodes of
 a cluster have configured the same timezone.
 .PP
-* Needed NFS shares (e.g. /usr/sap/<SID>) are mounted statically or by automounter. No client-side write caching. File locking might be configured for
-application needs.
+* Needed NFS shares (e.g. /usr/sap/<SID>) are mounted statically or by automounter.
+No client-side write caching. File locking might be configured for application needs.
 .PP
 * The RA monitoring operations have to be active.
 .PP
@@ -479,8 +503,8 @@ are done. The Linux cluster does not prevent from administrative mistakes.
 However, if the Linux cluster detects the application running at both sites in
 parallel, it will stop both and restart one.
 .PP
-* Interface for the RA to the ControlZone platform is the command mzsh. The
-mzsh should be accessed on the cluster nodes´ local filesystems.
+* Interface for the RA to the ControlZone services is the command mzsh. Ideally,
+the mzsh should be accessed on the cluster nodes´ local filesystems.
 The mzsh is called with the arguments startup, shutdown, status and kill. Its
 output is parsed by the RA. Thus the command and its output needs to be stable.
 .PP
