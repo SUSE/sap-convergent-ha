@@ -25,6 +25,7 @@ case "$action" in
             # TODO: also simulate anwer like '<component> is running without'
             # TODO: rc-handling (still to be confirmed)
             # TODO: also take component as optional parameter (still to be confirmed)
+            # TODO: simuate already running: '<component> already running' (format still to be confirmed)
             logger --id -t "mzsh" "mzsh process action=$action"
             if [[ "$is_fail" == "yes" ]]; then
                 echo "blala is not running"
@@ -55,6 +56,8 @@ case "$action" in
             fi
             ;;
     shutdown )
+            # TODO: siluate differnt output if compunent is already down: '<component> is not running' (format still to be confirmed)
+            # TODO: rc-handling (still to be confirmed)
             logger --id -t "mzsh" "mzsh process action=$action component=$comp"
             if [[ "$is_fail" == "no" ]]; then
                 printf "Shutting down %s..." "$comp"
