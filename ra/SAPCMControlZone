@@ -29,11 +29,11 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4.10"
+SAPCMControlZoneVersion="0.2.4.11"
 export myBASH="/usr/bin/bash"
 #
 # TODO: PRIO1: get MZ_PLATFORM, JAVA_HOME AND MZ_HOME from cluster config
-export MZ_PLATFORM="http://localhost:9000"
+#export MZ_PLATFORM="http://localhost:9000"
 export MZ_JAVA_HOME="TBD"
 export MZ_HOME="TBD"
 
@@ -108,7 +108,8 @@ export -f mz_component_shutdown
 function mz_component_status()
 {
     # TODO PRIO1: improved and more detailled parameter handling
-    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0
+    # TODO PRIO2: add --mz_shell in parameter handling
+    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 JAVA_HOME=""
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --user=* ) # user handling
@@ -123,9 +124,17 @@ function mz_component_status()
             --lid=* ) # logger id to be used
                         lid=${1#*=}
                     ;;
-            --mz_platform=* ) # valie to be set for MZ_PLATFORM
+            --mz_platform=* ) # set MZ_PLATFORM for CM
                         MZ_PLATFORM=${1#*=}
                         export MZ_PLATFORM
+                        ;;
+            --java_home=* ) # set JAVA_HOME for CM
+                        JAVA_HOME=${1#*=}
+                        export JAVA_HOME
+                        ;;
+            --mz_home=* ) # set mz_home for CM
+                        MZ_HOME=${1#*=}
+                        export MZ_HOME
                         ;;
         esac
         shift
@@ -173,8 +182,8 @@ function mz_call()
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
                     # TODO PRIO1: improved and more detailled parameter handling
-                    # TODO PRIO1: improved and more detailled parameter handling
-                    timeout "$timeout" "$myBASH" -c "mz_component_status --user=$user --component=$component --mz_platform=${MZ_PLATFORM} --rid=${OCF_RESOURCE_INSTANCE} --lid=${logger_pid}"; call_rc="$?"
+                    # TODO PRIO1: add also mz_shell and java_home
+                    timeout "$timeout" "$myBASH" -c "mz_component_status --user=$user --component=$component --mz_platform=${mz_platform} --mz_home=${mz_home_local} --java_home=${java_home_local} --rid=${OCF_RESOURCE_INSTANCE} --lid=${logger_pid}"; call_rc="$?"
                     case "$call_rc" in
                         0 ) ocf_log INFO "mz_call: $component is running"
                             rc="$OCF_SUCCESS"
@@ -285,9 +294,16 @@ function mz_init()
 {
     # TODO: init variables
     declare -a mz_path_arr
+    declare -a mz_home_arr
+    declare -a java_home_arr
     mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_path_str="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
+    mz_home_str="${OCF_RESKEY_MZHOME:-/opt/cm/V3Z/CMP01/CM}"
+    java_home_str="${OCF_RESKEY_JAVAHOME:-/opt/cm/V3Z/CMP01/CM}"
+    mz_platform="${OCF_RESKEY_MZPLATFORM:-http://localhost:9000}"
     # shellcheck disable=SC2206
+    IFS=: java_home_arr=( $java_home_str )
+    ## mz_shell
     IFS=: mz_path_arr=( $mz_path_str )
     mz_shell_local="${mz_path_arr[0]}"
     if [[ -n "${mz_path_arr[1]}" ]]; then
@@ -298,6 +314,28 @@ function mz_init()
         mz_shell_central="$mz_shell_local"
     fi
     # mz_shell="$mz_shell_local"
+    ## mz_home
+    IFS=: mz_home_arr=( $mz_home_str )
+    mz_home_local="${mz_home_arr[0]}"
+    if [[ -n "${mz_home_arr[1]}" ]]; then
+        # first (0) path is local, second (1) is central
+        mz_home_central="${mz_home_arr[1]}"
+    else
+        # first-and-only (0) path is local and central
+        mz_home_central="$mz_home_local"
+    fi
+    # TODO PRIO1: also handle arraxs for java_home
+    ## java_home
+    IFS=: java_home_arr=( $java_home_str )
+    java_home_local="${java_home_arr[0]}"
+    if [[ -n "${java_home_arr[1]}" ]]; then
+        # first (0) path is local, second (1) is central
+        java_home_central="${java_home_arr[1]}"
+    else
+        # first-and-only (0) path is local and central
+        java_home_central="$java_home_local"
+    fi
+
     # shellcheck disable=SC2034
     mz_search_list="/usr/bin:/usr/sap/[A-Z][A-Z0-9][A-Z0-9]/CMP[0-9][0-9]/CM/bin/"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
