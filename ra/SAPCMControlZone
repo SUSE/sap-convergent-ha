@@ -128,7 +128,7 @@ function mz_component_status()
                         export MZ_PLATFORM
                         ;;
         esac
-        sfift
+        shift
     done
 
     # TODO PRIO1: How to treat output like "platform is running without ..." 
