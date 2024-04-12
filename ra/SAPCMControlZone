@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4.5"
+SAPCMControlZoneVersion="0.2.4.6"
 export myBASH="/usr/bin/bash"
 logger_pid="$$"
 #
@@ -101,7 +101,7 @@ export -f mz_component_shutdown
 # shellcheck disable=SC2317
 function mz_component_status()
 {
-    local user="$1" component="$2" rc=0
+    local user="$1" component="$2" rid="$3" rc=0
     # TODO PRIO1: How to treat output like "platform is running without ..." 
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
@@ -109,10 +109,10 @@ function mz_component_status()
     result=$(su - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     echo "$result" | grep -q "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone($OCF_RESOURCE_INSTANCE)" "INFO: got rc_call=$rc_call"
+        logger --id="$logger_pid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call"
         # ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$logger_pid" -t "SAPCMControlZone($OCF_RESOURCE_INSTANCE)" "INFO: got rc_call=$rc_call; result=$result"
+        logger --id="$logger_pid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call; result=$result"
         # ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
@@ -143,7 +143,7 @@ function mz_call()
                 # needs to switch-user to <mzadmin>
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
-                    timeout "$timeout" "$myBASH" -c "mz_component_status $user $component"; call_rc="$?"
+                    timeout "$timeout" "$myBASH" -c "mz_component_status $user $component ${OCF_RESOURCE_INSTANCE}"; call_rc="$?"
                     case "$call_rc" in
                         0 ) ocf_log INFO "mz_call: $component is running"
                             rc="$OCF_SUCCESS"
