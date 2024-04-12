@@ -29,9 +29,9 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4.3"
+SAPCMControlZoneVersion="0.2.4.4"
 export myBASH="/usr/bin/bash"
-#logger_pid="$$"
+logger_pid="$$"
 #
 # Initialization:
 #
@@ -39,7 +39,6 @@ raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
-export OCF_ROOT OCF_FUNCTIONS_DIR
 # logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 ocf_log INFO "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 # init a minimum set of variables, if the variable are not initialized so far
@@ -57,7 +56,6 @@ OCF_SUCCESS="${OCF_SUCCESS:-0}"
 function mz_component_startup()
 {
     local user="$1" component="$2" rc=0 result="" rc_call=0
-source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     #             su - v3zadm -c "JAVA_HOME=/opt/cm/V3Z/sapmachine17 MZ_HOME=/opt/cm/V3Z/CMP01/CM /opt/cm/V3Z/CMP01/CM/bin/mzsh startup platform"
     # TODO PRIO1: out for already started component is "platform is already running"
@@ -67,11 +65,11 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
     # TODO: PRIO2: Try to get rid of "grep" (bash-regmap)
     echo "$result" | grep -q "Starting $component\.*done."; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
-        ocf_log INFO "got rc_call=$rc_call"
+        logger --id="$logger_pid" -t "SAPCMControlZone" "INFO: got rc_call=$rc_call"
+        #ocf_log INFO "got rc_call=$rc_call"
     else
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
-        ocf_log INFO "got rc_call=$rc_call; result=$result"
+        logger --id="$logger_pid" -t "SAPCMControlZone" "INFO: got rc_call=$rc_call; result=$result"
+        #ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
@@ -80,7 +78,6 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 function mz_component_shutdown()
 {
     local user="$1" component="$2" rc=0
-source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: How to treat output like "Shutting down platform...\nShutdown failed. Trying kill instead.\ndone."
     # DONE PRIO1: How to treat output with unequal 3 dots (Shutting down platform....done.)
@@ -91,21 +88,20 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
     result=$(su - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
     echo "$result" | grep -q -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
-        ocf_log INFO "got rc_call=$rc_call"
+        logger --id="$logger_pid" -t "SAPCMControlZone" "INFO: got rc_call=$rc_call"
+        # ocf_log INFO "got rc_call=$rc_call"
     else
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
-        ocf_log ERROR "got rc_call=$rc_call; result=$result"
+        logger -p err --id="$logger_pid" -t "SAPCMControlZone" "ERROR: got rc_call=$rc_call; result=$result"
+        # ocf_log ERROR "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
-#export -f mz_component_shutdown
+export -f mz_component_shutdown
 
 # shellcheck disable=SC2317
 function mz_component_status()
 {
     local user="$1" component="$2" rc=0
-source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
     # TODO PRIO1: How to treat output like "platform is running without ..." 
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
@@ -113,17 +109,15 @@ source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
     result=$(su - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     echo "$result" | grep -q "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
-        ocf_log INFO "got rc_call=$rc_call"
+        logger --id="$logger_pid" -t "SAPCMControlZone" "INFO: got rc_call=$rc_call"
+        # ocf_log INFO "got rc_call=$rc_call"
     else
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
-        ocf_log INFO "got rc_call=$rc_call; result=$result"
+        logger --id="$logger_pid" -t "SAPCMControlZone" "INFO: got rc_call=$rc_call; result=$result"
+        # ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
 export -f mz_component_status
-
-export -f ocf_log
 
 function mz_call()
 {
