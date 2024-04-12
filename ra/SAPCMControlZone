@@ -119,6 +119,8 @@ function mz_component_status()
 }
 export -f mz_component_status
 
+export -f ocf_log
+
 function mz_call()
 {
     # TODO: 'timeout' default value (non zero), see OCF_RESKEY_CALL_TIMEOUT?
