@@ -413,7 +413,15 @@ Resource is rsc_cz_C11, resource group is grp_C11.
 \fB* Search for log entries of SAPCMControlZone, show errors only.\fR
 .PP
 .RS 2
-# grep "SAPCMControlZone.*RA.*rc=[1-7,9]" /var/log/messages
+# grep "SAPCMControlZone.*rc=[1-7,9]" /var/log/messages
+.RE
+.PP
+\fB* Show log entry of one specific SAPCMControlZone run.\fR
+.PP
+PID of run is 8558.
+.PP
+.RS 2
+# grep "SAPCMControlZone.*\\[8558\\]" /var/log/messages
 .RE
 .PP
 \fB* Show and delete failcount for resource.\fR
