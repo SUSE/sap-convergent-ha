@@ -30,7 +30,7 @@
 #
 #######################################################################
 SAPCMControlZoneVersion="0.2.3"
-myBASH="/usr/bin/bash"
+export myBASH="/usr/bin/bash"
 logger_pid="$$"
 #
 # Initialization:
