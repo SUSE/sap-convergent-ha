@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4"
+SAPCMControlZoneVersion="0.2.4.1"
 export myBASH="/usr/bin/bash"
 #logger_pid="$$"
 #
@@ -56,6 +56,7 @@ OCF_SUCCESS="${OCF_SUCCESS:-0}"
 function mz_component_startup()
 {
     local user="$1" component="$2" rc=0 result="" rc_call=0
+source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     #             su - v3zadm -c "JAVA_HOME=/opt/cm/V3Z/sapmachine17 MZ_HOME=/opt/cm/V3Z/CMP01/CM /opt/cm/V3Z/CMP01/CM/bin/mzsh startup platform"
     # TODO PRIO1: out for already started component is "platform is already running"
@@ -78,6 +79,7 @@ function mz_component_startup()
 function mz_component_shutdown()
 {
     local user="$1" component="$2" rc=0
+source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: How to treat output like "Shutting down platform...\nShutdown failed. Trying kill instead.\ndone."
     # DONE PRIO1: How to treat output with unequal 3 dots (Shutting down platform....done.)
@@ -102,6 +104,7 @@ function mz_component_shutdown()
 function mz_component_status()
 {
     local user="$1" component="$2" rc=0
+source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
     # TODO PRIO1: How to treat output like "platform is running without ..." 
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
