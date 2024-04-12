@@ -361,7 +361,8 @@ colocation col_with_cz 2000: rsc_ui_C11:Started grp_cz_C11:Started
 .RE
 .PP
 Note: Instead of defining order and colocation, the resource rsc_ui_C11 might be
-just added to the resource group grp_cz_C11. This may impact the platform in some situations.
+just added to the resource group grp_cz_C11. This may impact the platform in some
+situations.
 .PP
 \fB* Optional Filesystem resource for monitoring NFS shares.\fR
 .PP
@@ -505,16 +506,20 @@ the JAVA virtual machine, used by mzsh
 .SH REQUIREMENTS
 .\"
 * Convergent Mediation ControlZone version 9.0.0.0 or higher is installed and
-configured on both cluster nodes. Usually the software is installed once into a
-shared NFS filesystem. Then binaries and configuration are copied into both cluster
-nodes´ local filesystems. Finally the local configuration has to be adjusted.
-Please refer to Convergent Mediation documentation for details.
+configured on both cluster nodes. Either the software is installed once into a
+shared NFS filesystem and then binaries and configuration are copied into both
+cluster nodes´ local filesystems. Or the software is installed per node directly.
+However, finally the local configuration has to be adjusted. Please refer to
+Convergent Mediation documentation for details.
+.PP
+* CM ControlZone is configured identically on both cluster nodes. User, path
+names and environment settings are the same.
 .PP
 * Only one ControlZone instance per Linux cluster.
 .PP
-* Linux shell of the mz-user (e.g. "mzadmin") is /bin/bash.
+* Linux shell of the mzadmin user is /bin/bash.
 .PP
-* When called by resource agent, mzsh connnects to CM ControlZone services at
+* When called by the resource agent, mzsh connnects to CM ControlZone services at
 localhost. The service´s virtual hostname or virtual IP address managed by the
 cluster must never be used when called by RA. 
 .PP
@@ -530,7 +535,8 @@ cluster nodes and services are resolved locally in the Linux system.
 a cluster have configured the same timezone.
 .PP
 * Needed NFS shares (e.g. /usr/sap/<SID>) are mounted statically or by automounter.
-No client-side write caching. File locking might be configured for application needs.
+No client-side write caching. File locking might be configured for application
+needs.
 .PP
 * The RA monitoring operations have to be active.
 .PP
