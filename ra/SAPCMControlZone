@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 #
 # SAPCMControlZone
 #
@@ -30,8 +30,8 @@
 #
 #######################################################################
 SAPCMControlZoneVersion="0.2.3"
+myBASH="/usr/bin/bash"
 logger_pid="$$"
-logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 #
 # Initialization:
 #
@@ -39,6 +39,7 @@ raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
+logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 # init a minimum set of variables, if the variable are not initialized so far
 OCF_SUCCESS="${OCF_SUCCESS:-0}"
 #
@@ -135,7 +136,7 @@ function mz_call()
                 # needs to switch-user to <mzadmin>
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
-                    timeout "$timeout" bash -c "mz_component_status $user $component"; call_rc="$?"
+                    timeout "$timeout" "$myBASH" -c "mz_component_status $user $component"; call_rc="$?"
                     case "$call_rc" in
                         0 ) ocf_log info "mz_call: $component is running"
                             rc="$OCF_SUCCESS"
