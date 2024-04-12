@@ -29,9 +29,9 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.3"
+SAPCMControlZoneVersion="0.2.4"
 export myBASH="/usr/bin/bash"
-logger_pid="$$"
+#logger_pid="$$"
 #
 # Initialization:
 #
@@ -39,7 +39,8 @@ raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
-logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
+# logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
+ocf_log INFO "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 # init a minimum set of variables, if the variable are not initialized so far
 OCF_SUCCESS="${OCF_SUCCESS:-0}"
 #
@@ -64,9 +65,11 @@ function mz_component_startup()
     # TODO: PRIO2: Try to get rid of "grep" (bash-regmap)
     echo "$result" | grep -q "Starting $component\.*done."; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
@@ -85,9 +88,11 @@ function mz_component_shutdown()
     result=$(su - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
     echo "$result" | grep -q -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        ocf_log ERROR "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
@@ -104,9 +109,11 @@ function mz_component_status()
     result=$(su - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     echo "$result" | grep -q "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
@@ -138,12 +145,12 @@ function mz_call()
                     (( retry_count++ ))
                     timeout "$timeout" "$myBASH" -c "mz_component_status $user $component"; call_rc="$?"
                     case "$call_rc" in
-                        0 ) ocf_log info "mz_call: $component is running"
+                        0 ) ocf_log INFO "mz_call: $component is running"
                             rc="$OCF_SUCCESS"
                             break;;
-                        1 ) ocf_log info "mz_call: $component is NOT running"
+                        1 ) ocf_log INFO "mz_call: $component is NOT running"
                             rc="$OCF_NOT_RUNNING";;
-                        * ) ocf_log info "mz_call: $component is unclear (call_rc=$call_rc)"
+                        * ) ocf_log INFO "mz_call: $component is unclear (call_rc=$call_rc)"
                             rc="$OCF_ERR_GENERIC";;
                     esac
                     sleep "$retry_sleep"
@@ -157,11 +164,11 @@ function mz_call()
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
                     if mz_component_startup "$user" "$component"; then
-                        ocf_log info "mz_call: $component is started"
+                        ocf_log INFO "mz_call: $component is started"
                         rc="$OCF_SUCCESS"
                         break
                     else
-                        ocf_log info "mz_call: $component is NOT started"
+                        ocf_log INFO "mz_call: $component is NOT started"
                         rc="$OCF_NOT_RUNNING"
                     fi
                     sleep "$retry_sleep"
@@ -176,11 +183,11 @@ function mz_call()
                     (( retry_count++ ))
                     # second try to stop mz component
                     if mz_component_shutdown "$user" "$component"; then
-                        ocf_log info "mz_call: $component is stopped"
+                        ocf_log INFO "mz_call: $component is stopped"
                         rc="$OCF_SUCCESS"
                         break
                     else
-                        ocf_log info "mz_call: $component is still NOT stopped"
+                        ocf_log INFO "mz_call: $component is still NOT stopped"
                         rc="$OCF_ERR_GENERIC"
                     fi
                     sleep "$retry_sleep"
@@ -194,9 +201,11 @@ function mz_call()
                     rc="$OCF_ERR_GENERIC"
                 fi
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        ocf_log INFO "got rc_call=$rc_call; result=$result"
     else
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        ocf_log INFO "got rc_call=$rc_call"
     fi
                 ;;
         kill )
@@ -204,17 +213,19 @@ function mz_call()
                 # TODO PRIO1: How to treat that kill outputs "platform not running" (not killing)
                 #             This occures e.g. if the component is already down.
                 if su - "$user" -c "$mz_shell_central kill $component" | grep -qi "killing $component\.*done."; then
-                    ocf_log info "mz_call: killing $component successful"
+                    ocf_log INFO "mz_call: killing $component successful"
                     rc="$OCF_SUCCESS"
                 else
                     # TODO PRIO2: maybe killing processes (with OS command kill) directly as last try? 
-                    ocf_log info "mz_call: killing $component NOT successful"
+                    ocf_log INFO "mz_call: killing $component NOT successful"
                     rc="$OCF_ERR_GENERIC"
                 fi
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+        ocf_log INFO "got rc_call=$rc_call; result=$result"
     else
-        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+        ocf_log INFO "got rc_call=$rc_call"
     fi
                 ;;
         * )
@@ -322,42 +333,44 @@ function mz_meta_data()
 # shellcheck disable=SC2120
 function mz_check_params()
 {
-    local rc="$OCF_SUCCESS" log_stderr="-s"
-# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone functions-stack: ${FUNCNAME[*]}"
-    while  [[ "$#" -gt 1 ]]; do
-        case "$1" in
-            --quiet ) log_stderr="" ;;
-        esac
-    done
+    local rc="$OCF_SUCCESS"
     if [[ -n "$OCF_RESKEY_USER" ]]; then
         if id "$OCF_RESKEY_USER" 1>/dev/null 2>/dev/null; then
-            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
+            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
+            ocf_log INFO "User '$OCF_RESKEY_USER' exists"
         else
-            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' does NOT exist"
+            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' does NOT exist"
+            ocf_log ERROR "User '$OCF_RESKEY_USER' does NOT exist"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$mz_shell_local" ]]; then
         if [[ -x "$mz_shell_local" ]]; then
-            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' exists and is executable"
+            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' exists and is executable"
+            ocf_log INFO "Program '$mz_shell_local' exists and is executable"
         else
-            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' either does NOT exist or is NOT executable"
+            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' either does NOT exist or is NOT executable"
+            ocf_log ERROR "Program '$mz_shell_local' either does NOT exist or is NOT executable"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$mz_shell_central" ]]; then
         if [[ -x "$mz_shell_central" ]]; then
-            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' exists and is executable"
+            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' exists and is executable"
+            ocf_log INFO "Program '$mz_shell_central' exists and is executable"
         else
-            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' either does NOT exist or is NOT executable"
+            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' either does NOT exist or is NOT executable"
+            ocf_log ERROR "Program '$mz_shell_central' either does NOT exist or is NOT executable"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
         if [[ "$OCF_RESKEY_SERVICE" =~ ^(platform|ui)$ ]]; then
-            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui']"
+            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui']"
+            ocf_log INFO "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui']"
         else
-            logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
+            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
+            ocf_log INFO "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
@@ -421,7 +434,8 @@ if [ "$ACTION" = "status" ]; then
 fi
 
 # These operations don't require OCF parameters to be set
-logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
+# logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
+ocf_log INFO "SAPCMControlZone begin action=$ACTION"
 case "$ACTION" in
     usage)          mz_usage
                     exit "$OCF_SUCCESS";;
@@ -432,7 +446,6 @@ case "$ACTION" in
     notify)         # just ignore
                     exit "$OCF_SUCCESS";;
     validate-all)
-# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone VALIDATE-ALL"
         mz_init
         mz_validate; ra_rc="$?"
         exit "$ra_rc"
@@ -452,15 +465,12 @@ ra_rc="$OCF_ERR_UNIMPLEMENTED"
 case "$ACTION" in
     start)
         mz_check_params
-logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone pre-start"
         mz_start; 
         ra_rc="$?"
-logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone post-start ra_rc='$ra_rc'"
         ;;
     stop)
         mz_stop; ra_rc="$?";;
     monitor)
-# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone MONITOR"
         mz_monitor; ra_rc="$?";;
     promote)
         mz_promote; ra_rc="$?";;
@@ -470,14 +480,14 @@ logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone post-star
         mz_reload
         ra_rc="$OCF_SUCCESS";;
     validate)
-# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone VALIDATE"
         mz_validate
         ra_rc="$OCF_SUCCESS";;
     *)  # seems to be an unknown request
-# logger --id="$logger_pid" -t "SAPCMControlZone" "DBG: SAPCMControlZone UNKNOWN"
         "${raType}"methods
         ra_rc="$OCF_ERR_UNIMPLEMENTED"
         ;;
 esac
+# logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
+ocf_log INFO "SAPCMControlZone end action=$ACTION"
 exit "${ra_rc}"
 # set ts=4 sw=4 sts=4 et
