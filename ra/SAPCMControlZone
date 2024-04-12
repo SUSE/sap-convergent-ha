@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4.4"
+SAPCMControlZoneVersion="0.2.4.5"
 export myBASH="/usr/bin/bash"
 logger_pid="$$"
 #
@@ -109,10 +109,10 @@ function mz_component_status()
     result=$(su - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     echo "$result" | grep -q "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone" "INFO: got rc_call=$rc_call"
+        logger --id="$logger_pid" -t "SAPCMControlZone($OCF_RESOURCE_INSTANCE)" "INFO: got rc_call=$rc_call"
         # ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$logger_pid" -t "SAPCMControlZone" "INFO: got rc_call=$rc_call; result=$result"
+        logger --id="$logger_pid" -t "SAPCMControlZone($OCF_RESOURCE_INSTANCE)" "INFO: got rc_call=$rc_call; result=$result"
         # ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
@@ -435,7 +435,7 @@ fi
 
 # These operations don't require OCF parameters to be set
 # logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
-ocf_log INFO "SAPCMControlZone begin action=$ACTION"
+ocf_log INFO "SAPCMControlZone begin action $ACTION"
 case "$ACTION" in
     usage)          mz_usage
                     exit "$OCF_SUCCESS";;
@@ -488,6 +488,6 @@ case "$ACTION" in
         ;;
 esac
 # logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
-ocf_log INFO "SAPCMControlZone end action=$ACTION rc=${ra_rc}"
+ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
 exit "${ra_rc}"
 # set ts=4 sw=4 sts=4 et
