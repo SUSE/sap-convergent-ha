@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.1.0"
+SAPCMControlZoneVersion="0.2.3"
 logger_pid="$$"
 logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 #
@@ -53,13 +53,20 @@ OCF_SUCCESS="${OCF_SUCCESS:-0}"
 
 function mz_component_startup()
 {
-    local user="$1" component="$2" rc=0
+    local user="$1" component="$2" rc=0 result="" rc_call=0
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     #             su - v3zadm -c "JAVA_HOME=/opt/cm/V3Z/sapmachine17 MZ_HOME=/opt/cm/V3Z/CMP01/CM /opt/cm/V3Z/CMP01/CM/bin/mzsh startup platform"
     # TODO PRIO1: out for already started component is "platform is already running"
     # TODO PRIO1: Output like "FAILED\nStartable platform exited unexpectedly"
     # TODO PRIO1: Tested, but not committed API: RC==0 OK
-    su - "$user" -c "$mz_shell_central startup $component" | grep -q "Starting $component\.*done."; rc="$?"
+    result=$(su - "$user" -c "$mz_shell_central startup $component"); rc_call="$?"
+    # TODO: PRIO2: Try to get rid of "grep" (bash-regmap)
+    echo "$result" | grep -q "Starting $component\.*done."; rc="$?"
+    if [[ "$rc" == "0" ]]; then
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+    else
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+    fi
     return "$rc"
 }
 #export -f mz_component_startup
@@ -74,7 +81,13 @@ function mz_component_shutdown()
     # TODO PRIO1: Output like "Starting ui...FAILED"
     # TODO PRIO1: Output like "platfoam: no such server process"
     # TODO PRIO1: Tested, but not committed API: RC==0 OK
-    su - "$user" -c "$mz_shell_central shutdown $component" | grep -q -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
+    result=$(su - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
+    echo "$result" | grep -q -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
+    if [[ "$rc" == "0" ]]; then
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+    else
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+    fi
     return "$rc"
 }
 #export -f mz_component_shutdown
@@ -87,7 +100,13 @@ function mz_component_status()
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
     # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
-    su - "$user" -c "$mz_shell_local status $component" | grep -q "$component is running"; rc="$?"
+    result=$(su - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
+    echo "$result" | grep -q "$component is running"; rc="$?"
+    if [[ "$rc" == "0" ]]; then
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+    else
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+    fi
     return "$rc"
 }
 export -f mz_component_status
@@ -173,6 +192,11 @@ function mz_call()
                 else
                     rc="$OCF_ERR_GENERIC"
                 fi
+    if [[ "$rc" == "0" ]]; then
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+    else
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+    fi
                 ;;
         kill )
                 # needs to switch-user to <mzadmin>
@@ -186,6 +210,11 @@ function mz_call()
                     ocf_log info "mz_call: killing $component NOT successful"
                     rc="$OCF_ERR_GENERIC"
                 fi
+    if [[ "$rc" == "0" ]]; then
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
+    else
+        logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
+    fi
                 ;;
         * )
                 # not implemented
