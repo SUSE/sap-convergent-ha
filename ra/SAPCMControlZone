@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4.1"
+SAPCMControlZoneVersion="0.2.4.2"
 export myBASH="/usr/bin/bash"
 #logger_pid="$$"
 #
@@ -39,6 +39,7 @@ raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
+export OCF_ROOT OCF_FUNCTIONS_DIR
 # logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 ocf_log INFO "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 # init a minimum set of variables, if the variable are not initialized so far
