@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4.8"
+SAPCMControlZoneVersion="0.2.4.9"
 export myBASH="/usr/bin/bash"
 export logger_pid="$$"
 #
@@ -73,7 +73,7 @@ function mz_component_startup()
     fi
     return "$rc"
 }
-#export -f mz_component_startup
+export -f mz_component_startup
 
 function mz_component_shutdown()
 {
@@ -438,16 +438,21 @@ fi
 ocf_log INFO "SAPCMControlZone begin action $ACTION"
 case "$ACTION" in
     usage)          mz_usage
+                    ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
                     exit "$OCF_SUCCESS";;
     methods)        mz_methods
+                    ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
                     exit "$OCF_SUCCESS";;
     meta-data)      mz_meta_data
+                    ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
                     exit "$OCF_SUCCESS";;
     notify)         # just ignore
+                    ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
                     exit "$OCF_SUCCESS";;
     validate-all)
         mz_init
         mz_validate; ra_rc="$?"
+        ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
         exit "$ra_rc"
         ;;
 esac
