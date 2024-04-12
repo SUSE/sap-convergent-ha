@@ -29,8 +29,14 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4.9"
+SAPCMControlZoneVersion="0.2.4.10"
 export myBASH="/usr/bin/bash"
+#
+# TODO: PRIO1: get MZ_PLATFORM, JAVA_HOME AND MZ_HOME from cluster config
+export MZ_PLATFORM="http://localhost:9000"
+export MZ_JAVA_HOME="TBD"
+export MZ_HOME="TBD"
+
 export logger_pid="$$"
 #
 # Initialization:
@@ -55,7 +61,7 @@ OCF_SUCCESS="${OCF_SUCCESS:-0}"
 
 function mz_component_startup()
 {
-    local user="$1" component="$2" rid="$3" logger_pid="$4" rc=0 result="" rc_call=0
+    local user="$1" component="$2" rid="$3" lid="$4" rc=0 result="" rc_call=0
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     #             su - v3zadm -c "JAVA_HOME=/opt/cm/V3Z/sapmachine17 MZ_HOME=/opt/cm/V3Z/CMP01/CM /opt/cm/V3Z/CMP01/CM/bin/mzsh startup platform"
     # TODO PRIO1: out for already started component is "platform is already running"
@@ -65,10 +71,10 @@ function mz_component_startup()
     # TODO: PRIO2: Try to get rid of "grep" (bash-regmap)
     echo "$result" | grep -q "Starting $component\.*done."; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call"
         #ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$logger_pid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call; result=$result"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call; result=$result"
         #ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
@@ -77,7 +83,7 @@ export -f mz_component_startup
 
 function mz_component_shutdown()
 {
-    local user="$1" component="$2" rid="$3" logger_pid="$4" rc=0
+    local user="$1" component="$2" rid="$3" lid="$4" rc=0
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: How to treat output like "Shutting down platform...\nShutdown failed. Trying kill instead.\ndone."
     # DONE PRIO1: How to treat output with unequal 3 dots (Shutting down platform....done.)
@@ -88,10 +94,10 @@ function mz_component_shutdown()
     result=$(su - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
     echo "$result" | grep -q -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call"
         # ocf_log INFO "got rc_call=$rc_call"
     else
-        logger -p err --id="$logger_pid" -t "SAPCMControlZone($rid)" "ERROR: got rc_call=$rc_call; result=$result"
+        logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: got rc_call=$rc_call; result=$result"
         # ocf_log ERROR "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
@@ -101,7 +107,30 @@ export -f mz_component_shutdown
 # shellcheck disable=SC2317
 function mz_component_status()
 {
-    local user="$1" component="$2" rid="$3" logger_pid="$4" rc=0
+    # TODO PRIO1: improved and more detailled parameter handling
+    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --user=* ) # user handling
+                        user=${1#*=}
+                       ;;
+            --component=* ) # component name
+                        component=${1#*=}
+                            ;;
+            --rid=* ) # resource id to log
+                        rid=${1#*=}
+                        ;;
+            --lid=* ) # logger id to be used
+                        lid=${1#*=}
+                    ;;
+            --mz_platform=* ) # valie to be set for MZ_PLATFORM
+                        MZ_PLATFORM=${1#*=}
+                        export MZ_PLATFORM
+                        ;;
+        esac
+        sfift
+    done
+
     # TODO PRIO1: How to treat output like "platform is running without ..." 
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
@@ -109,10 +138,10 @@ function mz_component_status()
     result=$(su - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     echo "$result" | grep -q "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$logger_pid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call (MZ_PLATFORM=$MZ_PLATFORM)"
         # ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$logger_pid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call; result=$result"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call; result=$result (MZ_PLATFORM=$MZ_PLATFORM)"
         # ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
@@ -143,7 +172,9 @@ function mz_call()
                 # needs to switch-user to <mzadmin>
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
-                    timeout "$timeout" "$myBASH" -c "mz_component_status $user $component ${OCF_RESOURCE_INSTANCE} ${logger_pid}"; call_rc="$?"
+                    # TODO PRIO1: improved and more detailled parameter handling
+                    # TODO PRIO1: improved and more detailled parameter handling
+                    timeout "$timeout" "$myBASH" -c "mz_component_status --user=$user --component=$component --mz_platform=${MZ_PLATFORM} --rid=${OCF_RESOURCE_INSTANCE} --lid=${logger_pid}"; call_rc="$?"
                     case "$call_rc" in
                         0 ) ocf_log INFO "mz_call: $component is running"
                             rc="$OCF_SUCCESS"
