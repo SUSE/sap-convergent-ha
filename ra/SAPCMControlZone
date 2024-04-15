@@ -499,6 +499,24 @@ function mz_check_params()
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
+# mz_home_local=
+    if [[ -n "$mz_home_local" ]]; then
+        if [[ -e "$mz_home_local" ]]; then
+            ocf_log INFO "mz_home_local '$mz_home_local' exists"
+        else
+            ocf_log ERROR "mz_home_local '$mz_home_local' does NOT exist"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+    if [[ -n "$mz_home_central" ]]; then
+        if [[ -e "$mz_home_central" ]]; then
+            ocf_log INFO "mz_home_central '$mz_home_central' exists"
+        else
+            ocf_log ERROR "mz_home_central '$mz_home_central' does NOT exist"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+###
 # java_home_local=
     if [[ -n "$java_home_local" ]]; then
         if [[ -e "$java_home_local" ]]; then
@@ -510,9 +528,9 @@ function mz_check_params()
     fi
     if [[ -n "$java_home_central" ]]; then
         if [[ -e "$java_home_central" ]]; then
-            ocf_log INFO "java_home_cental '$java_home_central' exists"
+            ocf_log INFO "java_home_central '$java_home_central' exists"
         else
-            ocf_log ERROR "java_home_cental '$java_home_central' does NOT exist"
+            ocf_log ERROR "java_home_central '$java_home_central' does NOT exist"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
