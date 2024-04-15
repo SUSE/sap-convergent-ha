@@ -63,7 +63,7 @@ function mz_component_startup()
 {
     local user="$1" component="$2" rid="$3" lid="$4" rc=0
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
-    #             su - v3zadm -c "JAVA_HOME=/opt/cm/V3Z/sapmachine17 MZ_HOME=/opt/cm/V3Z/CMP01/CM /opt/cm/V3Z/CMP01/CM/bin/mzsh startup platform"
+    #             su - v3zadm -c "JAVA_HOME=/opt/cm/C11/sapmachine17 MZ_HOME=/opt/cm/C11/CM /opt/cm/C11/CMP01/CM/bin/mzsh startup platform"
     # TODO PRIO1: out for already started component is "platform is already running"
     # TODO PRIO1: Output like "FAILED\nStartable platform exited unexpectedly"
     # TODO PRIO1: Tested, but not committed API: RC==0 OK
@@ -100,10 +100,10 @@ function mz_component_startup()
     # TODO: PRIO2: Try to get rid of "grep" (bash-regmap)
     echo "$result" | grep -q "Starting $component\.*done."; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
         #ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call; result=$result"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call; result=$result"
         #ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
@@ -152,10 +152,10 @@ function mz_component_shutdown()
     result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
     echo "$result" | grep -q -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
         # ocf_log INFO "got rc_call=$rc_call"
     else
-        logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: got rc_call=$rc_call; result=$result"
+        logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh ($mz_shell_central) got rc_call=$rc_call; result=$result"
         # ocf_log ERROR "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
@@ -205,10 +205,10 @@ function mz_component_status()
     result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     echo "$result" | grep -q "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call (MZ_PLATFORM=$MZ_PLATFORM)"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (MZ_PLATFORM=$MZ_PLATFORM)"
         # ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call; result=$result (MZ_PLATFORM=$MZ_PLATFORM)"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (MZ_PLATFORM=$MZ_PLATFORM)"
         # ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
@@ -356,8 +356,8 @@ function mz_init()
     declare -a java_home_arr
     mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_path_str="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
-    mz_home_str="${OCF_RESKEY_MZHOME:-/opt/cm/V3Z/CMP01/CM}"
-    java_home_str="${OCF_RESKEY_JAVAHOME:-/opt/cm/V3Z/CMP01/CM}"
+    mz_home_str="${OCF_RESKEY_MZHOME:-/opt/cm/C11/CM}"
+    java_home_str="${OCF_RESKEY_JAVAHOME:-/opt/cm/C11/CM}"
     mz_platform="${OCF_RESKEY_MZPLATFORM:-http://localhost:9000}"
     # shellcheck disable=SC2206
     IFS=: java_home_arr=( $java_home_str )
