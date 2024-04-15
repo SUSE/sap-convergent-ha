@@ -417,6 +417,21 @@ function mz_meta_data()
    <longdesc lang="en">How long calls to the ControlZone platform for checking the status can take. If you increase this timeout, you should also adjust the operation timeouts of your Linux cluster resources.</longdesc>
     <content type="string" default="60" />
 </parameter>
+<parameter name="JAVAHOME" unique="0" required="0">
+    <shortdesc lang="en">ControlZone specific JAVA_HOME directory</shortdesc>
+    <longdesc lang="en">TBD</longdesc>
+    <content type="string" default="TBD" />
+</parameter>
+<parameter name="MZHOME" unique="0" required="0">
+    <shortdesc lang="en">ControlZone home directory</shortdesc>
+    <longdesc lang="en">TBD</longdesc>
+    <content type="string" default="TBD" />
+</parameter>
+<parameter name="MZPLATFORM" unique="0" required="0">
+    <shortdesc lang="en">ControlZone connection URL</shortdesc>
+    <longdesc lang="en">ControlZone connection URL</longdesc>
+    <content type="string" default="http://localhost:9000" />
+</parameter>
 <parameter name="MZSHELL" unique="0" required="0">
     <shortdesc lang="en">ControlZone shell</shortdesc>
     <longdesc lang="en">Path to the CM ControlZone commandline shell to be called. Values: full path to the shell. The parameter could also take two different paths separarated by colon (:). In that case the first path must be the path of the "local" mzsh and the second must be the path of the "central/shared" mzsh. Format: PATH-LOCAL:PATH-CENTRAL</longdesc>
