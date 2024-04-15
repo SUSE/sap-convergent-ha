@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4.13"
+SAPCMControlZoneVersion="0.2.4.14"
 export myBASH="/usr/bin/bash"
 #
 # TODO: PRIO1: get MZ_PLATFORM, JAVA_HOME AND MZ_HOME from cluster config
@@ -477,40 +477,50 @@ function mz_check_params()
     local rc="$OCF_SUCCESS"
     if [[ -n "$OCF_RESKEY_USER" ]]; then
         if id "$OCF_RESKEY_USER" 1>/dev/null 2>/dev/null; then
-            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' exists"
             ocf_log INFO "User '$OCF_RESKEY_USER' exists"
         else
-            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "User '$OCF_RESKEY_USER' does NOT exist"
             ocf_log ERROR "User '$OCF_RESKEY_USER' does NOT exist"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$mz_shell_local" ]]; then
         if [[ -x "$mz_shell_local" ]]; then
-            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' exists and is executable"
-            ocf_log INFO "Program '$mz_shell_local' exists and is executable"
+            ocf_log INFO "mz_shell_local '$mz_shell_local' exists and is executable"
         else
-            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_local' either does NOT exist or is NOT executable"
-            ocf_log ERROR "Program '$mz_shell_local' either does NOT exist or is NOT executable"
+            ocf_log ERROR "mz_shell_local '$mz_shell_local' either does NOT exist or is NOT executable"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
     if [[ -n "$mz_shell_central" ]]; then
         if [[ -x "$mz_shell_central" ]]; then
-            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' exists and is executable"
-            ocf_log INFO "Program '$mz_shell_central' exists and is executable"
+            ocf_log INFO "mz_shell_central '$mz_shell_central' exists and is executable"
         else
-            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Program '$mz_shell_central' either does NOT exist or is NOT executable"
-            ocf_log ERROR "Program '$mz_shell_central' either does NOT exist or is NOT executable"
+            ocf_log ERROR "mz_shell_central '$mz_shell_central' either does NOT exist or is NOT executable"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
+# java_home_local=
+    if [[ -n "$java_home_local" ]]; then
+        if [[ -e "$java_home_local" ]]; then
+            ocf_log INFO "java_home_local '$java_home_local' exists"
+        else
+            ocf_log ERROR "java_home_local '$java_home_local' does NOT exist"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+    if [[ -n "$java_home_central" ]]; then
+        if [[ -e "$java_home_central" ]]; then
+            ocf_log INFO "java_home_cental '$java_home_central' exists"
+        else
+            ocf_log ERROR "java_home_cental '$java_home_central' does NOT exist"
+            rc="$OCF_ERR_CONFIGURED"
+        fi
+    fi
+###
     if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
         if [[ "$OCF_RESKEY_SERVICE" =~ ^(platform|ui)$ ]]; then
-            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui']"
             ocf_log INFO "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui']"
         else
-            # logger --id="$logger_pid" "$log_stderr" -t "SAPCMControlZone" "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
             ocf_log INFO "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
             rc="$OCF_ERR_CONFIGURED"
         fi
