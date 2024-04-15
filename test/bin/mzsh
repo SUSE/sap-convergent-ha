@@ -7,7 +7,7 @@ comp="$2"
 services="platform ui bla-bla blub-blub"
 
 logger --id -t "mzsh" "mzsh version 0.2.4 - action=$action"
-logger --id -t "mzsh" "JAVA_HOME=$JAVA_HOME MZ_HOME=$MZ_HOME MZ_PLATFORM=$MZ_PLATFORM"
+logger --id -t "mzsh" "MZSH=$0 JAVA_HOME=$JAVA_HOME MZ_HOME=$MZ_HOME MZ_PLATFORM=$MZ_PLATFORM"
 
 file_of_fail_base="/dev/shm/mzsh_fail_"
 file_of_status="/dev/shm/mzsh_status_"
