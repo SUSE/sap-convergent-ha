@@ -61,12 +61,41 @@ OCF_SUCCESS="${OCF_SUCCESS:-0}"
 
 function mz_component_startup()
 {
-    local user="$1" component="$2" rid="$3" lid="$4" rc=0 result="" rc_call=0
+    local user="$1" component="$2" rid="$3" lid="$4" rc=0
     # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
     #             su - v3zadm -c "JAVA_HOME=/opt/cm/V3Z/sapmachine17 MZ_HOME=/opt/cm/V3Z/CMP01/CM /opt/cm/V3Z/CMP01/CM/bin/mzsh startup platform"
     # TODO PRIO1: out for already started component is "platform is already running"
     # TODO PRIO1: Output like "FAILED\nStartable platform exited unexpectedly"
     # TODO PRIO1: Tested, but not committed API: RC==0 OK
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --user=* ) # user handling
+                        user=${1#*=}
+                       ;;
+            --component=* ) # component name
+                        component=${1#*=}
+                            ;;
+            --rid=* ) # resource id to log
+                        rid=${1#*=}
+                        ;;
+            --lid=* ) # logger id to be used
+                        lid=${1#*=}
+                    ;;
+            --mz_platform=* ) # set MZ_PLATFORM for CM
+                        MZ_PLATFORM=${1#*=}
+                        export MZ_PLATFORM
+                        ;;
+            --java_home=* ) # set JAVA_HOME for CM
+                        JAVA_HOME=${1#*=}
+                        export JAVA_HOME
+                        ;;
+            --mz_home=* ) # set mz_home for CM
+                        MZ_HOME=${1#*=}
+                        export MZ_HOME
+                        ;;
+        esac
+        shift
+    done
     result=$(su - "$user" -c "$mz_shell_central startup $component"); rc_call="$?"
     # TODO: PRIO2: Try to get rid of "grep" (bash-regmap)
     echo "$result" | grep -q "Starting $component\.*done."; rc="$?"
@@ -83,14 +112,43 @@ export -f mz_component_startup
 
 function mz_component_shutdown()
 {
-    local user="$1" component="$2" rid="$3" lid="$4" rc=0
-    # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
+    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 JAVA_HOME="" MZ_HOME="" MZ_PLATFORM=""
+    # DONE PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: How to treat output like "Shutting down platform...\nShutdown failed. Trying kill instead.\ndone."
     # DONE PRIO1: How to treat output with unequal 3 dots (Shutting down platform....done.)
     # DONE PRIO1: Output fror already stopped component is "<component> is not running"
     # TODO PRIO1: Output like "Starting ui...FAILED"
     # TODO PRIO1: Output like "platfoam: no such server process"
     # TODO PRIO1: Tested, but not committed API: RC==0 OK
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --user=* ) # user handling
+                        user=${1#*=}
+                       ;;
+            --component=* ) # component name
+                        component=${1#*=}
+                            ;;
+            --rid=* ) # resource id to log
+                        rid=${1#*=}
+                        ;;
+            --lid=* ) # logger id to be used
+                        lid=${1#*=}
+                    ;;
+            --mz_platform=* ) # set MZ_PLATFORM for CM
+                        MZ_PLATFORM=${1#*=}
+                        export MZ_PLATFORM
+                        ;;
+            --java_home=* ) # set JAVA_HOME for CM
+                        JAVA_HOME=${1#*=}
+                        export JAVA_HOME
+                        ;;
+            --mz_home=* ) # set mz_home for CM
+                        MZ_HOME=${1#*=}
+                        export MZ_HOME
+                        ;;
+        esac
+        shift
+    done
     result=$(su - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
     echo "$result" | grep -q -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
@@ -109,7 +167,7 @@ function mz_component_status()
 {
     # TODO PRIO1: improved and more detailled parameter handling
     # TODO PRIO2: add --mz_shell in parameter handling
-    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 JAVA_HOME=""
+    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 JAVA_HOME="" MZ_HOME="" MZ_PLATFORM=""
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --user=* ) # user handling
@@ -141,7 +199,7 @@ function mz_component_status()
     done
 
     # TODO PRIO1: How to treat output like "platform is running without ..." 
-    # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
+    # DONE PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
     # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
     result=$(su - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
@@ -203,7 +261,7 @@ function mz_call()
                 retry_count=0
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
-                    if mz_component_startup "$user" "$component" "${OCF_RESOURCE_INSTANCE}" "${logger_pid}"; then
+                    if mz_component_startup --user=$user --component=$component --mz_platform=${mz_platform} --mz_home=${mz_home_central} --java_home=${java_home_central} --rid=${OCF_RESOURCE_INSTANCE} --lid=${logger_pid}"; then
                         ocf_log INFO "mz_call: $component is started"
                         rc="$OCF_SUCCESS"
                         break
@@ -222,7 +280,7 @@ function mz_call()
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
                     # second try to stop mz component
-                    if mz_component_shutdown "$user" "$component" "${OCF_RESOURCE_INSTANCE}" "${logger_pid}"; then
+                    if mz_component_shutdown --user=$user --component=$component --mz_platform=${mz_platform} --mz_home=${mz_home_central} --java_home=${java_home_central} --rid=${OCF_RESOURCE_INSTANCE} --lid=${logger_pid}" ; then
                         ocf_log INFO "mz_call: $component is stopped"
                         rc="$OCF_SUCCESS"
                         break
@@ -335,7 +393,6 @@ function mz_init()
         # first-and-only (0) path is local and central
         java_home_central="$java_home_local"
     fi
-
     # shellcheck disable=SC2034
     mz_search_list="/usr/bin:/usr/sap/[A-Z][A-Z0-9][A-Z0-9]/CMP[0-9][0-9]/CM/bin/"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
@@ -490,6 +547,7 @@ function mz_monitor()
 # params:   ACTION
 # globals:  OCF_*(r), ra_rc(rw), $0(r)
 #
+ra_rc="$OCF_SUCCESS"
 
 if [ "$#" != "1" ]
 then
