@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.4.12"
+SAPCMControlZoneVersion="0.2.4.13"
 export myBASH="/usr/bin/bash"
 #
 # TODO: PRIO1: get MZ_PLATFORM, JAVA_HOME AND MZ_HOME from cluster config
@@ -96,7 +96,7 @@ function mz_component_startup()
         esac
         shift
     done
-    result=$(su - "$user" -c "$mz_shell_central startup $component"); rc_call="$?"
+    result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_central startup $component"); rc_call="$?"
     # TODO: PRIO2: Try to get rid of "grep" (bash-regmap)
     echo "$result" | grep -q "Starting $component\.*done."; rc="$?"
     if [[ "$rc" == "0" ]]; then
@@ -149,7 +149,7 @@ function mz_component_shutdown()
         esac
         shift
     done
-    result=$(su - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
+    result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
     echo "$result" | grep -q -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call"
@@ -202,7 +202,7 @@ function mz_component_status()
     # DONE PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
     # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
-    result=$(su - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
+    result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     echo "$result" | grep -q "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: got rc_call=$rc_call (MZ_PLATFORM=$MZ_PLATFORM)"
