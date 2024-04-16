@@ -4,11 +4,14 @@
 action="$1"
 comp="$2"
 
+lid="$$"
+
 # the 'bla-bla' and 'blub-blub' services are just to simmulate unexpected output for 'status'
 services="platform ui bla-bla blub-blub"
 
-logger --id -t "mzsh" "mzsh version 0.2.6 - action=$action"
-logger --id -t "mzsh" "MZSH=$0 JAVA_HOME=$JAVA_HOME MZ_HOME=$MZ_HOME MZ_PLATFORM=$MZ_PLATFORM"
+logger --id "$lid" -t "mzsh" "mzsh version 0.2.6 - action=$action"
+logger --id "$lid" -t "mzsh" "MZSH=$0 JAVA_HOME=$JAVA_HOME MZ_HOME=$MZ_HOME MZ_PLATFORM=$MZ_PLATFORM"
+logger --id "$lid" -t "mzsh" "MZSH=$0 RA_JAVA_HOME=$JAVA_HOME RA_MZ_HOME=$MZ_HOME RA_MZ_PLATFORM=$MZ_PLATFORM"
 
 file_of_fail_base="/dev/shm/mzsh_fail_"
 file_of_status="/dev/shm/mzsh_status_"
@@ -24,11 +27,11 @@ fi
 
 case "$action" in
     status )  
-            # TODO: also simulate anwer like '<component> is running without'
+            # TODO: also simulate answer like '<component> is running without'
             # TODO: rc-handling (still to be confirmed)
             # TODO: also take component as optional parameter (still to be confirmed)
-            # TODO: simuate already running: '<component> already running' (format still to be confirmed)
-            logger --id -t "mzsh" "mzsh process action=$action"
+            # TODO: simulate already running: '<component> already running' (format still to be confirmed)
+            logger --id "$lid" -t "mzsh" "mzsh process action=$action"
             if [[ "$is_fail" == "yes" ]]; then
                 echo "blala is not running"
                 echo "blubblub is not running"
@@ -47,7 +50,7 @@ case "$action" in
             # TODO: number of dots in 'starting %s...' can vary
             # TODO: simulate FAILURES (format of different output strings still to be confirmed)
             # TODO: rc-handling (still to be confirmed)
-            logger --id -t "mzsh" "mzsh process action=$action component=$comp"
+            logger --id "$lid" -t "mzsh" "mzsh process action=$action component=$comp"
             if [[ "$is_fail" == "no" ]]; then
                 printf "Starting %s..." "$comp"
                 sleep 10
@@ -66,7 +69,7 @@ case "$action" in
             #       Escalated to call kill
             #       done.
             # TODO: rc-handling (still to be confirmed)
-            logger --id -t "mzsh" "mzsh process action=$action component=$comp"
+            logger --id "$lid" -t "mzsh" "mzsh process action=$action component=$comp"
             if [[ "$is_fail" == "no" ]]; then
                 printf "Shutting down %s..." "$comp"
                 sleep 5
