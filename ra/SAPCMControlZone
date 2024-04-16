@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.6"
+SAPCMControlZoneVersion="0.2.6.1"
 export myBASH="/usr/bin/bash"
 #
 # DONE: PRIO1: get RA_MZ_PLATFORM, RA_JAVA_HOME AND RA_MZ_HOME from cluster config
@@ -45,7 +45,7 @@ raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
-ocf_log INFO "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
+ocf_log INFO "Version $SAPCMControlZoneVersion ($*)"
 # init a minimum set of variables, if the variable are not initialized so far
 OCF_SUCCESS="${OCF_SUCCESS:-0}"
 #
@@ -100,10 +100,8 @@ function mz_component_startup()
     echo "$result" | grep -qi -e "Starting $component\.*done." -e "$component is already running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
-        #ocf_log INFO "got rc_call=$rc_call"
     else
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call; result=$result"
-        #ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
@@ -152,10 +150,8 @@ function mz_component_shutdown()
     echo "$result" | grep -qi -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
-        # ocf_log INFO "got rc_call=$rc_call"
     else
         logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh ($mz_shell_central) got rc_call=$rc_call; result=$result"
-        # ocf_log ERROR "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
@@ -204,10 +200,8 @@ function mz_component_status()
     echo "$result" | grep -qi "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
-        # ocf_log INFO "got rc_call=$rc_call"
     else
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
-        # ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
@@ -259,10 +253,8 @@ function mz_component_kill()
     echo "$result" | grep -qi "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
-        # ocf_log INFO "got rc_call=$rc_call"
     else
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
-        # ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
@@ -653,7 +645,7 @@ if [ "$ACTION" = "status" ]; then
 fi
 
 # These operations don't require OCF parameters to be set
-ocf_log INFO "SAPCMControlZone begin action $ACTION"
+ocf_log INFO "begin action $ACTION"
 case "$ACTION" in
     usage)          mz_usage
                     ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
@@ -670,7 +662,7 @@ case "$ACTION" in
     validate-all)
         mz_init
         mz_validate; ra_rc="$?"
-        ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
+        ocf_log INFO "end action $ACTION rc=${ra_rc}"
         exit "$ra_rc"
         ;;
 esac
@@ -710,6 +702,6 @@ case "$ACTION" in
         ra_rc="$OCF_ERR_UNIMPLEMENTED"
         ;;
 esac
-ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
+ocf_log INFO "end action $ACTION rc=${ra_rc}"
 exit "${ra_rc}"
 # set ts=4 sw=4 sts=4 et
