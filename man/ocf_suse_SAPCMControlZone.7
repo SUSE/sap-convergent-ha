@@ -280,8 +280,10 @@ MZ_HOME and JAVA_HOME are inherited from RA
 .PP
 .RS 2
 # MZ_HOME and JAVA_HOME are set by HA RA
-export MZ_HOME=${RA_MZ_HOME:-"/opt/cm9/C11"}
-export JAVA_HOME=${RA_JAVA_HOME:-"/opt/cm9/C11/sapmachine17"}
+.br
+export MZ_HOME=${RA_MZ_HOME:-"/opt/cm9/c11"}
+.br
+export JAVA_HOME=${RA_JAVA_HOME:-"/opt/cm9/c11/sapmachine17"}
 .RE
 .PP
 \fB* Example configuration for resource group with ControlZone platform and IP address.\fR
@@ -507,14 +509,14 @@ Note: Understand the impact before trying.
 /usr/lib/ocf/resource.d/suse/SAPCMControlZone
 the resource agent
 .TP
-.\" TODO two paths
+$HOME/.bashrc, e.g. /home/mzadmin/.bashrc
+the mzadmin´s .bashrc, defining JAVA_HOME and MZ_HOME
+.TP
 $MZ_HOME, e.g. /opt/cm/
 the installation directory of a CM ControlZone service
 .TP
 $MZ_HOME/bin/mzsh
 the default mzshell, used as API for managing CM ControlZone services, contains paths and URL
-.bashrc
-the mzadmin´s .bashrc, defining JAVA_HOME and MZ_HOME
 .TP
 $MZ_HOME/log/
 path to logfiles of mzsh as well as platform and UI
