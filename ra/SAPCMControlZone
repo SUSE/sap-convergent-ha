@@ -164,7 +164,7 @@ export -f mz_component_shutdown
 # shellcheck disable=SC2317
 function mz_component_status()
 {
-    # TODO PRIO1: improved and more detailled parameter handling
+    # TODO DONE: improved and more detailled parameter handling
     # TODO PRIO2: add --mz_shell in parameter handling
     local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 JAVA_HOME="" MZ_HOME="" MZ_PLATFORM=""
     while [[ "$#" -gt 0 ]]; do
@@ -196,7 +196,6 @@ function mz_component_status()
         esac
         shift
     done
-
     # TODO PRIO1: How to treat output like "platform is running without ..." 
     # DONE PRIO1: set env for variables JAVA_HOME and MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
@@ -214,6 +213,61 @@ function mz_component_status()
 }
 export -f mz_component_status
 
+# shellcheck disable=SC2317
+function mz_component_kill()
+{
+    # TODO DONE: improved and more detailled parameter handling
+    # TODO PRIO2: add --mz_shell in parameter handling
+    # TODO PRIO1: How to treat that kill outputs "platform not running" (not killing)
+    #             This occures e.g. if the component is already down.
+    # TODO PRIO2: maybe killing processes (with OS command kill) directly as last try? 
+    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 JAVA_HOME="" MZ_HOME="" MZ_PLATFORM=""
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            --user=* ) # user handling
+                        user=${1#*=}
+                       ;;
+            --component=* ) # component name
+                        component=${1#*=}
+                            ;;
+            --rid=* ) # resource id to log
+                        rid=${1#*=}
+                        ;;
+            --lid=* ) # logger id to be used
+                        lid=${1#*=}
+                    ;;
+            --mz_platform=* ) # set MZ_PLATFORM for CM
+                        MZ_PLATFORM=${1#*=}
+                        export MZ_PLATFORM
+                        ;;
+            --java_home=* ) # set JAVA_HOME for CM
+                        JAVA_HOME=${1#*=}
+                        export JAVA_HOME
+                        ;;
+            --mz_home=* ) # set mz_home for CM
+                        MZ_HOME=${1#*=}
+                        export MZ_HOME
+                        ;;
+        esac
+        shift
+    done
+    # TODO PRIO1: How to treat output like "platform is running without ..." 
+    # DONE PRIO1: set env for variables JAVA_HOME and MZ_HOME
+    # TODO PRIO1: Tested, but not committed API: status <component> does also work
+    # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
+    result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_local kill $component"); rc_call="$?"
+    echo "$result" | grep -qi "$component is running"; rc="$?"
+    if [[ "$rc" == "0" ]]; then
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (MZ_PLATFORM=$MZ_PLATFORM)"
+        # ocf_log INFO "got rc_call=$rc_call"
+    else
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (MZ_PLATFORM=$MZ_PLATFORM)"
+        # ocf_log INFO "got rc_call=$rc_call; result=$result"
+    fi
+    return "$rc"
+}
+export -f mz_component_kill
+
 function mz_call()
 {
     # TODO: 'timeout' default value (non zero), see OCF_RESKEY_CALL_TIMEOUT?
@@ -227,7 +281,6 @@ function mz_call()
         esac
         shift
     done
-
     case "$action" in
         status )
                 export mz_shell_local mz_shell_central component user
@@ -305,21 +358,22 @@ function mz_call()
                 ;;
         kill )
                 # needs to switch-user to <mzadmin>
-                # TODO PRIO1: How to treat that kill outputs "platform not running" (not killing)
-                #             This occures e.g. if the component is already down.
-                if su - "$user" -c "$mz_shell_central kill $component" | grep -qi "killing $component\.*done."; then
-                    ocf_log INFO "mz_call: killing $component successful"
-                    rc="$OCF_SUCCESS"
-                else
-                    # TODO PRIO2: maybe killing processes (with OS command kill) directly as last try? 
-                    ocf_log INFO "mz_call: killing $component NOT successful"
-                    rc="$OCF_ERR_GENERIC"
-                fi
-    if [[ "$rc" == "0" ]]; then
-        ocf_log INFO "got rc_call=$rc_call; result=$result"
-    else
-        ocf_log INFO "got rc_call=$rc_call"
-    fi
+                retry_sleep=10
+                max_retry=2
+                retry_count=0
+                while [[ "$retry_count" -lt "$max_retry" ]]; do
+                    (( retry_count++ ))
+                    # second try to stop mz component
+                    if mz_component_shutdown --user="$user" --component="$component" --mz_platform="${mz_platform}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" ; then
+                        ocf_log INFO "mz_call: $component is stopped"
+                        rc="$OCF_SUCCESS"
+                        break
+                    else
+                        ocf_log INFO "mz_call: $component is still NOT stopped"
+                        rc="$OCF_ERR_GENERIC"
+                    fi
+                    sleep "$retry_sleep"
+                done
                 ;;
         * )
                 # not implemented
