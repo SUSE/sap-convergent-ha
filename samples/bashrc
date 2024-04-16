@@ -1,5 +1,6 @@
 #
-# for JAVA_HOME, MZ_HOME and MZ_PLATFORM use the RA_-name-space variables with priority
+# for JAVA_HOME, MZ_HOME and MZ_PLATFORM use the RA_-name-space variables 
+#     with priority
 #
 JAVA_HOME="${RA_JAVA_HOME:-/usr/sap/CM/java}"
 MZ_HOME="${RA_MZ_HOME:-/usr/sap/CM}"
