@@ -29,13 +29,13 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.5"
+SAPCMControlZoneVersion="0.2.5.1"
 export myBASH="/usr/bin/bash"
 #
-# TODO: PRIO1: get MZ_PLATFORM, JAVA_HOME AND MZ_HOME from cluster config
-#export MZ_PLATFORM="http://localhost:9000"
-export MZ_JAVA_HOME="TBD"
-export MZ_HOME="TBD"
+# DONE: PRIO1: get RA_MZ_PLATFORM, RA_JAVA_HOME AND RA_MZ_HOME from cluster config
+#export RA_MZ_PLATFORM="http://localhost:9000"
+export RA_JAVA_HOME="TBD"
+export RA_MZ_HOME="TBD"
 
 export logger_pid="$$"
 #
@@ -61,8 +61,8 @@ OCF_SUCCESS="${OCF_SUCCESS:-0}"
 function mz_component_startup()
 {
     local user="$1" component="$2" rid="$3" lid="$4" rc=0
-    # TODO PRIO1: set env for variables JAVA_HOME and MZ_HOME
-    #             su - v3zadm -c "JAVA_HOME=/opt/cm/C11/sapmachine17 MZ_HOME=/opt/cm/C11/CM /opt/cm/C11/CMP01/CM/bin/mzsh startup platform"
+    # TODO PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
+    #             su - v3zadm -c "RA_JAVA_HOME=/opt/cm/C11/sapmachine17 RA_MZ_HOME=/opt/cm/C11/CM /opt/cm/C11/CMP01/CM/bin/mzsh startup platform"
     # TODO PRIO1: out for already started component is "platform is already running" - implemented, but ask if that is really part of the "API"
     # TODO PRIO1: Output like "FAILED\nStartable platform exited unexpectedly"
     # TODO PRIO1: Tested, but not committed API: RC==0 OK
@@ -80,22 +80,22 @@ function mz_component_startup()
             --lid=* ) # logger id to be used
                         lid=${1#*=}
                     ;;
-            --mz_platform=* ) # set MZ_PLATFORM for CM
-                        MZ_PLATFORM=${1#*=}
-                        export MZ_PLATFORM
+            --mz_platform=* ) # set RA_MZ_PLATFORM for CM
+                        RA_MZ_PLATFORM=${1#*=}
+                        export RA_MZ_PLATFORM
                         ;;
-            --java_home=* ) # set JAVA_HOME for CM
-                        JAVA_HOME=${1#*=}
-                        export JAVA_HOME
+            --java_home=* ) # set RA_JAVA_HOME for CM
+                        RA_JAVA_HOME=${1#*=}
+                        export RA_JAVA_HOME
                         ;;
             --mz_home=* ) # set mz_home for CM
-                        MZ_HOME=${1#*=}
-                        export MZ_HOME
+                        RA_MZ_HOME=${1#*=}
+                        export RA_MZ_HOME
                         ;;
         esac
         shift
     done
-    result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_central startup $component"); rc_call="$?"
+    result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_central startup $component"); rc_call="$?"
     # TODO: PRIO2: Try to get rid of "grep" (bash-regmap)
     echo "$result" | grep -qi -e "Starting $component\.*done." -e "$component is already running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
@@ -111,8 +111,8 @@ export -f mz_component_startup
 
 function mz_component_shutdown()
 {
-    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 JAVA_HOME="" MZ_HOME="" MZ_PLATFORM=""
-    # DONE PRIO1: set env for variables JAVA_HOME and MZ_HOME
+    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 RA_JAVA_HOME="" RA_MZ_HOME="" RA_MZ_PLATFORM=""
+    # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
     # TODO PRIO1: How to treat output like "Shutting down platform...\nShutdown failed. Trying kill instead.\ndone."
     # DONE PRIO1: How to treat output with unequal 3 dots (Shutting down platform....done.)
     # DONE PRIO1: Output fror already stopped component is "<component> is not running"
@@ -133,22 +133,22 @@ function mz_component_shutdown()
             --lid=* ) # logger id to be used
                         lid=${1#*=}
                     ;;
-            --mz_platform=* ) # set MZ_PLATFORM for CM
-                        MZ_PLATFORM=${1#*=}
-                        export MZ_PLATFORM
+            --mz_platform=* ) # set RA_MZ_PLATFORM for CM
+                        RA_MZ_PLATFORM=${1#*=}
+                        export RA_MZ_PLATFORM
                         ;;
-            --java_home=* ) # set JAVA_HOME for CM
-                        JAVA_HOME=${1#*=}
-                        export JAVA_HOME
+            --java_home=* ) # set RA_JAVA_HOME for CM
+                        RA_JAVA_HOME=${1#*=}
+                        export RA_JAVA_HOME
                         ;;
             --mz_home=* ) # set mz_home for CM
-                        MZ_HOME=${1#*=}
-                        export MZ_HOME
+                        RA_MZ_HOME=${1#*=}
+                        export RA_MZ_HOME
                         ;;
         esac
         shift
     done
-    result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
+    result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
     echo "$result" | grep -qi -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
@@ -166,7 +166,7 @@ function mz_component_status()
 {
     # TODO DONE: improved and more detailled parameter handling
     # TODO PRIO2: add --mz_shell in parameter handling
-    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 JAVA_HOME="" MZ_HOME="" MZ_PLATFORM=""
+    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 RA_JAVA_HOME="" RA_MZ_HOME="" RA_MZ_PLATFORM=""
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --user=* ) # user handling
@@ -181,32 +181,32 @@ function mz_component_status()
             --lid=* ) # logger id to be used
                         lid=${1#*=}
                     ;;
-            --mz_platform=* ) # set MZ_PLATFORM for CM
-                        MZ_PLATFORM=${1#*=}
-                        export MZ_PLATFORM
+            --mz_platform=* ) # set RA_MZ_PLATFORM for CM
+                        RA_MZ_PLATFORM=${1#*=}
+                        export RA_MZ_PLATFORM
                         ;;
-            --java_home=* ) # set JAVA_HOME for CM
-                        JAVA_HOME=${1#*=}
-                        export JAVA_HOME
+            --java_home=* ) # set RA_JAVA_HOME for CM
+                        RA_JAVA_HOME=${1#*=}
+                        export RA_JAVA_HOME
                         ;;
             --mz_home=* ) # set mz_home for CM
-                        MZ_HOME=${1#*=}
-                        export MZ_HOME
+                        RA_MZ_HOME=${1#*=}
+                        export RA_MZ_HOME
                         ;;
         esac
         shift
     done
     # TODO PRIO1: How to treat output like "platform is running without ..." 
-    # DONE PRIO1: set env for variables JAVA_HOME and MZ_HOME
+    # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
     # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
-    result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
+    result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     echo "$result" | grep -qi "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (MZ_PLATFORM=$MZ_PLATFORM)"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
         # ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (MZ_PLATFORM=$MZ_PLATFORM)"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
         # ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
@@ -221,7 +221,7 @@ function mz_component_kill()
     # TODO PRIO1: How to treat that kill outputs "platform not running" (not killing)
     #             This occures e.g. if the component is already down.
     # TODO PRIO2: maybe killing processes (with OS command kill) directly as last try? 
-    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 JAVA_HOME="" MZ_HOME="" MZ_PLATFORM=""
+    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 RA_JAVA_HOME="" RA_MZ_HOME="" RA_MZ_PLATFORM=""
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --user=* ) # user handling
@@ -236,32 +236,32 @@ function mz_component_kill()
             --lid=* ) # logger id to be used
                         lid=${1#*=}
                     ;;
-            --mz_platform=* ) # set MZ_PLATFORM for CM
-                        MZ_PLATFORM=${1#*=}
-                        export MZ_PLATFORM
+            --mz_platform=* ) # set RA_MZ_PLATFORM for CM
+                        RA_MZ_PLATFORM=${1#*=}
+                        export RA_MZ_PLATFORM
                         ;;
-            --java_home=* ) # set JAVA_HOME for CM
-                        JAVA_HOME=${1#*=}
-                        export JAVA_HOME
+            --java_home=* ) # set RA_JAVA_HOME for CM
+                        RA_JAVA_HOME=${1#*=}
+                        export RA_JAVA_HOME
                         ;;
             --mz_home=* ) # set mz_home for CM
-                        MZ_HOME=${1#*=}
-                        export MZ_HOME
+                        RA_MZ_HOME=${1#*=}
+                        export RA_MZ_HOME
                         ;;
         esac
         shift
     done
     # TODO PRIO1: How to treat output like "platform is running without ..." 
-    # DONE PRIO1: set env for variables JAVA_HOME and MZ_HOME
+    # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
     # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
-    result=$(su -w MZ_HOME,MZ_PLATFORM,JAVA_HOME - "$user" -c "$mz_shell_local kill $component"); rc_call="$?"
+    result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local kill $component"); rc_call="$?"
     echo "$result" | grep -qi "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (MZ_PLATFORM=$MZ_PLATFORM)"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
         # ocf_log INFO "got rc_call=$rc_call"
     else
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (MZ_PLATFORM=$MZ_PLATFORM)"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
         # ocf_log INFO "got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
