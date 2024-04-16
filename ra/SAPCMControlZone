@@ -45,7 +45,6 @@ raType="mz_"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
-# logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 ocf_log INFO "SAPCMControlZone $SAPCMControlZoneVersion ($*)"
 # init a minimum set of variables, if the variable are not initialized so far
 OCF_SUCCESS="${OCF_SUCCESS:-0}"
@@ -299,10 +298,8 @@ function mz_call()
                     rc="$OCF_ERR_GENERIC"
                 fi
     if [[ "$rc" == "0" ]]; then
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
         ocf_log INFO "got rc_call=$rc_call; result=$result"
     else
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
         ocf_log INFO "got rc_call=$rc_call"
     fi
                 ;;
@@ -319,10 +316,8 @@ function mz_call()
                     rc="$OCF_ERR_GENERIC"
                 fi
     if [[ "$rc" == "0" ]]; then
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call; result=$result"
         ocf_log INFO "got rc_call=$rc_call; result=$result"
     else
-        # logger --id="$logger_pid" -t "SAPCMControlZone" "got rc_call=$rc_call"
         ocf_log INFO "got rc_call=$rc_call"
     fi
                 ;;
@@ -604,7 +599,6 @@ if [ "$ACTION" = "status" ]; then
 fi
 
 # These operations don't require OCF parameters to be set
-# logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
 ocf_log INFO "SAPCMControlZone begin action $ACTION"
 case "$ACTION" in
     usage)          mz_usage
@@ -662,7 +656,6 @@ case "$ACTION" in
         ra_rc="$OCF_ERR_UNIMPLEMENTED"
         ;;
 esac
-# logger --id="$logger_pid" -t "SAPCMControlZone" "SAPCMControlZone action=$ACTION"
 ocf_log INFO "SAPCMControlZone end action $ACTION rc=${ra_rc}"
 exit "${ra_rc}"
 # set ts=4 sw=4 sts=4 et
