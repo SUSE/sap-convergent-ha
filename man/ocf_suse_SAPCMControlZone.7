@@ -273,6 +273,17 @@ See SUSE TID 7022678 for maximum RA tracing.
 Configuration and basic checks for ControlZone platform resources in Linux clusters.
 See also man page SAPCMControlZone_maintenance_examples(7).
 .PP
+\fB* Example .bashrc\fR
+.PP
+TODO
+MZ_HOME and JAVA_HOME are inherited from RA
+.PP
+.RS 2
+# MZ_HOME and JAVA_HOME are set by HA RA
+export MZ_HOME=${RA_MZ_HOME:-"/opt/cm9/C11"}
+export JAVA_HOME=${RA_JAVA_HOME:-"/opt/cm9/C11/sapmachine17"}
+.RE
+.PP
 \fB* Example configuration for resource group with ControlZone platform and IP address.\fR
 .PP
 A ControlZone platform resoure rsc_cz_C11 is configured, handled by OS user
@@ -502,6 +513,8 @@ the installation directory of a CM ControlZone service
 .TP
 $MZ_HOME/bin/mzsh
 the default mzshell, used as API for managing CM ControlZone services, contains paths and URL
+.bashrc
+the mzadmin´s .bashrc, defining JAVA_HOME and MZ_HOME
 .TP
 $MZ_HOME/log/
 path to logfiles of mzsh as well as platform and UI
@@ -530,6 +543,8 @@ names and environment settings are the same.
 * Only one ControlZone instance per Linux cluster.
 .PP
 * Linux shell of the mzadmin user is /bin/bash.
+.PP
+* The mzadmin´s .bashrc inherits MZ_HOME and JAVA_HOME from SAPCMControlZone RA.
 .PP
 * When called by the resource agent, mzsh connnects to CM ControlZone services at
 localhost. The service´s virtual hostname or virtual IP address managed by the
