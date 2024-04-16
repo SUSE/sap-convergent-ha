@@ -4,9 +4,10 @@
 action="$1"
 comp="$2"
 
+# the 'bla-bla' and 'blub-blub' services are just to simmulate unexpected output for 'status'
 services="platform ui bla-bla blub-blub"
 
-logger --id -t "mzsh" "mzsh version 0.2.4 - action=$action"
+logger --id -t "mzsh" "mzsh version 0.2.6 - action=$action"
 logger --id -t "mzsh" "MZSH=$0 JAVA_HOME=$JAVA_HOME MZ_HOME=$MZ_HOME MZ_PLATFORM=$MZ_PLATFORM"
 
 file_of_fail_base="/dev/shm/mzsh_fail_"
