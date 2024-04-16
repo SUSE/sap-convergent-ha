@@ -279,7 +279,9 @@ TODO
 MZ_HOME and JAVA_HOME are inherited from RA
 .PP
 .RS 2
-# MZ_HOME and JAVA_HOME are set by HA RA
+# MZ_PLATFORM, MZ_HOME, JAVA_HOME are set by HA RA
+.br
+export MZ_PLATFORM=${RA_MZ_PLATFORM:-"http://localhost:9000"}
 .br
 export MZ_HOME=${RA_MZ_HOME:-"/opt/cm9/c11"}
 .br
