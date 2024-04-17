@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.6.2"
+SAPCMControlZoneVersion="0.2.7.0"
 export myBASH="/usr/bin/bash"
 #
 # DONE: PRIO1: get RA_MZ_PLATFORM, RA_JAVA_HOME AND RA_MZ_HOME from cluster config
@@ -38,6 +38,9 @@ export RA_JAVA_HOME="TBD"
 export RA_MZ_HOME="TBD"
 
 export logger_pid="$$"
+#
+# all BASH-REGEX to be case insensitive (no case match)
+shopt -s nocasematch
 #
 # Initialization:
 #
@@ -96,8 +99,9 @@ function mz_component_startup()
     done
     result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_central startup $component"); rc_call="$?"
     # TODO: PRIO2: Try to get rid of "grep" (bash-regmap)
-    echo "$result" | grep -qi -e "Starting $component\.*done." -e "$component is already running"; rc="$?"
-    if [[ "$rc" == "0" ]]; then
+    regex_starting="Starting $component\.*done."
+    regex_already="$component is already running"
+    if [[ ( "$result" =~ $regex_starting ) || ( "$result" =~ $regex_already ) ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
     else
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call; result=$result"
@@ -146,11 +150,14 @@ function mz_component_shutdown()
         shift
     done
     result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
-    echo "$result" | grep -qi -e "Shutting down $component\.*done." -e "$component is not running"; rc="$?"
-    if [[ "$rc" == "0" ]]; then
+    regex_shuttingdown="Shutting down $component\.*done."
+    regex_notrunning="$component is not running"; rc="$?"
+    if [[ ( "$result" =~ $regex_shuttingdown ) || ( "$result" =~ $regex_notrunning ) ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
+        rc=0
     else
         logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh ($mz_shell_central) got rc_call=$rc_call; result=$result"
+        rc=1
     fi
     return "$rc"
 }
@@ -196,11 +203,19 @@ function mz_component_status()
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
     # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
     result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
-    echo "$result" | grep -qi "$component is running"; rc="$?"
-    if [[ "$rc" == "0" ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
+    regex_isrunning="$component is running"
+    regex_isnotrunning="$component is not running"
+    if [[ ( "$result" =~ $regex_isrunning ) ]]; then
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component running; got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
+        rc=0
     else
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
+        if [[ ( "$result" =~ $regex_isnotrunning ) ]]; then
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component not running; got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
+            rc=1
+        else
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component status unclear; got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
+            rc=2
+        fi
     fi
     return "$rc"
 }
@@ -250,8 +265,8 @@ function mz_component_kill()
     # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
     result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local kill $component"); rc_call="$?"
     # TODO: which regular expression to be cheched?
-    echo "$result" | grep -qi "$component is running"; rc="$?"
-    if [[ "$rc" == "0" ]]; then
+    regex_tbd="TBD"
+    if [[ "$result" =~ $regex_tbd ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
     else
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
@@ -384,9 +399,10 @@ function mz_init()
     mz_home_str="${OCF_RESKEY_MZHOME:-/opt/cm/C11/CM}"
     java_home_str="${OCF_RESKEY_JAVAHOME:-/opt/cm/C11/CM}"
     mz_platform="${OCF_RESKEY_MZPLATFORM:-http://localhost:9000}"
+    regex_multivalue="^([^:]*):(.*)$"
     ## mz_shell
     # cut string into a first part and an optional second part. parts are separated by colon (':')
-    if [[ "$mz_path_str" =~ ^([^:]*):(.*)$ ]]; then
+    if [[ "$mz_path_str" =~ $regex_multivalue ]]; then
         # found first:second
         mz_shell_local="${BASH_REMATCH[1]}"
         mz_shell_central="${BASH_REMATCH[2]}"
@@ -396,7 +412,7 @@ function mz_init()
     fi
     ## mz_home
     # cut string into a first part and an optional second part. parts are separated by colon (':')
-    if [[ "$mz_home_str" =~ ^([^:]*):(.*)$ ]]; then
+    if [[ "$mz_home_str" =~ $regex_multivalue ]]; then
         # found first:second
         mz_home_local="${BASH_REMATCH[1]}"
         mz_home_central="${BASH_REMATCH[2]}"
@@ -407,7 +423,7 @@ function mz_init()
     # DONE PRIO1: also handle arraxs for java_home
     ## java_home
     # cut string into a first part and an optional second part. parts are separated by colon (':')
-    if [[ "$java_home_str" =~ ^([^:]*):(.*)$ ]]; then
+    if [[ "$java_home_str" =~ $regex_multivalue ]]; then
         # found first:second
         java_home_local="${BASH_REMATCH[1]}"
         java_home_central="${BASH_REMATCH[2]}"
@@ -556,8 +572,9 @@ function mz_check_params()
         fi
     fi
 ###
+    regex_platformorui="^(platform|ui)$"
     if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
-        if [[ "$OCF_RESKEY_SERVICE" =~ ^(platform|ui)$ ]]; then
+        if [[ "$OCF_RESKEY_SERVICE" =~ $regex_platformorui ]]; then
             ocf_log INFO "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui']"
         else
             ocf_log INFO "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
