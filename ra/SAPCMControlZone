@@ -97,7 +97,8 @@ function mz_component_startup()
         esac
         shift
     done
-    result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_central startup $component"); rc_call="$?"
+    # using option "-f" for startup following mail "Convergent Mediation SUSE HA Status 2024-04-15" from software vendor
+    result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_central startup -f $component"); rc_call="$?"
     # DONE: PRIO2: Try to get rid of "grep" (bash-regmap)
     regex_starting="Starting $component\.*done."
     regex_already="$component is already running"
@@ -163,12 +164,11 @@ function mz_component_shutdown()
 }
 export -f mz_component_shutdown
 
-# shellcheck disable=SC2317
 function mz_component_status()
 {
     # TODO DONE: improved and more detailled parameter handling
     # TODO PRIO2: add --mz_shell in parameter handling
-    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 RA_JAVA_HOME="" RA_MZ_HOME="" RA_MZ_PLATFORM=""
+    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 RA_JAVA_HOME="" RA_MZ_HOME="" RA_MZ_PLATFORM="" timeout=60
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --user=* ) # user handling
@@ -177,6 +177,9 @@ function mz_component_status()
             --component=* ) # component name
                         component=${1#*=}
                             ;;
+            --timeout=* ) # timeout
+                        timeout=${1#*=}
+                        ;;
             --rid=* ) # resource id to log
                         rid=${1#*=}
                         ;;
@@ -202,7 +205,7 @@ function mz_component_status()
     # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
     # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
-    result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
+    result=$(timeout "$timeout" su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     regex_isrunning="$component is running"
     regex_isnotrunning="$component is not running"
     if [[ ( "$result" =~ $regex_isrunning ) ]]; then
@@ -278,7 +281,7 @@ export -f mz_component_kill
 function mz_call()
 {
     # TODO: 'timeout' default value (non zero), see OCF_RESKEY_CALL_TIMEOUT?
-    local rc="$OCF_ERR_GENERIC" timeout=3000, user="$mz_user", action="status", component="platform" call_rc=0
+    local rc="$OCF_ERR_GENERIC" timeout=60, user="$mz_user", action="status", component="platform" call_rc=0
     while [ $# -gt 0 ]; do
         case "$1" in
             --user=* )  user=${1#*=} ;;
@@ -300,7 +303,7 @@ function mz_call()
                     (( retry_count++ ))
                     # TODO PRIO1: improved and more detailled parameter handling
                     # TODO PRIO1: add also mz_shell and java_home
-                    timeout "$timeout" "$myBASH" -c "mz_component_status --user=$user --component=$component --mz_platform=${mz_platform} --mz_home=${mz_home_local} --java_home=${java_home_local} --rid=${OCF_RESOURCE_INSTANCE} --lid=${logger_pid}"; call_rc="$?"
+                    mz_component_status --user="$user" --component="$component" --mz_platform="${mz_platform}" --mz_home="${mz_home_local}" --java_home="${java_home_local}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" --timeout="$timeout"; call_rc="$?"
                     case "$call_rc" in
                         0 ) ocf_log INFO "mz_call: $component is running"
                             rc="$OCF_SUCCESS"
