@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.7.0"
+SAPCMControlZoneVersion="0.2.9"
 export myBASH="/usr/bin/bash"
 #
 # DONE: PRIO1: get RA_MZ_PLATFORM, RA_JAVA_HOME AND RA_MZ_HOME from cluster config
@@ -104,8 +104,10 @@ function mz_component_startup()
     regex_already="$component is already running"
     if [[ ( "$result" =~ $regex_starting ) || ( "$result" =~ $regex_already ) ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
+        rc=0
     else
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call; result=$result"
+        rc=1
     fi
     return "$rc"
 }
