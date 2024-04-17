@@ -383,11 +383,11 @@ ControlZone application itself. Client-side write caching has to be disabled.
 .PP
 A Filesystem resource is configured for a bind-mount of the real NFS share.
 This resource is grouped with the ControlZone platform and IP address. In case
-of filesystem failures, the whole group gets restarted.
+of filesystem failures, the node gets fenced.
 No mount or umount on the real NFS share is done.
 Example for the real NFS share is /mnt/platform/check/, example for the
 bind-mount is /mnt/check/. Both mount points have to be created before the
-cluster resource is activated. 
+cluster resource is activated.
 See also man page SAPCMControlZone_basic_cluster(7), ocf_heartbeat_Filesystem(7)
 and nfs(5).
 .PP
@@ -398,7 +398,7 @@ primitive rsc_fs_C11 ocf:heartbeat:Filesystem \\
 .br
  fstype=nfs4 options=bind,rw,noac,sync,defaults \\
 .br
- op monitor interval=120 timeout=120 on-fail=restart \\
+ op monitor interval=60 timeout=120 on-fail=fail \\
 .br
  op_params OCF_CHECK_LEVEL=20 \\
 .br
