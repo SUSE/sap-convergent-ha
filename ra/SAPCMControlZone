@@ -61,10 +61,9 @@ OCF_SUCCESS="${OCF_SUCCESS:-0}"
 function mz_component_startup()
 {
     local user="$1" component="$2" rid="$3" lid="$4" rc=0
-    # TODO PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
-    #             su - v3zadm -c "RA_JAVA_HOME=/opt/cm/C11/sapmachine17 RA_MZ_HOME=/opt/cm/C11/CM /opt/cm/C11/CMP01/CM/bin/mzsh startup platform"
-    # TODO PRIO1: out for already started component is "platform is already running" - implemented, but ask if that is really part of the "API"
-    # TODO PRIO1: Output like "FAILED\nStartable platform exited unexpectedly"
+    # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
+    # DONE PRIO1: output for already started component is "platform is already running" - implemented, checked with project
+    # DONE PRIO1: Output like "FAILED\nStartable platform exited unexpectedly"; interpreted as ERROR
     # TODO PRIO1: Tested, but not committed API: RC==0 OK
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -250,6 +249,7 @@ function mz_component_kill()
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
     # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
     result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local kill $component"); rc_call="$?"
+    # TODO: which regular expression to be cheched?
     echo "$result" | grep -qi "$component is running"; rc="$?"
     if [[ "$rc" == "0" ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
@@ -335,19 +335,6 @@ function mz_call()
                     sleep "$retry_sleep"
                 done
                 ;;
-        restart )
-                # needs to switch-user to <mzadmin>
-                if su - "$user" -c "$mz_shell_central restart $component" | grep -q "Starting $component\.*done."; then
-                    rc="$OCF_SUCCESS"
-                else
-                    rc="$OCF_ERR_GENERIC"
-                fi
-    if [[ "$rc" == "0" ]]; then
-        ocf_log INFO "got rc_call=$rc_call; result=$result"
-    else
-        ocf_log INFO "got rc_call=$rc_call"
-    fi
-                ;;
         kill )
                 # needs to switch-user to <mzadmin>
                 retry_sleep=10
@@ -356,7 +343,7 @@ function mz_call()
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
                     # second try to stop mz component
-                    if mz_component_shutdown --user="$user" --component="$component" --mz_platform="${mz_platform}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" ; then
+                    if mz_component_kill --user="$user" --component="$component" --mz_platform="${mz_platform}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" ; then
                         ocf_log INFO "mz_call: $component is stopped"
                         rc="$OCF_SUCCESS"
                         break
