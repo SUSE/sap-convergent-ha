@@ -1,8 +1,26 @@
 #!/usr/bin/bash
 #set -x
 
-action="$1"
-comp="$2"
+# startup [ -e <property=value> ] [ -f ] [ -q ] <server process>
+# shutdown [ -q ] [ -f ] <running server process> ...
+# status [ -q ] [ -verbose ] <server process> ...
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        startup | shutdown | status ) action="$1" ;;
+        -f ) # just be able to ingnore it 
+                true
+                ;;
+        -q ) # just be able to ingnore it
+                true
+                ;;
+        -verbose ) # just be able to ingnore it
+                true
+                ;;
+        * ) comp="$1" ;;
+    esac
+    shift
+done
 
 lid="$$"
 
