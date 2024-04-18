@@ -36,8 +36,6 @@ This calls are used:
 - mzsh status \fISERVICE\fP
 .br
 - mzsh shutdown \fISERVICE\fP
-.\" .br
-.\" TODO needed? - mzsh kill \fISERVICE\fP
 .RE
 .PP
 Currently supported services are "platform" and "ui".
@@ -61,7 +59,6 @@ RA offers three ways for managing ControlZone services:
 - calling mzsh always from cluster node´s local filesystem
 .br
 - calling mzsh startup/shutdown centrally, but mzsh status locally
-.\" TODO kill better local?
 .RE
 .PP
 Another option would be to install the ControlZone software into a cluster
@@ -127,7 +124,7 @@ Optional. Unique, [ platform | ui ]. Default value: "platform".
 .RS 4
 Path to mzsh. Could be one or two full paths. If one path is given, that path is
 used for all actions. In case two paths are given, the first one is used for monitor
-actions, the second one is used for start/stop/kill actions. If two paths are given,
+actions, the second one is used for start/stop actions. If two paths are given,
 the first needs to be on local disk, the second needs to be on the central NFS share
 with the original CM ControlZone installation. Two paths are separated by a colon (:).
 The mzsh contains settings that need to be consistent with MZ_HOME and JAVA_HOME.
@@ -142,7 +139,7 @@ Optional. Unique, string. Default value: "/usr/bin/mzsh".
 Path to CM ControlZone installation dirctory, owned by the mz-user.
 Could be one or two full paths. If one path is given, that path is used for all 
 actions. In case two paths are given, the first one is used for monitor actions,
-the second one is used for start/stop/kill actions. If two paths are given, the
+the second one is used for start/stop actions. If two paths are given, the
 first needs to be on local disk, the second needs to be on the central NFS share
 with the original CM ControlZone installation. Two paths are separated by a
 colon (:).
@@ -156,7 +153,7 @@ Optional. Unique, string. Default value: "/opt/cm/".
 Path to Java virtual machine used for CM ControlZone.
 Could be one or two full paths. If one path is given, that path is used for all
 actions. In case two paths are given, the first one is used for monitor actions,
-the second one is used for start/stop/kill actions. If two paths are given, the
+the second one is used for start/stop actions. If two paths are given, the
 first needs to be on local disk, the second needs to be on the central NFS share
 with the original CM ControlZone installation. Two paths are separated by a
 colon (:).
@@ -598,8 +595,8 @@ parallel, it will stop both and restart one.
 .PP
 * Interface for the RA to the ControlZone services is the command mzsh. Ideally,
 the mzsh should be accessed on the cluster nodes´ local filesystems.
-The mzsh is called with the arguments startup, shutdown, status and kill. Its
-output is parsed by the RA. Thus the command and its output needs to be stable.
+The mzsh is called with the arguments startup, shutdown and status. Its output
+is parsed by the RA. Thus the command and its output needs to be stable.
 .PP
 * The mzsh is called on the active node with a defined interval for regular
 resource monitor operations. It also is called on the active or passive node in
