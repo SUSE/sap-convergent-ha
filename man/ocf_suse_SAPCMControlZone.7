@@ -385,6 +385,31 @@ Note: Instead of defining order and colocation, the resource rsc_ui_C11 might be
 just added to the resource group grp_cz_C11. This may impact the platform in some
 situations.
 .PP
+\fB* Optional loadbalancer resource for specific environments.\fR
+.PP
+In some environments a loadbalancer is used for managing access to the virtual IP
+addres. Thus a respective resource agent might be needed. The resource might be
+grouped with the IPaddr2 resoure, and starts just after the IPaddr2.
+In the example at hand azure-lb is the loadbalancer RA, 62011 is the used port.
+.PP
+.RS 2
+primitive rsc_lb_C11 azure-lb \\
+.br
+ params port=62001 \\
+.br
+ op monitor timeout=20 interval=10 \\
+.br
+ op_params depth=0 \\
+.br
+ op start timeout=20 \\
+.br
+ op stop timeout=20
+.PP
+group grp_cz_C11 \\
+.br
+ rsc_ip_C11 rsc_lb_C11 rsc_cz_C11
+.RE
+.PP
 \fB* Optional Filesystem resource for monitoring NFS shares.\fR
 .PP
 A shared filesystem migth be statically mounted by OS on both cluster nodes.
@@ -415,9 +440,7 @@ primitive rsc_fs_C11 ocf:heartbeat:Filesystem \\
  op start timeout=120 \\
 .br
  op stop timeout=120
-.RE
 .PP
-.RS 2
 group grp_cz_C11 \\
 .br
  rsc_fs_C11 rsc_ip_C11 rsc_cz_C11
