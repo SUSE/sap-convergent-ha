@@ -36,8 +36,8 @@ This calls are used:
 - mzsh status \fISERVICE\fP
 .br
 - mzsh shutdown \fISERVICE\fP
-.br
-- mzsh kill \fISERVICE\fP
+.\" .br
+.\" TODO needed? - mzsh kill \fISERVICE\fP
 .RE
 .PP
 Currently supported services are "platform" and "ui".
@@ -210,7 +210,7 @@ This resource agent supports the following actions (operations):
 \fBstart\fR
 .RS 4
 Starts the ControlZone platform resource.
-.br
+If the start call fails, the RA tries twice.
 Timeout might be adapted to match expected application timing.
 Suggested minimum timeout: 120\&.
 .RE
@@ -218,15 +218,22 @@ Suggested minimum timeout: 120\&.
 \fBstop\fR
 .RS 4
 Stops the ControlZone platform resource.
+If the stop call fails, the RA tries twice.
 Timeout might be adapted to match expected application timing.
+The RA stop timeout related to mzsh TODO, which defaults to 180 seconds.
+For maximum patience, the RA stop timeout would be TODO
 Suggested minimum timeout: 120\&.
 .RE
 .PP
 \fBmonitor\fR
 .RS 4
 Regularly checks the ControlZone platform resource status.
+If the status call fails, the RA tries twice.
 Timeout might be adapted to be greater than expected infrastructure timeouts.
-Suggested minimum timeout: 120, suggested interval: 120,
+The RA stop timeout also relates to the ControlZome components property
+pico.rcp.timeout, which defaults to 60 seconds.
+For maximum patience with the component, the RA stop timeout would be 140
+(60+10+60+10). Suggested minimum timeout: 120, suggested interval: 120,
 suggested action on-fail=restart\&.
 .RE
 .PP
@@ -264,7 +271,10 @@ be logged if CALL_TIMEOUT has been exceeded. Also log entries are written, which
 can be scanned by using a pattern like "SAPCMControlZone.*RA.*rc=[1-7,9]" for
 errors. Regular operations might be found with "SAPHanaControlZone.*RA.*rc=0".
 See SUSE TID 7022678 for maximum RA tracing.
-.RE
+.PP
+The RA also logs mzsh return codes. For that codes, please look for the respective
+functions at
+https://infozone.atlassian.net/wiki/spaces/MD91/pages/23375910/Always+Available
 .PP
 .\"
 .SH EXAMPLES
@@ -398,7 +408,7 @@ primitive rsc_fs_C11 ocf:heartbeat:Filesystem \\
 .br
  fstype=nfs4 options=bind,rw,noac,sync,defaults \\
 .br
- op monitor interval=60 timeout=120 on-fail=fail \\
+ op monitor interval=60 timeout=120 on-fail=fence \\
 .br
  op_params OCF_CHECK_LEVEL=20 \\
 .br
