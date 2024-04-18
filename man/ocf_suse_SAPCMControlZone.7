@@ -164,9 +164,10 @@ Optional. Unique, string. Default value: "/usr/lib64/jvm/jre-17-openjdk".
 .PP
 \fBMZPLATFORM\fP
 .RS 4
+.\" TODO Could be one or two URLs. ...
 URL used by mzsh for connecting to CM ControlZone services.
 Should usually not be changed. The service´s virtual hostname or virtual IP
-address managed by the cluster must never be used here.
+address managed by the cluster must never be used for RA monitor actions.
 .br
 Optional. Unique, string. Default value: "http://localhost:9000".
 .RE
@@ -582,9 +583,9 @@ names and environment settings are the same.
 .PP
 * The mzadmin´s .bashrc inherits MZ_HOME and JAVA_HOME from SAPCMControlZone RA.
 .PP
-* When called by the resource agent, mzsh connnects to CM ControlZone services at
-localhost. The service´s virtual hostname or virtual IP address managed by the
-cluster must never be used when called by RA. 
+* When called by the resource agent, mzsh connnects to CM ControlZone services
+via network. The service´s virtual hostname or virtual IP address managed by the
+cluster must never be used when called by RA monitor actions.
 .PP
 * Technical users and groups are defined locally in the Linux system. If users
 are resolved by remote service, local caching is neccessary. Substitute user
