@@ -220,7 +220,8 @@ Suggested minimum timeout: 120\&.
 Stops the ControlZone platform resource.
 If the stop call fails, the RA tries twice.
 Timeout might be adapted to match expected application timing.
-The RA stop timeout relates to mzsh TODO, which defaults to 180 seconds.
+The RA stop timeout relates to the ControlZone components property
+term.default.startup.timeout, which defaults to 180 seconds.
 For maximum patience, the RA stop timeout would be TODO
 Suggested minimum timeout: 120\&.
 .RE
@@ -230,7 +231,7 @@ Suggested minimum timeout: 120\&.
 Regularly checks the ControlZone platform resource status.
 If the status call fails, the RA tries twice.
 Timeout might be adapted to be greater than expected infrastructure timeouts.
-The RA monitor timeout also relates to the ControlZome components property
+The RA monitor timeout also relates to the ControlZone components property
 pico.rcp.timeout, which defaults to 60 seconds.
 For maximum patience with the component, the RA stop timeout would be 140
 (60+10+60+10). Suggested minimum timeout: 120, suggested interval: 120,
