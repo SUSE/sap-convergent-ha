@@ -5,6 +5,8 @@
 # shutdown [ -q ] [ -f ] <running server process> ...
 # status [ -q ] [ -verbose ] <server process> ...
 
+rc=99
+
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
         startup | shutdown | status ) action="$1" ;;
@@ -54,12 +56,19 @@ case "$action" in
                 echo "blala is not running"
                 echo "blubblub is not running"
                 sleep 60
+                rc=2
             else
                 for srv in $services; do
                     if [ -e "${file_of_status}${srv}" ]; then
                         cat "${file_of_status}${srv}"
+                        if grep -q "$comp is running"  "${file_of_status}${srv}"; then
+                            rc=0
+                        else
+                            rc=2
+                        fi
                     else
                         echo "$srv is not running"
+                        rc=2
                     fi
                 done
             fi
@@ -74,9 +83,11 @@ case "$action" in
                 sleep 10
                 echo "done."
                 echo "$comp is running" > "${file_of_status}${comp}"
+                rc=0
             else
                 printf "Starting %s..." "$comp"
                 sleep 30
+                rc=1
             fi
             ;;
     shutdown )
@@ -93,9 +104,11 @@ case "$action" in
                 sleep 5
                 echo "done."
                 echo "$comp is not running" > "${file_of_status}${comp}"
+                rc=0
             else
                 printf "Shutting down %s..." "$comp"
                 sleep 30
+                rc=1
             fi
             ;;
 esac
@@ -103,5 +116,5 @@ esac
 # TODO: simulation of 'kill'
 
 
-# meaningless  rc
-exit 99
+# meaningfull  rc
+exit "$rc"
