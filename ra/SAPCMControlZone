@@ -45,7 +45,18 @@ shopt -s nocasematch
 # Initialization:
 #
 raType="mz_"
+#
+# fallback, if OCF variables are not set (before sourcing the ocf-shellfuncts)
+OCF_ROOT="${OCF_ROOT:-/usr/lib/ocf}"
 OCF_FUNCTIONS_DIR="${OCF_FUNCTIONS_DIR:-${OCF_ROOT}/lib/heartbeat}"
+OCF_SUCCESS=0
+OCF_ERR_GENERIC=1
+OCF_ERR_ARGS=2
+OCF_ERR_UNIMPLEMENTED=3
+OCF_ERR_PERM=4
+OCF_ERR_INSTALLED=5
+OCF_ERR_CONFIGURED=6
+OCF_NOT_RUNNING=7
 # shellcheck source=/dev/null
 source "${OCF_FUNCTIONS_DIR}/ocf-shellfuncs"
 ocf_log INFO "Version $SAPCMControlZoneVersion ($*)"
