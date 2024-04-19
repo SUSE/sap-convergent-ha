@@ -26,8 +26,7 @@ done
 
 lid="$$"
 
-# the 'bla-bla' and 'blub-blub' services are just to simmulate unexpected output for 'status'
-services="platform ui bla-bla blub-blub"
+services="platform ui"
 
 logger --id "$lid" -t "mzsh" "mzsh version 0.2.6 - action=$action"
 logger --id "$lid" -t "mzsh" "MZSH=$0 JAVA_HOME=$JAVA_HOME MZ_HOME=$MZ_HOME MZ_PLATFORM=$MZ_PLATFORM"
@@ -51,26 +50,38 @@ case "$action" in
             # TODO: rc-handling (still to be confirmed)
             # TODO: also take component as optional parameter (still to be confirmed)
             # TODO: simulate already running: '<component> already running' (format still to be confirmed)
-            logger --id "$lid" -t "mzsh" "mzsh process action=$action"
+            logger --id "$lid" -t "mzsh" "mzsh process action=$action comp=$comp"
             if [[ "$is_fail" == "yes" ]]; then
-                echo "blala is not running"
-                echo "blubblub is not running"
                 sleep 60
                 rc=2
             else
-                for srv in $services; do
-                    if [ -e "${file_of_status}${srv}" ]; then
-                        cat "${file_of_status}${srv}"
-                        if grep -q "$comp is running"  "${file_of_status}${srv}"; then
-                            rc=0
+                if [[ -n "$comp" ]]; then
+                        if [ -e "${file_of_status}${comp}" ]; then
+                            cat "${file_of_status}${comp}"
+                            if grep -q "$comp is running"  "${file_of_status}${comp}"; then
+                                rc=0
+                            else
+                                rc=2
+                            fi
                         else
+                            echo "$comp is not running"
                             rc=2
                         fi
-                    else
-                        echo "$srv is not running"
-                        rc=2
-                    fi
-                done
+                else
+                    for srv in $services; do
+                        if [ -e "${file_of_status}${srv}" ]; then
+                            cat "${file_of_status}${srv}"
+                            if grep -q "$comp is running"  "${file_of_status}${srv}"; then
+                                rc=0
+                            else
+                                rc=2
+                            fi
+                        else
+                            echo "$srv is not running"
+                            rc=2
+                        fi
+                    done
+                fi
             fi
             ;;
     startup )
