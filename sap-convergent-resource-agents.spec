@@ -16,7 +16,7 @@
 #
 
 Name:           sap-convergent-resource-agents
-Version:        0.2.2
+Version:        0.3.0
 Release:        0
 Group:          Productivity/Clustering/HA
 Summary:        Resource agents to control the convergent mediation control zone

@@ -1,12 +1,36 @@
 #!/usr/bin/bash
 #set -x
 
-action="$1"
-comp="$2"
+# startup [ -e <property=value> ] [ -f ] [ -q ] <server process>
+# shutdown [ -q ] [ -f ] <running server process> ...
+# status [ -q ] [ -verbose ] <server process> ...
 
-services="platform ui bla-bla blub-blub"
+rc=99
 
-logger --id -t "mzsh" "mzsh version 0.0.3 - action=$action"
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        startup | shutdown | status ) action="$1" ;;
+        -f ) # just be able to ingnore it 
+                true
+                ;;
+        -q ) # just be able to ingnore it
+                true
+                ;;
+        -verbose ) # just be able to ingnore it
+                true
+                ;;
+        * ) comp="$1" ;;
+    esac
+    shift
+done
+
+lid="$$"
+
+services="platform ui"
+
+logger --id "$lid" -t "mzsh" "mzsh version 0.2.6 - action=$action"
+logger --id "$lid" -t "mzsh" "MZSH=$0 JAVA_HOME=$JAVA_HOME MZ_HOME=$MZ_HOME MZ_PLATFORM=$MZ_PLATFORM"
+logger --id "$lid" -t "mzsh" "MZSH=$0 RA_JAVA_HOME=$JAVA_HOME RA_MZ_HOME=$MZ_HOME RA_MZ_PLATFORM=$MZ_PLATFORM"
 
 file_of_fail_base="/dev/shm/mzsh_fail_"
 file_of_status="/dev/shm/mzsh_status_"
@@ -22,38 +46,59 @@ fi
 
 case "$action" in
     status )  
-            # TODO: also simulate anwer like '<component> is running without'
+            # TODO: also simulate answer like '<component> is running without'
             # TODO: rc-handling (still to be confirmed)
             # TODO: also take component as optional parameter (still to be confirmed)
-            # TODO: simuate already running: '<component> already running' (format still to be confirmed)
-            logger --id -t "mzsh" "mzsh process action=$action"
+            # TODO: simulate already running: '<component> already running' (format still to be confirmed)
+            logger --id "$lid" -t "mzsh" "mzsh process action=$action comp=$comp"
             if [[ "$is_fail" == "yes" ]]; then
-                echo "blala is not running"
-                echo "blubblub is not running"
                 sleep 60
+                rc=2
             else
-                for srv in $services; do
-                    if [ -e "${file_of_status}${srv}" ]; then
-                        cat "${file_of_status}${srv}"
-                    else
-                        echo "$srv is not running"
-                    fi
-                done
+                if [[ -n "$comp" ]]; then
+                        if [ -e "${file_of_status}${comp}" ]; then
+                            cat "${file_of_status}${comp}"
+                            if grep -q "$comp is running"  "${file_of_status}${comp}"; then
+                                rc=0
+                            else
+                                rc=2
+                            fi
+                        else
+                            echo "$comp is not running"
+                            rc=2
+                        fi
+                else
+                    for srv in $services; do
+                        if [ -e "${file_of_status}${srv}" ]; then
+                            cat "${file_of_status}${srv}"
+                            if grep -q "$comp is running"  "${file_of_status}${srv}"; then
+                                rc=0
+                            else
+                                rc=2
+                            fi
+                        else
+                            echo "$srv is not running"
+                            rc=2
+                        fi
+                    done
+                fi
             fi
             ;;
     startup )
             # TODO: number of dots in 'starting %s...' can vary
             # TODO: simulate FAILURES (format of different output strings still to be confirmed)
             # TODO: rc-handling (still to be confirmed)
-            logger --id -t "mzsh" "mzsh process action=$action component=$comp"
+            logger --id "$lid" -t "mzsh" "mzsh process action=$action component=$comp"
             if [[ "$is_fail" == "no" ]]; then
-                printf "starting %s..." "$comp"
+                printf "Starting %s..." "$comp"
                 sleep 10
                 echo "done."
                 echo "$comp is running" > "${file_of_status}${comp}"
+                rc=0
             else
-                printf "starting %s..." "$comp"
+                printf "Starting %s..." "$comp"
                 sleep 30
+                rc=1
             fi
             ;;
     shutdown )
@@ -64,15 +109,17 @@ case "$action" in
             #       Escalated to call kill
             #       done.
             # TODO: rc-handling (still to be confirmed)
-            logger --id -t "mzsh" "mzsh process action=$action component=$comp"
+            logger --id "$lid" -t "mzsh" "mzsh process action=$action component=$comp"
             if [[ "$is_fail" == "no" ]]; then
                 printf "Shutting down %s..." "$comp"
                 sleep 5
                 echo "done."
                 echo "$comp is not running" > "${file_of_status}${comp}"
+                rc=0
             else
                 printf "Shutting down %s..." "$comp"
                 sleep 30
+                rc=1
             fi
             ;;
 esac
@@ -80,5 +127,5 @@ esac
 # TODO: simulation of 'kill'
 
 
-# meaningless  rc
-exit 99
+# meaningfull  rc
+exit "$rc"
