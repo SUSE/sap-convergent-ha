@@ -359,6 +359,20 @@ function mz_call()
                     fi
                     sleep "$retry_sleep"
                 done
+                if [[ "$rc" == "$OCF_ERR_GENERIC" ]]; then
+                    # compoent is still not stopped, try to escalate with pkill
+                    pkill_pattern="${java_home_central}/bin/java.*OnOutOfMemoryError=oom ${component}"
+                    ocf_log INFO "$component still not stopped, killing component process"
+                    pkill -9 -f "${pkill_pattern}"
+                    sleep 2
+                    if pgrep -f "${pkill_pattern}"; then
+                        ocf_log INFO "$component still not stopped, setting stop failure"
+                        rc="$OCF_ERR_GENERIC"
+                    else
+                        ocf_log INFO "$component killed succesfully, setting stop success"
+                        rc="$OCF_SUCCESS"
+                    fi
+                fi
                 ;;
         * )
                 # not implemented
@@ -488,7 +502,7 @@ function mz_meta_data()
 </parameters>
 <actions>
     <action name="start"   timeout="120" />
-    <action name="stop"    timeout="120" />
+    <action name="stop"    timeout="150" />
     <action name="monitor" timeout="120" interval="120" />
     <action name="meta-data" timeout="5" />
     <action name="methods" timeout="5" />
