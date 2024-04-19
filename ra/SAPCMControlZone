@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.3.0"
+SAPCMControlZoneVersion="0.3.1"
 export myBASH="/usr/bin/bash"
 #
 # DONE: PRIO1: get RA_MZ_PLATFORM, RA_JAVA_HOME AND RA_MZ_HOME from cluster config
@@ -271,59 +271,6 @@ function mz_component_status()
 }
 export -f mz_component_status
 
-# shellcheck disable=SC2317
-function mz_component_kill()
-{
-    # TODO DONE: improved and more detailled parameter handling
-    # TODO PRIO2: add --mz_shell in parameter handling
-    # TODO PRIO1: How to treat that kill outputs "platform not running" (not killing)
-    #             This occures e.g. if the component is already down.
-    # TODO PRIO2: maybe killing processes (with OS command kill) directly as last try?
-    local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 RA_JAVA_HOME="" RA_MZ_HOME="" RA_MZ_PLATFORM=""
-    while [[ "$#" -gt 0 ]]; do
-        case "$1" in
-            --user=* ) # user handling
-                        user=${1#*=}
-                       ;;
-            --component=* ) # component name
-                        component=${1#*=}
-                            ;;
-            --rid=* ) # resource id to log
-                        rid=${1#*=}
-                        ;;
-            --lid=* ) # logger id to be used
-                        lid=${1#*=}
-                    ;;
-            --mz_platform=* ) # set RA_MZ_PLATFORM for CM
-                        RA_MZ_PLATFORM=${1#*=}
-                        export RA_MZ_PLATFORM
-                        ;;
-            --java_home=* ) # set RA_JAVA_HOME for CM
-                        RA_JAVA_HOME=${1#*=}
-                        export RA_JAVA_HOME
-                        ;;
-            --mz_home=* ) # set mz_home for CM
-                        RA_MZ_HOME=${1#*=}
-                        export RA_MZ_HOME
-                        ;;
-        esac
-        shift
-    done
-    # TODO PRIO1: How to treat output like "platform is running without ..."
-    # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
-    # TODO PRIO1: Tested, but not committed API: status <component> does also work
-    # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
-    result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local kill $component"); rc_call="$?"
-    # TODO: which regular expression to be cheched?
-    regex_tbd="TBD"
-    if [[ "$result" =~ $regex_tbd ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
-    else
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
-    fi
-    return "$rc"
-}
-export -f mz_component_kill
 
 function mz_call()
 {
@@ -391,25 +338,6 @@ function mz_call()
                     (( retry_count++ ))
                     # second try to stop mz component
                     if mz_component_shutdown --user="$user" --component="$component" --mz_platform="${mz_platform}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" ; then
-                        ocf_log INFO "mz_call: $component is stopped"
-                        rc="$OCF_SUCCESS"
-                        break
-                    else
-                        ocf_log INFO "mz_call: $component is still NOT stopped"
-                        rc="$OCF_ERR_GENERIC"
-                    fi
-                    sleep "$retry_sleep"
-                done
-                ;;
-        kill )
-                # needs to switch-user to <mzadmin>
-                retry_sleep=10
-                max_retry=2
-                retry_count=0
-                while [[ "$retry_count" -lt "$max_retry" ]]; do
-                    (( retry_count++ ))
-                    # second try to stop mz component
-                    if mz_component_kill --user="$user" --component="$component" --mz_platform="${mz_platform}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" ; then
                         ocf_log INFO "mz_call: $component is stopped"
                         rc="$OCF_SUCCESS"
                         break
