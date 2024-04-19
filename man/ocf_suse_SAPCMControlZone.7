@@ -144,7 +144,6 @@ first needs to be on local disk, the second needs to be on the central NFS share
 with the original CM ControlZone installation. Two paths are separated by a
 colon (:).
 .br
-.\" TODO default /opt/cm9/ ?
 Optional. Unique, string. Default value: "/opt/cm/".
 .RE
 .PP
@@ -158,7 +157,6 @@ first needs to be on local disk, the second needs to be on the central NFS share
 with the original CM ControlZone installation. Two paths are separated by a
 colon (:).
 .br
-.\" TODO default /opt/cm9/sapmachine17 or OS $JAVA_HOME ?
 Optional. Unique, string. Default value: "/usr/lib64/jvm/jre-17-openjdk".
 .RE
 .PP
@@ -220,10 +218,9 @@ Suggested minimum timeout: 120\&.
 Stops the ControlZone platform resource.
 If the mzsh shutdown call fails, the RA tries twice.
 Timeout might be adapted to match expected application timing.
-.\" TODO The RA stop timeout relates to the ControlZone component property
-.\" TODO, which defaults to 180 seconds.
+.\" TODO RA stop timeout relates to the ControlZone component property?
 .\" For maximum patience, the RA stop timeout would be TODO
-Suggested minimum timeout: 120\&, default/required action on-fail=fence\&.
+Suggested minimum timeout: 150\&, default/required action on-fail=fence\&.
 .RE
 .PP
 \fBmonitor\fR
