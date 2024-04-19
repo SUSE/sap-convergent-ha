@@ -206,20 +206,28 @@ function mz_component_status()
     # TODO PRIO1: How to treat output like "platform is running without ..."
     # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
-    # TODO PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
+    # DONE PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
+    #             have been committed in a meeting that we could use the RCs
     result=$(timeout "$timeout" su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     regex_isrunning="$component is running"
     regex_isnotrunning="$component is not running"
+    case "$rc_call" in
+        0 ) # success
+            rc=0
+            ;;
+        1 ) # degraded
+            rc=1
+            ;;
+        2 ) # down
+            rc=1
+    esac
     if [[ ( "$result" =~ $regex_isrunning ) ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component running; got rc_call=$rc_call (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
-        rc=0
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component running; got rc_call=$rc_call"
     else
         if [[ ( "$result" =~ $regex_isnotrunning ) ]]; then
-            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component not running; got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
-            rc=1
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component not running; got rc_call=$rc_call; result=$result"
         else
-            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component status unclear; got rc_call=$rc_call; result=$result (RA_MZ_PLATFORM=$RA_MZ_PLATFORM)"
-            rc=2
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component status unclear; got rc_call=$rc_call; result=$result"
         fi
     fi
     return "$rc"
