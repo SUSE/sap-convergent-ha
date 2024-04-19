@@ -388,15 +388,16 @@ situations.
 .PP
 \fB* Optional loadbalancer resource for specific environments.\fR
 .PP
-In some environments a loadbalancer is used for managing access to the virtual IP
-addres. Thus a respective resource agent might be needed. The resource might be
-grouped with the IPaddr2 resoure, and starts just after the IPaddr2.
-In the example at hand azure-lb is the loadbalancer RA, 62011 is the used port.
+In some environments a loadbalancer is used for managing access to the virtual
+IP addres. Thus a respective resource agent might be needed. The resource might
+be grouped with the IPaddr2 resoure, and starts just after the IPaddr2.
+In the example at hand azure-lb is the loadbalancer RA, 47011 is the used port.
+See also man page ocf_heartbeat_azure-lb(7).
 .PP
 .RS 2
 primitive rsc_lb_C11 azure-lb \\
 .br
- params port=62001 \\
+ params port=47011 \\
 .br
  op monitor timeout=20 interval=10 \\
 .br
