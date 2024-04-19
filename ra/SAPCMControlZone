@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.2.9"
+SAPCMControlZoneVersion="0.2.10"
 export myBASH="/usr/bin/bash"
 #
 # DONE: PRIO1: get RA_MZ_PLATFORM, RA_JAVA_HOME AND RA_MZ_HOME from cluster config
@@ -310,7 +310,8 @@ function mz_call()
                         0 ) ocf_log INFO "mz_call: $component is running"
                             rc="$OCF_SUCCESS"
                             break;;
-                        1 ) ocf_log INFO "mz_call: $component is NOT running"
+                        1 ) # also for clear "not running" we need to repeat the status call (have seen short outages with ui in the test cluster)
+                            ocf_log INFO "mz_call: $component is NOT running"
                             rc="$OCF_NOT_RUNNING";;
                         * ) ocf_log INFO "mz_call: $component is unclear (call_rc=$call_rc)"
                             rc="$OCF_ERR_GENERIC";;
