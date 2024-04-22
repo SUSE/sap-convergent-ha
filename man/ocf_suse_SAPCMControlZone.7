@@ -528,10 +528,18 @@ The JAVA_HOME is /usr/sap/c11/sapmachine17 .
 .PP
 \fB* Example for checking if a CM platform can be reached.\fR
 .PP
-The MZ_PLATFORM is http://192.168.1.234:9000 .
+The MZ_PLATFORM is http://192.168.1.234:9000 , the mz-user is mzadmin.
 .PP
 .RS 2
 # telnet http://192.168.1.234:9000
+.br
+# su - mzadmin
+.br
+~> echo $MZ_PLATFORM 
+.br
+~> which mzsh
+.br
+~> mzsh status platform
 .RE
 .PP
 \fB* Example for testing the SAPCMControlZone RA.\fR
