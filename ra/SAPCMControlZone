@@ -134,6 +134,7 @@ function mz_component_startup()
             rc=1
             ;;
     esac
+    logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh start $component with env: RA_MZ_HOME=$RA_MZ_HOME, RA_MZ_PLATFORM=$RA_MZ_PLATFORM, RA_JAVA_HOME=$RA_JAVA_HOME"
     if [[ ( "$rc" == "0" ) && (( "$result" =~ $regex_starting ) || ( "$result" =~ $regex_already )) ]]; then
         logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh start $component ($mz_shell_central) OK - got rc_call=$rc_call"
     else
