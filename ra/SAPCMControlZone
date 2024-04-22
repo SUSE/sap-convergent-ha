@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.3.1"
+SAPCMControlZoneVersion="0.3.2"
 export myBASH="/usr/bin/bash"
 #
 # DONE: PRIO1: get RA_MZ_PLATFORM, RA_JAVA_HOME AND RA_MZ_HOME from cluster config
