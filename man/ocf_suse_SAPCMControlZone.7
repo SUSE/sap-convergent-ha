@@ -122,16 +122,16 @@ Optional. Unique, [ platform | ui ]. Default value: "platform".
 .PP
 \fBMZSHELL\fP
 .RS 4
-Path to mzsh. Could be one or two full paths. If one path is given, that path is
-used for all actions. In case two paths are given, the first one is used for monitor
-actions, the second one is used for start/stop actions. If two paths are given,
-the first needs to be on local disk, the second needs to be on the central NFS share
-with the original CM ControlZone installation. Two paths are separated by a colon (:).
-The mzsh contains settings that need to be consistent with MZ_HOME and JAVA_HOME.
-Please refer to Convergent Mediation product documentation for details.
+Path to mzsh. Could be one or two full paths. If one path is given, that path
+is used for all actions. In case two paths are given, the first one is used for
+monitor actions, the second one is used for start/stop actions. If two paths are
+given, the first needs to be on local disk, the second needs to be on the central
+NFS share with the original CM ControlZone installation. Two paths are separated
+by a semi-colon (;). The mzsh contains settings that need to be consistent with
+MZ_PLATFORM, MZ_HOME, JAVA_HOME. Please refer to Convergent Mediation product
+documentation for details.
 .br
-.\" TODO default /opt/cm9/bin/mzsh ?
-Optional. Unique, string. Default value: "/usr/bin/mzsh".
+Optional. Unique, string. Default value: "/opt/cm/bin/mzsh".
 .RE
 .PP
 \fBMZHOME\fP
@@ -142,7 +142,7 @@ actions. In case two paths are given, the first one is used for monitor actions,
 the second one is used for start/stop actions. If two paths are given, the
 first needs to be on local disk, the second needs to be on the central NFS share
 with the original CM ControlZone installation. Two paths are separated by a
-colon (:).
+semi-colon (;).
 .br
 Optional. Unique, string. Default value: "/opt/cm/".
 .RE
@@ -155,16 +155,18 @@ actions. In case two paths are given, the first one is used for monitor actions,
 the second one is used for start/stop actions. If two paths are given, the
 first needs to be on local disk, the second needs to be on the central NFS share
 with the original CM ControlZone installation. Two paths are separated by a
-colon (:).
+semi-colon (;).
 .br
 Optional. Unique, string. Default value: "/usr/lib64/jvm/jre-17-openjdk".
 .RE
 .PP
 \fBMZPLATFORM\fP
 .RS 4
-.\" TODO Could be one or two URLs. ...
 URL used by mzsh for connecting to CM ControlZone services.
-Should usually not be changed. The service´s virtual hostname or virtual IP
+Could be one or two URLs. If one URL is given, that URL is used for all actions.
+In case two URLs are given, the first one is used for monitor and stop actions,
+the second one is used for start actions. Two URLs are separated by a semi-colon
+(;). Should usually not be changed. The service´s virtual hostname or virtual IP
 address managed by the cluster must never be used for RA monitor actions.
 .br
 Optional. Unique, string. Default value: "http://localhost:9000".
@@ -283,8 +285,10 @@ See also man page SAPCMControlZone_maintenance_examples(7).
 .PP
 \fB* Example .bashrc\fR
 .PP
-TODO
-MZ_HOME and JAVA_HOME are inherited from RA
+Environment variables MZ_PLATFORM, MZ_HOME and JAVA_HOME are needed for handling the
+ControlZone components. The values are inherited from the RA. The related resource
+parameters are MZPLATFORM, MZHOME and JAVAHOME. See also man page bash(1).
+The lines in .bashrc might look like:
 .PP
 .RS 2
 # MZ_PLATFORM, MZ_HOME, JAVA_HOME are set by HA RA
@@ -317,11 +321,13 @@ primitive rsc_cz_C11 ocf:suse:SAPCMControlZone \\
 .br
  params USER=c11adm \\
 .br
- MZSHELL=/opt/cm9/c11/bin/mzsh:/usr/sap/c11/bin/mzsh \\
+ MZSHELL=/opt/cm9/c11/bin/mzsh;/usr/sap/c11/bin/mzsh \\
 .br
- MZHOME=/opt/cm9/c11/:/usr/sap/c11/ \\
+ MZHOME=/opt/cm9/c11/;/usr/sap/c11/ \\
 .br
- JAVAHOME=/opt/cm9/c11/sapmachine17:/usr/sap/c11/sapmachine17 \\
+ MZPLATFORM=http://192.168.1.234:9000;http://localhost:9000 \\
+.br
+ JAVAHOME=/opt/cm9/c11/sapmachine17;/usr/sap/c11/sapmachine17 \\
 .br 
  op monitor interval=120 timeout=120 on-fail=restart \\
 .br
@@ -513,6 +519,21 @@ OCF_RESKEY_CRM_meta_interval=0 \\
 /usr/lib/ocf/resource.d/suse/SAPCMControlZone validate\-all
 .RE
 .PP
+\fB* Example for identifying running CM platform processes.\fR
+.PP
+The JAVA_HOME is /usr/sap/c11/sapmachine17 .
+.RS 2
+# pgrep -f "/usr/sap/c11/sapmachine17/bin/java.*OnOutOfMemoryError=oom platform" -l
+.RE
+.PP
+\fB* Example for checking if a CM platform can be reached.\fR
+.PP
+The MZ_PLATFORM is http://192.168.1.234:9000 .
+.PP
+.RS 2
+# telnet http://192.168.1.234:9000
+.RE
+.PP
 \fB* Example for testing the SAPCMControlZone RA.\fR
 .PP
 The ControlZone platform will be terminated, while controlled by the
@@ -640,7 +661,7 @@ Please report feedback and suggestions to feedback@suse.com.
 \fBSAPCMControlZone_maintenance_examples\fP(7),
 \fBocf_heartbeat_IPaddr2\fP(7) , \fBocf_heartbeat_Filesystem\fP(7) ,
 \fBcrm\fP(8) , \fBcrm_mon\fP(8) ,
-\fBnfs\fP(5) , \fBmount\fP(8) ,
+\fBnfs\fP(5) , \fBmount\fP(8) ,  \fBbash\fP(1) ,
 .br
 http://clusterlabs.org/doc/en-US/Pacemaker/1.1/html/Pacemaker_Explained/s-ocf-return-codes.html ,
 .br
