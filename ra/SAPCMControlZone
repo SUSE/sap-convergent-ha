@@ -134,10 +134,14 @@ function mz_component_startup()
             rc=1
             ;;
     esac
-    if [[ ( "$result" =~ $regex_starting ) || ( "$result" =~ $regex_already ) ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
+    if [[ ( "$rc" == "0" ) && (( "$result" =~ $regex_starting ) || ( "$result" =~ $regex_already )) ]]; then
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh start $component ($mz_shell_central) OK - got rc_call=$rc_call"
     else
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call; result=$result"
+        if [[ "$rc" == "0" ]]; then
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh start $component ($mz_shell_central) OK - got rc_call=$rc_call; result=$result"
+        else
+            logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh start $component ($mz_shell_central) FAILED - got rc_call=$rc_call; result=$result"
+        fi
     fi
     return "$rc"
 }
@@ -202,10 +206,14 @@ function mz_component_shutdown()
             rc=1
             ;;
     esac
-    if [[ ( "$result" =~ $regex_shuttingdown ) || ( "$result" =~ $regex_notrunning ) ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_central) got rc_call=$rc_call"
+    if [[ ( "$rc" == "0" ) && (( "$result" =~ $regex_shuttingdown ) || ( "$result" =~ $regex_notrunning )) ]]; then
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh stop $component ($mz_shell_central) OK - got rc_call=$rc_call"
     else
-        logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh ($mz_shell_central) got rc_call=$rc_call; result=$result"
+        if [[ "$rc" == "0" ]]; then
+            logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh stop $component ($mz_shell_central) OK - got rc_call=$rc_call; result=$result"
+        else
+            logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh stop $component ($mz_shell_central) FAILED - got rc_call=$rc_call; result=$result"
+        fi
     fi
     return "$rc"
 }
@@ -270,14 +278,30 @@ function mz_component_status()
             rc=1
             ;;
     esac
-    if [[ ( "$result" =~ $regex_isrunning ) ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component running; got rc_call=$rc_call"
-    else
-        if [[ ( "$result" =~ $regex_isnotrunning ) ]]; then
-            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component not running; got rc_call=$rc_call; result=$result"
+    if [[  "$rc" == "0" ]]; then
+        if [[ "$result" =~ $regex_isrunning ]]; then
+            #
+            # rc UP, message OK
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh status $component ($mz_shell_local) OK - component running; got rc_call=$rc_call"
         else
-            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) component status unclear; got rc_call=$rc_call; result=$result"
+            #
+            # rc UP, message UNCLEAR
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh status $component ($mz_shell_local) OK - component running, but unexpected message; got rc_call=$rc_call; result=$result"
         fi
+    elif [[ ( "$rc" == "1" ) && ( "$rc_call" == "2" ) ]]; then
+        if [[ ( "$result" =~ $regex_isnotrunning ) ]]; then
+            #
+            # rc DOWN, message OK
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh ($mz_shell_local) OK - component not running; got rc_call=$rc_call;"
+        else
+            #
+            # rc DOWN, message unclear
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh status $component ($mz_shell_local) OK component not running, but unexpected message; got rc_call=$rc_call; result=$result"
+        fi
+    else
+        #
+        # rc FAIL
+        logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh status $component ($mz_shell_central) FAILED component status unclear - got rc_call=$rc_call; result=$result"
     fi
     return "$rc"
 }
