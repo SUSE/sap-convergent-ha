@@ -333,7 +333,7 @@ function mz_call()
                     (( retry_count++ ))
                     # TODO PRIO1: improved and more detailled parameter handling
                     # TODO PRIO1: add also mz_shell and java_home
-                    mz_component_status --user="$user" --component="$component" --mz_platform="${mz_platform}" --mz_home="${mz_home_local}" --java_home="${java_home_local}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" --timeout="$timeout"; call_rc="$?"
+                    mz_component_status --user="$user" --component="$component" --mz_platform="${mz_platform_local}" --mz_home="${mz_home_local}" --java_home="${java_home_local}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" --timeout="$timeout"; call_rc="$?"
                     case "$call_rc" in
                         0 ) ocf_log INFO "mz_call: $component is running"
                             rc="$OCF_SUCCESS"
@@ -354,7 +354,7 @@ function mz_call()
                 retry_count=0
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
-                    if mz_component_startup --user="$user" --component="$component" --mz_platform="${mz_platform}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}"; then
+                    if mz_component_startup --user="$user" --component="$component" --mz_platform="${mz_platform_central}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}"; then
                         ocf_log INFO "mz_call: $component is started"
                         rc="$OCF_SUCCESS"
                         break
@@ -373,7 +373,7 @@ function mz_call()
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
                     # second try to stop mz component
-                    if mz_component_shutdown --user="$user" --component="$component" --mz_platform="${mz_platform}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" ; then
+                    if mz_component_shutdown --user="$user" --component="$component" --mz_platform="${mz_platform_central}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" ; then
                         ocf_log INFO "mz_call: $component is stopped"
                         rc="$OCF_SUCCESS"
                         break
@@ -427,11 +427,11 @@ function mz_init()
     mz_path_str="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
     mz_home_str="${OCF_RESKEY_MZHOME:-/opt/cm/C11/CM}"
     java_home_str="${OCF_RESKEY_JAVAHOME:-/opt/cm/C11/CM}"
-    mz_platform="${OCF_RESKEY_MZPLATFORM:-http://localhost:9000}"
-    regex_seperator=":"
+    mz_platform_str="${OCF_RESKEY_MZPLATFORM:-http://localhost:9000}"
+    regex_seperator=";"
     regex_multivalue="^([^$regex_seperator]*)$regex_seperator(.*)$"
     ## mz_shell
-    # cut string into a first part and an optional second part. parts are separated by colon (':')
+    # cut string into a first part and an optional second part. parts are separated by $regex_seperator
     if [[ "$mz_path_str" =~ $regex_multivalue ]]; then
         # found first:second
         mz_shell_local="${BASH_REMATCH[1]}"
@@ -441,7 +441,7 @@ function mz_init()
         mz_shell_central="$mz_path_str"
     fi
     ## mz_home
-    # cut string into a first part and an optional second part. parts are separated by colon (':')
+    # cut string into a first part and an optional second part. parts are separated by $regex_seperator
     if [[ "$mz_home_str" =~ $regex_multivalue ]]; then
         # found first:second
         mz_home_local="${BASH_REMATCH[1]}"
@@ -452,7 +452,7 @@ function mz_init()
     fi
     # DONE PRIO1: also handle arraxs for java_home
     ## java_home
-    # cut string into a first part and an optional second part. parts are separated by colon (':')
+    # cut string into a first part and an optional second part. parts are separated by $regex_seperator
     if [[ "$java_home_str" =~ $regex_multivalue ]]; then
         # found first:second
         java_home_local="${BASH_REMATCH[1]}"
@@ -461,6 +461,17 @@ function mz_init()
         java_home_local="$java_home_str"
         java_home_central="$java_home_str"
     fi
+    ## mz_platform 
+    # cut string into a first part and an optional second part. parts are separated by $regex_seperator
+    if [[ "$mz_platform_str" =~ $regex_multivalue ]]; then
+        # found first:second
+        mz_platform_local="${BASH_REMATCH[1]}"
+        mz_platform_central="${BASH_REMATCH[2]}"
+    else
+        mz_platform_local="$mz_platform_str"
+        mz_platform_central="$mz_platform_str"
+    fi
+    
     # mz_search_list="/usr/bin:/usr/sap/[A-Z][A-Z0-9][A-Z0-9]/CMP[0-9][0-9]/CM/bin/"
     mz_component="${OCF_RESKEY_SERVICE:-platform}"
     # shellcheck disable=SC2034  # variable for future usage
