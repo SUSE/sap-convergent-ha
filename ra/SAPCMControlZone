@@ -428,7 +428,8 @@ function mz_init()
     mz_home_str="${OCF_RESKEY_MZHOME:-/opt/cm/C11/CM}"
     java_home_str="${OCF_RESKEY_JAVAHOME:-/opt/cm/C11/CM}"
     mz_platform="${OCF_RESKEY_MZPLATFORM:-http://localhost:9000}"
-    regex_multivalue="^([^:]*):(.*)$"
+    regex_seperator=":"
+    regex_multivalue="^([^$regex_seperator]*)$regex_seperator(.*)$"
     ## mz_shell
     # cut string into a first part and an optional second part. parts are separated by colon (':')
     if [[ "$mz_path_str" =~ $regex_multivalue ]]; then
