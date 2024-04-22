@@ -134,14 +134,14 @@ function mz_component_startup()
             rc=1
             ;;
     esac
-    logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh start $component with env: RA_MZ_HOME=$RA_MZ_HOME, RA_MZ_PLATFORM=$RA_MZ_PLATFORM, RA_JAVA_HOME=$RA_JAVA_HOME"
+    logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh startup $component with env: RA_MZ_HOME=$RA_MZ_HOME, RA_MZ_PLATFORM=$RA_MZ_PLATFORM, RA_JAVA_HOME=$RA_JAVA_HOME"
     if [[ ( "$rc" == "0" ) && (( "$result" =~ $regex_starting ) || ( "$result" =~ $regex_already )) ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh start $component ($mz_shell_central) OK - got rc_call=$rc_call"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh startup $component ($mz_shell_central) OK - got rc_call=$rc_call"
     else
         if [[ "$rc" == "0" ]]; then
-            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh start $component ($mz_shell_central) OK - got rc_call=$rc_call; result=$result"
+            logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh startup $component ($mz_shell_central) OK - got rc_call=$rc_call; result=$result"
         else
-            logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh start $component ($mz_shell_central) FAILED - got rc_call=$rc_call; result=$result"
+            logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh startup $component ($mz_shell_central) FAILED - got rc_call=$rc_call; result=$result"
         fi
     fi
     return "$rc"
@@ -187,6 +187,7 @@ function mz_component_shutdown()
         esac
         shift
     done
+    logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh shutdown $component with env: RA_MZ_HOME=$RA_MZ_HOME, RA_MZ_PLATFORM=$RA_MZ_PLATFORM, RA_JAVA_HOME=$RA_JAVA_HOME"
     result=$(su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_central shutdown $component"); rc_call="$?"
     regex_shuttingdown="Shutting down $component\.*done."
     regex_notrunning="$component is not running"; rc="$?"
@@ -208,12 +209,12 @@ function mz_component_shutdown()
             ;;
     esac
     if [[ ( "$rc" == "0" ) && (( "$result" =~ $regex_shuttingdown ) || ( "$result" =~ $regex_notrunning )) ]]; then
-        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh stop $component ($mz_shell_central) OK - got rc_call=$rc_call"
+        logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh shutdown $component ($mz_shell_central) OK - got rc_call=$rc_call"
     else
         if [[ "$rc" == "0" ]]; then
-            logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh stop $component ($mz_shell_central) OK - got rc_call=$rc_call; result=$result"
+            logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh shutdown $component ($mz_shell_central) OK - got rc_call=$rc_call; result=$result"
         else
-            logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh stop $component ($mz_shell_central) FAILED - got rc_call=$rc_call; result=$result"
+            logger -p err --id="$lid" -t "SAPCMControlZone($rid)" "ERROR: mzsh shutdown $component ($mz_shell_central) FAILED - got rc_call=$rc_call; result=$result"
         fi
     fi
     return "$rc"
@@ -262,6 +263,7 @@ function mz_component_status()
     # TODO PRIO1: Tested, but not committed API: status <component> does also work
     # DONE PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
     #             have been committed in a meeting that we could use the RCs
+    logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh status $component with env: RA_MZ_HOME=$RA_MZ_HOME, RA_MZ_PLATFORM=$RA_MZ_PLATFORM, RA_JAVA_HOME=$RA_JAVA_HOME"
     result=$(timeout "$timeout" su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
     regex_isrunning="$component is running"
     regex_isnotrunning="$component is not running"
