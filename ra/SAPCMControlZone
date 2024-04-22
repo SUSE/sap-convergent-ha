@@ -373,7 +373,7 @@ function mz_call()
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
                     # second try to stop mz component
-                    if mz_component_shutdown --user="$user" --component="$component" --mz_platform="${mz_platform_central}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" ; then
+                    if mz_component_shutdown --user="$user" --component="$component" --mz_platform="${mz_platform_local}" --mz_home="${mz_home_central}" --java_home="${java_home_central}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" ; then
                         ocf_log INFO "mz_call: $component is stopped"
                         rc="$OCF_SUCCESS"
                         break
