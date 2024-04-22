@@ -364,7 +364,7 @@ function mz_call()
                     pkill_pattern="${java_home_central}/bin/java.*OnOutOfMemoryError=oom ${component}"
                     ocf_log INFO "$component still not stopped, killing component process"
                     pkill -9 -f "${pkill_pattern}"
-                    sleep 2
+                    sleep 10
                     if pgrep -f "${pkill_pattern}"; then
                         ocf_log INFO "$component still not stopped, setting stop failure"
                         rc="$OCF_ERR_GENERIC"
