@@ -1,10 +1,10 @@
-.\" Version: 0.1
+.\" Version: 0.3
 .\"
 .TH ocf_suse_SAPCMControlZone 7 "15 Apr 2024" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
-SAPCMControlZone \- Manages Convergent Mediation ControlZone platform services for a single instance as HA resource.
+SAPCMControlZone \- Manages Convergent Mediation ControlZone services for a single instance as HA resource.
 .PP
 .\"
 .SH SYNOPSYS
@@ -20,13 +20,13 @@ SAPCMControlZone is a resource agent (RA) for managing the Convergent Mediation
 (CM) ControlZone platform and UI for a single instance as HA resources. 
 .PP
 The CM central ControlZone platform is responsible for providing services to
-other CM instances. Several platform containers may exist in a CM system, for high
-availability, but only one is active at a time.
+other CM instances. Several platform containers may exist in a CM system, for
+high availability, but only one is active at a time.
 .\" see https://infozone.atlassian.net/wiki/spaces/MD9/pages/4863840/Terminology
 The CM central ControlZone UI is used to query, edit, import, and export data.
 .\" see https://infozone.atlassian.net/wiki/spaces/MD83/pages/5966420/3.+Web+UI
 .PP
-The SAPCMControlZone RA manages platform services as active/passive resources.
+The SAPCMControlZone RA manages ControlZone services as active/passive resources.
 The RA relies on the mzsh command of ControlZone as interface.
 This calls are used:
 .PP
@@ -588,14 +588,14 @@ $MZ_HOME/tmp/
 temporary files and lock files of platform and UI
 .TP
 $JAVA_HOME
-the JAVA virtual machine, used by mzsh
+the Java virtual machine, used by mzsh
 .\" see https://infozone.atlassian.net/wiki/spaces/MD9/pages/4863840/Terminology
 .\" TODO logs?
 .PP
 .\"
 .SH REQUIREMENTS
 .\"
-* Convergent Mediation ControlZone version 9.0.0.0 or higher is installed and
+* Convergent Mediation ControlZone version 9.1 or higher is installed and
 configured on both cluster nodes. Either the software is installed once into a
 shared NFS filesystem and then binaries and configuration are copied into both
 cluster nodes´ local filesystems. Or the software is installed per node directly.
