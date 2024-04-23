@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.3.2"
+SAPCMControlZoneVersion="0.3.3"
 export myBASH="/usr/bin/bash"
 #
 # DONE: PRIO1: get RA_MZ_PLATFORM, RA_JAVA_HOME AND RA_MZ_HOME from cluster config
@@ -365,6 +365,23 @@ function mz_call()
                         ocf_log INFO "mz_call: $component is NOT started"
                         rc="$OCF_NOT_RUNNING"
                     fi
+                    sleep "$retry_sleep"
+                done
+                #
+                # now just wait till status could catch the compoent as started (rc keeps unttached by the following waiting-code
+                #
+                while [[ "$retry_count" -lt "$max_retry" ]]; do
+                    mz_component_status --user="$user" --component="$component" --mz_platform="${mz_platform_local}" --mz_home="${mz_home_local}" --java_home="${java_home_local}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" --timeout="$timeout"; call_rc="$?"
+                    case "$call_rc" in
+                        0 ) # dont longer wait for started component
+                            rc="$OCF_SUCCESS"
+                            break;;
+                        1 ) # also for clear "not running" we need to repeat the status call (have seen short outages with ui in the test cluster)
+                            ocf_log INFO "mz_call: $component is NOT running (still wait to be started)"
+                            ;;
+                        * ) ocf_log INFO "mz_call: $component is unclear (call_rc=$call_rc)"
+                            ;;
+                    esac
                     sleep "$retry_sleep"
                 done
                 ;;
@@ -743,6 +760,6 @@ case "$ACTION" in
         ra_rc="$OCF_ERR_UNIMPLEMENTED"
         ;;
 esac
-ocf_log INFO "end action $ACTION rc=${ra_rc}"
+ocf_log INFO "end action $ACTION rc=${ra_rc} (${SECONDS}s)"
 exit "${ra_rc}"
 # set ts=4 sw=4 sts=4 et
