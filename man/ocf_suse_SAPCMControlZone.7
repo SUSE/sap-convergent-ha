@@ -136,7 +136,7 @@ Optional. Unique, string. Default value: "/opt/cm/bin/mzsh".
 .PP
 \fBMZHOME\fP
 .RS 4
-Path to CM ControlZone installation dirctory, owned by the mz-user.
+Path to CM ControlZone installation dirctory, owned by the mzadmin user.
 Could be one or two full paths. If one path is given, that path is used for all 
 actions. In case two paths are given, the first one is used for monitor actions,
 the second one is used for start/stop actions. If two paths are given, the
@@ -281,13 +281,13 @@ https://infozone.atlassian.net/wiki/spaces/MD91/pages/23375910/Always+Available
 .SH EXAMPLES
 .\"
 Configuration and basic checks for ControlZone platform resources in Linux clusters.
-See also man page SAPCMControlZone_maintenance_examples(7).
+See also manual page SAPCMControlZone_maintenance_examples(7).
 .PP
 \fB* Example .bashrc\fR
 .PP
 Environment variables MZ_PLATFORM, MZ_HOME and JAVA_HOME are needed for handling the
 ControlZone components. The values are inherited from the RA. The related resource
-parameters are MZPLATFORM, MZHOME and JAVAHOME. See also man page bash(1).
+parameters are MZPLATFORM, MZHOME and JAVAHOME. See also manual page bash(1).
 The lines in .bashrc might look like:
 .PP
 .RS 2
@@ -396,7 +396,7 @@ In some environments a loadbalancer is used for managing access to the virtual
 IP addres. Thus a respective resource agent might be needed. The resource might
 be grouped with the IPaddr2 resoure, and starts just after the IPaddr2.
 In the example at hand azure-lb is the loadbalancer RA, 47011 is the used port.
-See also man page ocf_heartbeat_azure-lb(7).
+See also manual page ocf_heartbeat_azure-lb(7).
 .PP
 .RS 2
 primitive rsc_lb_C11 azure-lb \\
@@ -429,7 +429,7 @@ No mount or umount on the real NFS share is done.
 Example for the real NFS share is /mnt/platform/check/, example for the
 bind-mount is /mnt/check/. Both mount points have to be created before the
 cluster resource is activated.
-See also man page SAPCMControlZone_basic_cluster(7), ocf_heartbeat_Filesystem(7)
+See also manual page SAPCMControlZone_basic_cluster(7), ocf_heartbeat_Filesystem(7)
 and nfs(5).
 .PP
 .RS 2
@@ -528,7 +528,7 @@ The JAVA_HOME is /usr/sap/c11/sapmachine17 .
 .PP
 \fB* Example for checking if a CM platform can be reached.\fR
 .PP
-The MZ_PLATFORM is http://192.168.1.234:9000 , the mz-user is mzadmin.
+The MZ_PLATFORM is http://192.168.1.234:9000 , the user is mzadmin.
 .PP
 .RS 2
 # telnet http://192.168.1.234:9000
@@ -605,7 +605,8 @@ Convergent Mediation documentation for details.
 * CM ControlZone is configured identically on both cluster nodes. User, path
 names and environment settings are the same.
 .PP
-* Only one ControlZone instance per Linux cluster.
+* Only one ControlZone instance per Linux cluster. Thus one platform service and
+one UI service per cluster.
 .PP
 * Linux shell of the mzadmin user is /bin/bash.
 .PP
@@ -617,8 +618,8 @@ cluster must never be used when called by RA monitor actions.
 .PP
 * Technical users and groups are defined locally in the Linux system. If users
 are resolved by remote service, local caching is neccessary. Substitute user
-(su) to the mz-user needs to work reliable and without customized actions or
-messages.
+(su) to the mzadmin user needs to work reliable and without customized actions
+or messages.
 .PP
 * Name resolution for hostnames and virtual hostnames is crucial. Hostnames of
 cluster nodes and services are resolved locally in the Linux system.
@@ -636,19 +637,20 @@ needs.
 OS and Linux cluster. The infrastructure needs to allow these call-outs to
 return in time.
 .PP
-* The ControlZone application is not started/stopped by OS. Thus there is no
+* The ControlZone services are not started/stopped by OS. Thus there is no
 SystemV, systemd or cron job.
 .PP
-* As long as the ControlZone application is managed by the Linux cluster, the
-application is not started/stopped/moved from outside. Thus no manual actions
-are done. The Linux cluster does not prevent from administrative mistakes.
+* As long as a ControlZone service is managed by the Linux cluster, the service
+is not started/stopped/moved from outside. Thus no manual actions are done. The
+Linux cluster does not prevent from administrative mistakes.
 However, if the Linux cluster detects the application running at both sites in
 parallel, it will stop both and restart one.
 .PP
 * Interface for the RA to the ControlZone services is the command mzsh. Ideally,
 the mzsh should be accessed on the cluster nodes´ local filesystems.
-The mzsh is called with the arguments startup, shutdown and status. Its output
-is parsed by the RA. Thus the command and its output needs to be stable.
+The mzsh is called with the arguments startup, shutdown and status. Its return
+code and output is interpreted by the RA. Thus the command and its output needs
+to be stable.
 .PP
 * The mzsh is called on the active node with a defined interval for regular
 resource monitor operations. It also is called on the active or passive node in

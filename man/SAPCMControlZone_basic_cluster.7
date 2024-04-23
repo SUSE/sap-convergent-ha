@@ -18,19 +18,20 @@ might match specific needs.
 \fBUsers and groups\fR
 .PP
 Technical users and groups, such as "mzadmin" are defined locally in the Linux
-system. See man page passwd(5) and usermod(8). The mz-user needs certain
-environment variables set in .bashrc. See man page ocf_suse_SAPCMControlZone(7)
+system. See manual page passwd(5) and usermod(8). The mz-user needs certain
+environment variables set in .bashrc. See manual page ocf_suse_SAPCMControlZone(7)
 for details.
 .PP
 \fBHostnames\fR
 .PP
 Name resolution of the cluster nodes and the virtual IP address must be done
-locally on all cluster nodes. See man page hosts(5).
+locally on all cluster nodes. See manual page hosts(5).
 .PP
 \fBTime synchronization\fR
 .PP
 Strict time synchronization between the cluster nodes is mandatory, e.g. NTP.
-See man page chrony.conf(5). Further, the nodes should have configured the same
+See manual page chrony.conf(5). Further the nodes should have configured the
+same
 timezone.
 .PP
 \fBNFS mounted filesystem\fR
@@ -40,7 +41,7 @@ cluster nodes. This filesystem holds work directories, e.g. for batch
 processing. It must not be confused with the ControlZone application itself.
 The application is copied from NFS to both cluster nodes into local
 filesystems. Client-side write caching has to be disabled for the NFS shares
-containing customer data. See man page fstab(5) and example below.
+containing customer data. See manual page fstab(5) and example below.
 .PP
 \fB* CRM Basics\fR
 .PP
