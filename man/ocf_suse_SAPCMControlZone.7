@@ -136,13 +136,13 @@ Optional. Unique, string. Default value: "/opt/cm/bin/mzsh".
 .PP
 \fBMZHOME\fP
 .RS 4
-Path to CM ControlZone installation dirctory, owned by the mzadmin user.
+Path to CM ControlZone installation directory, owned by the mzadmin user.
 Could be one or two full paths. If one path is given, that path is used for all 
 actions. In case two paths are given, the first one is used for monitor actions,
 the second one is used for start/stop actions. If two paths are given, the
 first needs to be on local disk, the second needs to be on the central NFS share
-with the original CM ControlZone installation. Two paths are separated by a
-semi-colon (;).
+with the original CM ControlZone installation. See also JAVAHOME. Two paths are 
+separated by semi-colon (;).
 .br
 Optional. Unique, string. Default value: "/opt/cm/".
 .RE
@@ -154,8 +154,8 @@ Could be one or two full paths. If one path is given, that path is used for all
 actions. In case two paths are given, the first one is used for monitor actions,
 the second one is used for start/stop actions. If two paths are given, the
 first needs to be on local disk, the second needs to be on the central NFS share
-with the original CM ControlZone installation. Two paths are separated by a
-semi-colon (;).
+with the original CM ControlZone installation. See also MZHOME. Two paths are
+separated by semi-colon (;).
 .br
 Optional. Unique, string. Default value: "/usr/lib64/jvm/jre-17-openjdk".
 .RE
@@ -165,7 +165,7 @@ Optional. Unique, string. Default value: "/usr/lib64/jvm/jre-17-openjdk".
 URL used by mzsh for connecting to CM ControlZone services.
 Could be one or two URLs. If one URL is given, that URL is used for all actions.
 In case two URLs are given, the first one is used for monitor and stop actions,
-the second one is used for start actions. Two URLs are separated by a semi-colon
+the second one is used for start actions. Two URLs are separated by semi-colon
 (;). Should usually not be changed. The service´s virtual hostname or virtual IP
 address managed by the cluster must never be used for RA monitor actions.
 .br
@@ -207,7 +207,7 @@ This resource agent supports the following actions (operations):
 .PP
 \fBstart\fR
 .RS 4
-Starts the ControlZone platform resource.
+Starts the ControlZone service resource.
 If the mzsh startup call fails, the RA tries twice.
 Timeout might be adapted to match expected application timing.
 The RA start timeout relates to the ControlZone component property
@@ -217,7 +217,7 @@ Suggested minimum timeout: 120\&.
 .PP
 \fBstop\fR
 .RS 4
-Stops the ControlZone platform resource.
+Stops the ControlZone service resource.
 If the mzsh shutdown call fails, the RA tries twice.
 Timeout might be adapted to match expected application timing.
 .\" TODO RA stop timeout relates to the ControlZone component property?
@@ -228,7 +228,7 @@ Suggested minimum timeout: 300\&, default/required action on-fail=fence\&.
 .PP
 \fBmonitor\fR
 .RS 4
-Regularly checks the ControlZone platform resource status.
+Regularly checks the ControlZone service resource status.
 If the mzsh status call fails, the RA tries twice.
 Timeout might be adapted to be greater than expected infrastructure timeouts.
 The RA monitor timeout also relates to the ControlZone component property
