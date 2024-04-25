@@ -1,7 +1,7 @@
 
 How to load CIB configuration for SAP CM platform resources?
 
-Version 0.1 2024-01-08
+Version 0.2 2024-04-24
 
 
 
@@ -9,17 +9,19 @@ Version 0.1 2024-01-08
 
 1) install packages
 
-2) show cib
-2.1) show cib basic config
-2.2) show sbd config
-2.3) show already configure primitive resources and groups
+2) adapt mzadmin´s .bashrc
 
-3) update cib
-3.1) update cib basic config
-3.2) update cib sbd resource config
-3.3) update cib platform resource config
+3) show cib
+3.1) show cib basic config
+3.2) show sbd config
+3.3) show already configure primitive resources and groups
 
-4) check cib
+4) update cib
+4.1) update cib basic config
+4.2) update cib sbd resource config
+4.3) update cib platform resource config
+
+5) check cib
 
 
 
@@ -28,23 +30,33 @@ Version 0.1 2024-01-08
 
 # zypper in ClustertTools2
 # rpm -F ./sap-convergent-resource-agents
+# rpm -ql sap-convergent-resource-agents | grep man
 
 
 
-2) show cib
+2) adapt mzadmin´s .bashrc
 
-2.1) show cib basic config
+# su - mzadmin
+# cp .bashrc backup.bashrc
+# cat /usr/share/sap-convergent-resource-agents/samples/bashrc >>.bashrc 
+# cat .bashrc
+
+
+
+3) show cib
+
+3.1) show cib basic config
 
 # crm configure show cib-bootstrap-options
 # crm configure show rsc-options
 # crm configure show op-options
 
-2.2) show sbd config
+3.2) show sbd config
 
 # crm configure show | grep primitive.*stonith
 # crm configure show rsc_stonith_sbd
 
-2.3) show already configure primitive resources and groups 
+3.3) show already configure primitive resources and groups 
 
 # crm configure show | grep primitive
 # crm configure show rsc_ip_C11
@@ -55,20 +67,20 @@ Version 0.1 2024-01-08
 
 
 
-3) update cib
+4) update cib
 
-3.1) update cib basic config
+4.1) update cib basic config
 
 # crm configure load update 10_cib-bootstrap-options.txt
 # crm configure load update 20_op-options.txt
 # crm configure load update 30_rsc-options.txt
 
-3.2) update cib sbd resource config
+4.2) update cib sbd resource config
 
 # vi 40_rsc_stonith_sbd.txt
 # crm configure load update 40_rsc_stonith_sbd.txt
 
-3.3) update cib platform resource config
+4.3) update cib platform resource config
 
 # vi 60_rsc_cz_C11.txt
 # vi 70_rsc_ip_C11.txt
@@ -88,7 +100,7 @@ Version 0.1 2024-01-08
 
 
 
-4) check cib
+5) check cib
 
 # crm_mon -1r
 
