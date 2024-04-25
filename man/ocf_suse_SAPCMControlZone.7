@@ -49,7 +49,7 @@ HA cluster does not need to control that filesystems. See also manual page
 SAPCMControlZone_basic_cluster(7).
 .PP
 The ControlZone software and Java runtime environment can be installed into a
-central NFS share, or into the cluster node´s local filesystems, or both. Again,
+central NFS share, or into the cluster nodes´ local filesystems, or both. Again,
 the HA cluster does not need to control that filesystems. The SAPCMControlZone
 RA offers three ways for managing ControlZone services:
 .PP
@@ -300,20 +300,20 @@ export MZ_HOME=${RA_MZ_HOME:-"/opt/cm9/c11"}
 export JAVA_HOME=${RA_JAVA_HOME:-"/opt/cm9/c11/sapmachine17"}
 .RE
 .PP
-\fB* Example configuration for resource group with ControlZone platform and IP address.\fR
+\fB* Example of a simple resource group with ControlZone platform and IP address.\fR
 .PP
 A ControlZone platform resoure rsc_cz_C11 is configured, handled by OS user
 c11adm. The local /opt/cm9/c11/bin/mzsh is used for monitoring, but for other
 actions /usr/sap/c11/bin/mzsh is used.
-This resource is grouped with an IP address resource rsc_ip_C11 into
-group grp_cz_C11. The IP address starts first. The resource group might run on
-either node, but never in parallel.
+This resource is grouped with an IP address resource rsc_ip_C11 into group
+grp_cz_C11. The resource group might run on either node, but never in parallel.
 .PP
-In case of ControlZone platform failure (or monitor timeout), the resource
-group gets restarted until it gains success or migration-threshold is reached.
-If migration-threshold is exceeded, or if the node fails where the group is
-running, the group will be moved to the other node.
-A priority is configured for correct fencing in split-brain situations.
+In case of ControlZone platform failure (or monitor timeout), the resource gets
+restarted until it gains success or migration-threshold is reached. In case of
+IP address failure, the resource group gets restarted until it gains success or
+migration-threshold is reached. If migration-threshold is exceeded, or if the
+node fails where the group is running, the group will be moved to the other
+node. A priority is configured for correct fencing in split-brain situations.
 See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPaddr2(7).
 .PP
 .RS 2
@@ -325,15 +325,15 @@ primitive rsc_cz_C11 ocf:suse:SAPCMControlZone \\
 .br
  MZHOME=/opt/cm9/c11/;/usr/sap/c11/ \\
 .br
- MZPLATFORM=http://192.168.1.234:9000;http://localhost:9000 \\
+ MZPLATFORM=http://localhost:9000 \\
 .br
- JAVAHOME=/opt/cm9/c11/sapmachine17;/usr/sap/c11/sapmachine17 \\
+ JAVAHOME=/opt/cm9/c11/sapmachine17 \\
 .br 
- op monitor interval=120 timeout=120 on-fail=restart \\
+ op monitor interval=90 timeout=120 on-fail=restart \\
 .br
  op start timeout=120 \\
 .br
- op stop timeout=120 \\
+ op stop timeout=300 \\
 .br
  meta priority=100
 .RE
@@ -350,8 +350,11 @@ primitive rsc_ip_C11 ocf:heartbeat:IPaddr2 \\
 group grp_cz_C11 \\
 .br
  rsc_ip_C11 rsc_cz_C11
-.PP
 .RE
+.PP
+Note: To limit the impact of IP address failures on the ControlZone platform
+resource, the IP address resource can be place after the platform. Please check
+if this is possible with your CM ControlZone setup.
 .PP
 \fB* Example configuration for resource ControlZone UI.\fR
 .PP
@@ -366,7 +369,7 @@ In case of ControlZone UI failure (or monitor timeout), the resource gets
 restarted until it gains success or migration-threshold is reached. If
 migration-threshold is exceeded, or if the node fails where the resource is
 running, the resource will be moved to the other node. 
-The resource rsc_ui_C11 will start after resource group grp_cz_C11 and run on
+The resource rsc_ui_C11 will start after resource group grp_cz_C11 and runs on
 the same node.
 See also SAPCMControlZone_basic_cluster(7) and ocf_heartbeat_IPaddr2(7).
 .PP
@@ -375,7 +378,7 @@ primitive rsc_ui_C11 ocf:suse:SAPCMControlZone \\
 .br
  params USER=c11adm SERVICE=ui \\
 .br
- op monitor interval=120 timeout=120 on-fail=restart \\
+ op monitor interval=90 timeout=120 on-fail=restart \\
 .br
  op start timeout=120 \\
 .br
@@ -387,8 +390,7 @@ colocation col_with_cz 2000: rsc_ui_C11:Started grp_cz_C11:Started
 .RE
 .PP
 Note: Instead of defining order and colocation, the resource rsc_ui_C11 might be
-just added to the resource group grp_cz_C11. This may impact the platform in some
-situations.
+just added to the resource group grp_cz_C11.
 .PP
 \fB* Optional loadbalancer resource for specific environments.\fR
 .PP
@@ -451,6 +453,9 @@ group grp_cz_C11 \\
 .br
  rsc_fs_C11 rsc_ip_C11 rsc_cz_C11
 .RE
+.PP
+Note: If the cluster should try to recover locally before fencing the node,
+action on-fail=restart needs to be used instead of on-fail=fence.
 .PP
 \fB* Show configuration of ControlZone platform resource and resource group.\fR
 .PP
@@ -540,12 +545,14 @@ The MZ_PLATFORM is http://192.168.1.234:9000 , the user is mzadmin.
 ~> which mzsh
 .br
 ~> mzsh status platform
+.br
+~> exit
 .RE
 .PP
 \fB* Example for testing the SAPCMControlZone RA.\fR
 .PP
-The ControlZone platform will be terminated, while controlled by the
-Linux cluster. This could be done as very basic testing of SAPCMControlZone RA
+The ControlZone platform will be terminated, while controlled by the Linux
+cluster. This could be done as very basic testing of SAPCMControlZone RA
 integration. Terminating ControlZone platform processes is dangerous. This test
 should not be done on production systems. Example user is mzadmin.
 .br
