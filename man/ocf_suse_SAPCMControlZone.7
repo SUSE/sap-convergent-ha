@@ -457,6 +457,19 @@ group grp_cz_C11 \\
 Note: If the cluster should try to recover locally before fencing the node,
 action on-fail=restart needs to be used instead of on-fail=fence.
 .PP
+\fB* Alternate resource order.\fR
+.PP
+All resources are managed within one group. The order is: filesystem, platform, IP address, loadbalancer, UI. The idea is to minimise impact of IP address and
+UI on platform. On the other hand, filesystem failures should lead to immediate
+cluster actions.
+To make this work, MZ_PLATFORM needs to point to localhost for all actions.
+.PP
+.RS 2
+group grp_cz_C11 \\
+.br
+ rsc_fs_C11 rsc_cz_C11 rsc_ip_C11 rsc_nc_C11 rsc_ui_C11
+.RE
+.PP
 \fB* Show configuration of ControlZone platform resource and resource group.\fR
 .PP
 Resource is rsc_cz_C11, resource group is grp_C11.
