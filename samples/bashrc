@@ -2,6 +2,6 @@
 # for JAVA_HOME, MZ_HOME and MZ_PLATFORM use the RA_-name-space variables 
 #     with priority
 #
-export JAVA_HOME="${RA_JAVA_HOME:-/usr/sap/CM/java}"
-export MZ_HOME="${RA_MZ_HOME:-/usr/sap/CM}"
+export JAVA_HOME="${RA_JAVA_HOME:-/usr/sap/cm/sapmachine17}"
+export MZ_HOME="${RA_MZ_HOME:-/usr/sap/cm}"
 export MZ_PLATFORM="${RA_MZ_PLATFORM:-http://localhost:9000}"
