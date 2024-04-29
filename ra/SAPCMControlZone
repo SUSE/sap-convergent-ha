@@ -633,7 +633,7 @@ function mz_check_params()
         fi
     fi
 ###
-    regex_platformorui="^(platform|ui)$"
+    regex_platformorui="^(platform|ui|wd.*)$"
     if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
         if [[ "$OCF_RESKEY_SERVICE" =~ $regex_platformorui ]]; then
             ocf_log INFO "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui']"
