@@ -29,7 +29,7 @@
 #   OCF_RESKEY_VERBOSE_STATUS   - optional parameter, call mz with "verbose output" (default no)
 #
 #######################################################################
-SAPCMControlZoneVersion="0.3.4"
+SAPCMControlZoneVersion="0.3.5"
 export myBASH="/usr/bin/bash"
 #
 # DONE: PRIO1: get RA_MZ_PLATFORM, RA_JAVA_HOME AND RA_MZ_HOME from cluster config
@@ -76,10 +76,10 @@ OCF_SUCCESS="${OCF_SUCCESS:-0}"
 function mz_component_startup()
 {
     local user="$1" component="$2" rid="$3" lid="$4" rc=0
-    # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
-    # DONE PRIO1: output for already started component is "platform is already running" - implemented, checked with project
-    # DONE PRIO1: Output like "FAILED\nStartable platform exited unexpectedly"; interpreted as ERROR
-    # TODO PRIO1: Tested, but not committed API: RC==0 OK
+    # DONE: set env for variables RA_JAVA_HOME and RA_MZ_HOME
+    # DONE: output for already started component is "platform is already running" - implemented, checked with project
+    # DONE: Output like "FAILED\nStartable platform exited unexpectedly"; interpreted as ERROR
+    # DONE: Tested, but not committed API: RC==0 OK; committed by project
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --user=* ) # user handling
@@ -151,13 +151,13 @@ export -f mz_component_startup
 function mz_component_shutdown()
 {
     local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 RA_JAVA_HOME="" RA_MZ_HOME="" RA_MZ_PLATFORM=""
-    # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
-    # TODO PRIO1: How to treat output like "Shutting down platform...\nShutdown failed. Trying kill instead.\ndone."
-    # DONE PRIO1: How to treat output with unequal 3 dots (Shutting down platform....done.)
-    # DONE PRIO1: Output fror already stopped component is "<component> is not running"
-    # TODO PRIO1: Output like "Starting ui...FAILED"
-    # TODO PRIO1: Output like "platfoam: no such server process"
-    # TODO PRIO1: Tested, but not committed API: RC==0 OK
+    # DONE: set env for variables RA_JAVA_HOME and RA_MZ_HOME
+    # DONE: How to treat output like "Shutting down platform...\nShutdown failed. Trying kill instead.\ndone."
+    # DONE: How to treat output with unequal 3 dots (Shutting down platform....done.)
+    # DONE: Output fror already stopped component is "<component> is not running"
+    # DONE: Output like "Starting ui...FAILED"; solved by rc of the command
+    # DONE: Output like "platfoam: no such server process"; solved by rc of the command
+    # DONE: Tested, but not committed API: RC==0 OK; committed by project
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
             --user=* ) # user handling
@@ -223,8 +223,8 @@ export -f mz_component_shutdown
 
 function mz_component_status()
 {
-    # TODO DONE: improved and more detailled parameter handling
-    # TODO PRIO2: add --mz_shell in parameter handling
+    # DONE: improved and more detailled parameter handling
+    # TODO PRIO3: add --mz_shell in parameter handling
     local user="mzadmin" component="platform" rid="n/a" lid="$$" rc=0 RA_JAVA_HOME="" RA_MZ_HOME="" RA_MZ_PLATFORM="" timeout=60
     while [[ "$#" -gt 0 ]]; do
         case "$1" in
@@ -258,10 +258,10 @@ function mz_component_status()
         esac
         shift
     done
-    # TODO PRIO1: How to treat output like "platform is running without ..."
-    # DONE PRIO1: set env for variables RA_JAVA_HOME and RA_MZ_HOME
-    # TODO PRIO1: Tested, but not committed API: status <component> does also work
-    # DONE PRIO1: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
+    # DONE: PRIO1: How to treat output like "platform is running without ..."; solved by rc of the command
+    # DONE: set env for variables RA_JAVA_HOME and RA_MZ_HOME
+    # DONE: PRIO1: Tested, but not committed API: status <component> does also work; committed by the project
+    # DONE: Tested, but not committed API: RC==0 UP, RC==1 DEGRADED; RC==2 DOWN (one or multiple), OTHER: ERROR (FATAL)
     #             have been committed in a meeting that we could use the RCs
     logger --id="$lid" -t "SAPCMControlZone($rid)" "INFO: mzsh status $component with env: RA_MZ_HOME=$RA_MZ_HOME, RA_MZ_PLATFORM=$RA_MZ_PLATFORM, RA_JAVA_HOME=$RA_JAVA_HOME"
     result=$(timeout "$timeout" su -w RA_MZ_HOME,RA_MZ_PLATFORM,RA_JAVA_HOME - "$user" -c "$mz_shell_local status $component"); rc_call="$?"
@@ -313,7 +313,7 @@ export -f mz_component_status
 
 function mz_call()
 {
-    # TODO: 'timeout' default value (non zero), see OCF_RESKEY_CALL_TIMEOUT?
+    # TODO PRIO3: 'timeout' default value (non zero), see OCF_RESKEY_CALL_TIMEOUT?
     local rc="$OCF_ERR_GENERIC" timeout=60, user="$mz_user", action="status", component="platform" call_rc=0
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -334,8 +334,9 @@ function mz_call()
                 # needs to switch-user to <mzadmin>
                 while [[ "$retry_count" -lt "$max_retry" ]]; do
                     (( retry_count++ ))
-                    # TODO PRIO1: improved and more detailled parameter handling
-                    # TODO PRIO1: add also mz_shell and java_home
+                    # DONE: improved and more detailled parameter handling
+                    # TODO PRIO3: also add mz_shell
+                    # DONE: also add java_home
                     mz_component_status --user="$user" --component="$component" --mz_platform="${mz_platform_local}" --mz_home="${mz_home_local}" --java_home="${java_home_local}" --rid="${OCF_RESOURCE_INSTANCE}" --lid="${logger_pid}" --timeout="$timeout"; call_rc="$?"
                     case "$call_rc" in
                         0 ) ocf_log INFO "mz_call: $component is running"
@@ -442,7 +443,7 @@ function mz_methods()
 
 function mz_init()
 {
-    # TODO: init variables
+    # DONE: init variables
     mz_user="${OCF_RESKEY_USER:-mzadmin}"
     mz_path_str="${OCF_RESKEY_MZSHELL:-/usr/bin/mzsh}"
     mz_home_str="${OCF_RESKEY_MZHOME:-/opt/cm/C11/CM}"
@@ -470,7 +471,7 @@ function mz_init()
         mz_home_local="$mz_home_str"
         mz_home_central="$mz_home_str"
     fi
-    # DONE PRIO1: also handle arraxs for java_home
+    # DONE: also handle arraxs for java_home
     ## java_home
     # cut string into a first part and an optional second part. parts are separated by $regex_seperator
     if [[ "$java_home_str" =~ $regex_multivalue ]]; then
@@ -614,8 +615,8 @@ function mz_check_params()
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
-###
-# java_home_local=
+    ###
+    # java_home_local=
     if [[ -n "$java_home_local" ]]; then
         if [[ -e "$java_home_local" ]]; then
             ocf_log INFO "java_home_local '$java_home_local' exists"
@@ -632,13 +633,13 @@ function mz_check_params()
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
-###
+    # DONE: Request from project to also controlling services like "wdX"
     regex_platformorui="^(platform|ui|wd.*)$"
     if [[ -n "$OCF_RESKEY_SERVICE" ]]; then
         if [[ "$OCF_RESKEY_SERVICE" =~ $regex_platformorui ]]; then
-            ocf_log INFO "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui']"
+            ocf_log INFO "Service '$OCF_RESKEY_SERVICE' matches list ['platform', 'ui', 'wd']"
         else
-            ocf_log INFO "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui']"
+            ocf_log INFO "Service '$OCF_RESKEY_SERVICE' does NOT match list ['platform', 'ui', 'wd']"
             rc="$OCF_ERR_CONFIGURED"
         fi
     fi
@@ -657,16 +658,16 @@ function mz_start()
 {
     local rc="$OCF_SUCCESS"
     mz_call --timeout=60 --action=startup --component="$mz_component" --user="$mz_user"; rc="$?"
-    # TODO; map to cluster return code (OCF_*)
+    # DONE: map to cluster return code (OCF_*)
     return "$rc"
 }
 
 function mz_stop()
 {
     local rc="$OCF_SUCCESS"
-    # TODO: retry
+    # DONE: retry
     mz_call --timeout=60 --action=shutdown --component="$mz_component" --user="$mz_user"; rc="$?"
-    # TODO; map to cluster return code (OCF_*)
+    # DONE: map to cluster return code (OCF_*)
     return "$rc"
 }
 
@@ -679,9 +680,9 @@ function mz_reload()
 function mz_monitor()
 {
     local rc="$OCF_SUCCESS"
-    # TODO: retry
+    # DONE: retry
     mz_call --timeout=60 --action=status --component="$mz_component" --user="$mz_user"; rc="$?"
-    # TODO; map to cluster return code (OCF_*)
+    # DONE: map to cluster return code (OCF_*)
     return "$rc"
 }
 
@@ -733,7 +734,7 @@ then
     exit "$OCF_ERR_PERM"
 fi
 
-# TODO PRIO2: Maybe add 'light' parameter check later
+# TODO PRIO2: Maybe add 'light' parameter check later e.g. not checking availability of files and directory but checking for parameter syntax
 ra_rc="$OCF_ERR_UNIMPLEMENTED"
 case "$ACTION" in
     start)
