@@ -50,8 +50,15 @@ SAPCMControlZone_basic_cluster(7).
 .PP
 The ControlZone software and Java runtime environment can be installed into a
 central NFS share, or into the cluster nodes´ local filesystems, or both. Again,
-the HA cluster does not need to control that filesystems. The SAPCMControlZone
-RA offers three ways for managing ControlZone services:
+the HA cluster does not need to control that filesystems.
+.PP
+Another option would be to install the ControlZone software into a cluster
+managed filesystem on shared storage. This might fit for on-premise systems
+backed by SAN storage infrastructure. From SAPCMControlZone RA´s perspective
+this would look like node´s local filesystem. We do not discuss storage details
+here.
+.PP
+The SAPCMControlZone RA offers three ways for managing ControlZone services:
 .PP
 .RS 2
 - calling mzsh always from central shared NFS
@@ -61,12 +68,13 @@ RA offers three ways for managing ControlZone services:
 - calling mzsh startup/shutdown centrally, but mzsh status locally
 .RE
 .PP
-Another option would be to install the ControlZone software into a cluster
-managed filesystem on shared storage. This might fit for on-premise systems
-backed by SAN storage infrastructure. From SAPCMControlZone RA´s perspective
-this would look like node´s local filesystem. We do not discuss storage details
-here.
+In all cases the Java runtime environment can be used either from local disk or
+from central NFS. If the OS provides a compatible Java, that one can be used as
+well.
 .PP
+The RA defines different MZ_HOME and JAVA_HOME as environment variables thru
+~/.bashrc . See the SUPPORTED PARAMETERS and EXAMPLES section below for details.
+.PP 
 \fBBest Practice\fP
 .PP
 * Use two independent corosync rings, at least one of them on bonded network.
@@ -78,7 +86,9 @@ Of course, together with hardware watchdog.
 * Align all timeouts in the Linux cluster with the timeouts of the underlying
 infrastructure - particuarly network and storage.
 .PP
-* Prefer cluster node´s local filesystem over NFS, whenever possible.
+* Prefer cluster node´s local filesystem over NFS whenever possible.
+.PP
+* Prefer OS Java runtime whenever possible.
 .PP
 * Check the installation of OS and Linux cluster on all nodes before doing any
 functional tests.
@@ -283,12 +293,12 @@ https://infozone.atlassian.net/wiki/spaces/MD91/pages/23375910/Always+Available
 Configuration and basic checks for ControlZone platform resources in Linux clusters.
 See also manual page SAPCMControlZone_maintenance_examples(7).
 .PP
-\fB* Example .bashrc\fR
+\fB* Example ~/.bashrc\fR
 .PP
 Environment variables MZ_PLATFORM, MZ_HOME and JAVA_HOME are needed for handling the
 ControlZone components. The values are inherited from the RA. The related resource
 parameters are MZPLATFORM, MZHOME and JAVAHOME. See also manual page bash(1).
-The lines in .bashrc might look like:
+The lines in ~/.bashrc might look like:
 .PP
 .RS 2
 # MZ_PLATFORM, MZ_HOME, JAVA_HOME are set by HA RA
@@ -498,9 +508,9 @@ Resource is rsc_cz_C11, node is node22. Useful after a failure has been fixed,
 and for testing.
 .PP
 .RS 2
-# crm resource failcount rsc_cz_C11 show node22.
+# crm resource failcount rsc_cz_C11 show node22
 .br
-# crm resource failcount rsc_cz_C11 delete node22.
+# crm resource failcount rsc_cz_C11 delete node22
 .RE
 .PP
 \fB* Manually trigger a SAPCMControlZone probe action.\fR
@@ -562,6 +572,24 @@ The MZ_PLATFORM is http://192.168.1.234:9000 , the user is mzadmin.
 ~> exit
 .RE
 .PP
+\fB* Example for checking if a CM platform can not reach the database.\fR
+.PP
+The user is mzadmin.
+.PP
+.RS 2
+# su - mzadmin
+.br
+~> grep "Failed to load codeserver state from database" \\
+.br
+ $MZ_HOME/log/platform_current.log
+.br
+~> grep "Cannot connect to jdbc:sap:" \\
+.br
+ $MZ_HOME/log/platform_current.log
+.br
+~> exit
+.RE
+.PP
 \fB* Example for testing the SAPCMControlZone RA.\fR
 .PP
 The ControlZone platform will be terminated, while controlled by the Linux
@@ -593,7 +621,7 @@ Note: Understand the impact before trying.
 the resource agent
 .TP
 $HOME/.bashrc, e.g. /home/mzadmin/.bashrc
-the mzadmin´s .bashrc, defining JAVA_HOME and MZ_HOME
+the mzadmin´s ~/.bashrc, defining JAVA_HOME and MZ_HOME
 .TP
 $MZ_HOME, e.g. /opt/cm/
 the installation directory of a CM ControlZone service
@@ -632,11 +660,13 @@ one UI service per cluster.
 .PP
 * Linux shell of the mzadmin user is /bin/bash.
 .PP
-* The mzadmin´s .bashrc inherits MZ_HOME and JAVA_HOME from SAPCMControlZone RA.
+* The mzadmin´s ~/.bashrc inherits MZ_HOME, JAVA_HOME and MZ_PLATFORM from
+SAPCMControlZone RA. This variables need to be set as described in the RA´s
+documentation (i.e. this manual page). 
 .PP
 * When called by the resource agent, mzsh connnects to CM ControlZone services
 via network. The service´s virtual hostname or virtual IP address managed by the
-cluster must never be used when called by RA monitor actions.
+cluster should not be used when called by RA monitor actions.
 .PP
 * Technical users and groups are defined locally in the Linux system. If users
 are resolved by remote service, local caching is neccessary. Substitute user
@@ -672,7 +702,8 @@ parallel, it will stop both and restart one.
 the mzsh should be accessed on the cluster nodes´ local filesystems.
 The mzsh is called with the arguments startup, shutdown and status. Its return
 code and output is interpreted by the RA. Thus the command and its output needs
-to be stable.
+to be stable. The mzsh shall not be customized. Particularly environment
+variables set thru ~/.bashrc must not be changed.
 .PP
 * The mzsh is called on the active node with a defined interval for regular
 resource monitor operations. It also is called on the active or passive node in
