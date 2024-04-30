@@ -9,18 +9,18 @@ SAPCMControlZone_basic_cluster \- basic settings to make SAPCMControlZone work.
 .\"
 .SH DESCRIPTION
 .\"
-The Convergent Mediation (CM) component ControlZone needs a certain basic
-cluster configuration. Besides neccessary settings, additional configurations
-might match specific needs.
+The Convergent Mediation (CM) ControlZone needs a certain basic cluster
+configuration. Besides neccessary settings, additional configurations might
+match specific needs.
 .PP
 \fB* Operating System Basics\fR
 .PP
 \fBUsers and groups\fR
 .PP
 Technical users and groups, such as "mzadmin" are defined locally in the Linux
-system. See manual page passwd(5) and usermod(8). The mz-user needs certain
-environment variables set in .bashrc. See manual page ocf_suse_SAPCMControlZone(7)
-for details.
+system. See manual page passwd(5) and usermod(8). The mziadmin user needs
+certain environment variables set in ~/.bashrc. See manual page
+ocf_suse_SAPCMControlZone(7) for details.
 .PP
 \fBHostnames\fR
 .PP
@@ -31,8 +31,13 @@ locally on all cluster nodes. See manual page hosts(5).
 .PP
 Strict time synchronization between the cluster nodes is mandatory, e.g. NTP.
 See manual page chrony.conf(5). Further the nodes should have configured the
-same
-timezone.
+same timezone.
+.PP
+\fBmzadmin´s ~/.bashrc\fR
+.PP
+Certain values for environment variables JAVA_HOME, MZ_HOME and MZ_PLATFORM are
+needed, depending on the specific setup. See manual page
+ocf_suse_SAPCMControlZone(7) for details.
 .PP
 \fBNFS mounted filesystem\fR
 .PP
@@ -68,8 +73,8 @@ Setting this parameter to \'true\' allows the user to see pending actions like
 .PP
 \fBfailure-timeout = 86400\fR
 .PP
-The crm op_default failure-timeout defines how long failed actions will
-be kept in the CIB. After that time the failure record will be deleted.
+The crm op_default failure-timeout defines how long failed actions will be kept
+in the CIB. After that time the failure record will be deleted.
 Time unit is seconds. 
 See also migration-threshold.
 .br
@@ -205,6 +210,12 @@ the OS kernel parameters, e.g. TCP tunables
 .TP
 /etc/fstab
 the filesystem table, for statically mounted NFS shares
+.TP
+~/.bashrc
+the mzadmin´s ~/.bashrc, defining JAVA_HOME, MZ_HOME and MZ_PLATFORM
+.TP
+/usr/lib64/jvm/jre-17-openjdk/
+the Java 1.7 runtime environment shipped with the OS, potentially $JAVA_HOME
 .PP
 .\"
 .SH BUGS
