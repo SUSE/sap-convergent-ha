@@ -171,6 +171,24 @@ Needs password-less ssh between cluster nodes.
 # crm cluster run "systemctl status pacemaker" | grep pacemaker.service
 .RE
 .PP
+\fB* Start Linux cluster after node has been fenced.\fR
+.PP
+It is recommended to not configure the Linux cluster for always starting
+autmatically on boot. Better is to start automatically only, if cluster and/or
+node have been stopped cleanly. If the node has been fenced, the cluster should
+not start automatically. If the cluster is configure that way, some steps are
+neccessary to start the cluster. STONITH via SBD is used in this example. 
+.PP
+.RS 2
+# cs_clear_sbd_devices --all
+.br
+# cs_show_sbd_devices
+.br
+# crm cluster start
+.br
+# crm_mon -r
+.RE
+.PP
 \fB* Overview  on maintenance procedure for Linux cluster or OS.\fR
 .PP
 ControlZone instance remains running. But it will not automatically be moved or
@@ -205,9 +223,11 @@ Please report feedback and suggestions to feedback@suse.com.
 .\"
 \fBocf_suse_SAPCMControlZone\fP(7) , \fBSAPCMControlZone_basic_cluster\fP(7) ,
 \fBcrm\fP(8) , \fBcrm_simulate\fP(8) , \fBcrm_report\fP(8) , \fBcibadmin\fP(8) ,
-\fBsbd\fP(8) , \fBstonith_admin\fP(8) , \fBcorosync-cfgtool\fP(8) ,
+\fBcrm_mon\fP(8) ,  \fBsbd\fP(8) , \fBstonith_admin\fP(8) ,
+\fBcorosync-cfgtool\fP(8) ,
 \fBcs_clusterstate\fP(8) , \fBcs_wait_for_idle\fP(8) ,
-\fBcs_show_cluster_actions\fP(8) ,
+\fBcs_show_cluster_actions\fP(8) , \fBcs_clear_sbd_devices\fP(8) ,
+ \fBcs_show_sbd_devices\fP(8) ,
 \fBha_related_sap_notes\fP(7) , \fBha_related_suse_tids\fP(7)
 .PP
 .\"
