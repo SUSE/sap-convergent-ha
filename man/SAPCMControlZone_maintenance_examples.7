@@ -1,6 +1,6 @@
 .\ Version: 0.1
 .\"
-.TH SAPCMControlZone_maintenance_examples 7 "18 Mar 2024" "" "SAPCMControlZone"
+.TH SAPCMControlZone_maintenance_examples 7 "15 Apr 2024" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -29,6 +29,8 @@ Example user is mzadmin.
 .br
 # crm configure show | grep cli-
 .br
+# cibadmin -Q | grep fail-count
+.br
 # cs_clusterstate -i
 .RE
 .PP
@@ -47,9 +49,11 @@ Resource group is grp_C11, user is mzadmin.
 .br
 # crm configure show | grep cli-
 .br
+# cibadmin -Q | grep fail-count
+.br
 # cs_clusterstate -i
 .PP
-# crm resource move grp_C11
+# crm resource move grp_C11 force
 .br
 # cs_wait_for_idle -s 9; crm_mon -1r
 .br
@@ -80,6 +84,8 @@ Resource group is grp_C11, user is mzadmin. See also example above.
 .br
 # crm configure show | grep cli-
 .br
+# cibadmin -Q | grep fail-count
+.br
 # cs_clusterstate -i
 .br
 # crm resource maintenance grp_C11
@@ -99,8 +105,9 @@ Resource group is grp_C11, user is mzadmin. See also example above.
 .PP
 \fB* Set whole Linux cluster into maintenance.\fR
 .PP
-This disables all resource management as well as node fencing. However, fence requests from outside will
-be queued and executed once the cluster leaves mainetenance mode. See manual page crm(8) and stonith_admin(8).
+This disables all resource management as well as node fencing. However, fence
+requests from outside will be queued and executed once the cluster leaves
+maintenance mode. See manual page crm(8) and stonith_admin(8).
 .PP
 .RS 2
 # crm maintenance on
@@ -122,7 +129,8 @@ Before doing so, check for cluster attribute maintenance-mode="false".
 \fB* Remove left-over standby attribute from Linux cluster nodes.\fR
 .PP
 This could be done to avoid confusion caused by different maintenance procedures.
-Before doing so for all nodes, check for node attribute standby="off" on all nodes. Example node is node1.
+Before doing so for all nodes, check for node attribute standby="off" on all
+nodes. Example node is node1.
 .PP
 .RS 2 
 # crm_attribute --query -t nodes -N node1 -n standby
@@ -145,6 +153,7 @@ Resource group is grp_C11.
 .PP
 On any cluster node the cluster will not start automatically on boot anymore.
 Nevertheless a currently running cluster will keep running.
+Needs password-less ssh between cluster nodes.
 .PP
 .RS 2
 # crm cluster run "crm cluster disable"
@@ -154,10 +163,31 @@ Nevertheless a currently running cluster will keep running.
 .PP
 \fB* Start Linux cluster on all cluster nodes.\fR
 .PP
+Needs password-less ssh between cluster nodes.
+.PP
 .RS 2
 # crm cluster start --all
 .br
 # crm cluster run "systemctl status pacemaker" | grep pacemaker.service
+.RE
+.PP
+\fB* Start Linux cluster after node has been fenced.\fR
+.PP
+It is recommended to not configure the Linux cluster for always starting
+autmatically on boot. Better is to start automatically only, if cluster and/or
+node have been stopped cleanly. If the node has been rebooted by STONITH, the
+cluster should not start automatically. If the cluster is configure that way,
+some steps are needed to start the cluster after a node has been rebooted by
+STONITH. STONITH via SBD is used in this example. 
+.PP
+.RS 2
+# cs_clear_sbd_devices --all
+.br
+# cs_show_sbd_devices
+.br
+# crm cluster start
+.br
+# crm_mon -r
 .RE
 .PP
 \fB* Overview  on maintenance procedure for Linux cluster or OS.\fR
@@ -194,8 +224,11 @@ Please report feedback and suggestions to feedback@suse.com.
 .\"
 \fBocf_suse_SAPCMControlZone\fP(7) , \fBSAPCMControlZone_basic_cluster\fP(7) ,
 \fBcrm\fP(8) , \fBcrm_simulate\fP(8) , \fBcrm_report\fP(8) , \fBcibadmin\fP(8) ,
-\fBsbd\fP(8) , \fBstonith_admin\fP(8) , \fBcorosync-cfgtool\fP(8) ,
-\fBcs_clusterstate\fP(8) , \fBcs_wait_for_idle\fP(8) , 
+\fBcrm_mon\fP(8) ,  \fBsbd\fP(8) , \fBstonith_admin\fP(8) ,
+\fBcorosync-cfgtool\fP(8) ,
+\fBcs_clusterstate\fP(8) , \fBcs_wait_for_idle\fP(8) ,
+\fBcs_show_cluster_actions\fP(8) , \fBcs_clear_sbd_devices\fP(8) ,
+ \fBcs_show_sbd_devices\fP(8) ,
 \fBha_related_sap_notes\fP(7) , \fBha_related_suse_tids\fP(7)
 .PP
 .\"

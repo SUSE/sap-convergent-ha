@@ -28,7 +28,7 @@ lid="$$"
 
 services="platform ui"
 
-logger --id "$lid" -t "mzsh" "mzsh version 0.2.6 - action=$action"
+logger --id "$lid" -t "mzsh" "mzsh version 0.3.2 - action=$action"
 logger --id "$lid" -t "mzsh" "MZSH=$0 JAVA_HOME=$JAVA_HOME MZ_HOME=$MZ_HOME MZ_PLATFORM=$MZ_PLATFORM"
 logger --id "$lid" -t "mzsh" "MZSH=$0 RA_JAVA_HOME=$JAVA_HOME RA_MZ_HOME=$MZ_HOME RA_MZ_PLATFORM=$MZ_PLATFORM"
 
