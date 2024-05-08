@@ -175,9 +175,10 @@ Needs password-less ssh between cluster nodes.
 .PP
 It is recommended to not configure the Linux cluster for always starting
 autmatically on boot. Better is to start automatically only, if cluster and/or
-node have been stopped cleanly. If the node has been fenced, the cluster should
-not start automatically. If the cluster is configure that way, some steps are
-neccessary to start the cluster. STONITH via SBD is used in this example. 
+node have been stopped cleanly. If the node has been rebooted by STONITH, the
+cluster should not start automatically. If the cluster is configure that way,
+some steps are needed to start the cluster.
+STONITH via SBD is used in this example. 
 .PP
 .RS 2
 # cs_clear_sbd_devices --all
