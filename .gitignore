@@ -1,5 +1,6 @@
 osc
 ibs
 misc
+tmp
 *.tar.gz
 *.tgz
