@@ -125,7 +125,7 @@ Optional. Unique, string. Default value: "mzadmin".
 .PP
 \fBSERVICE\fP
 .RS 4
-The ControlZone service to be managed by the resoure agent.
+The ControlZone service to be managed by the resource agent.
 .br
 Optional. Unique, [ platform | ui ]. Default value: "platform".
 .RE
@@ -312,7 +312,7 @@ export JAVA_HOME=${RA_JAVA_HOME:-"/opt/cm9/c11/sapmachine17"}
 .PP
 \fB* Example of a simple resource group with ControlZone platform and IP address.\fR
 .PP
-A ControlZone platform resoure rsc_cz_C11 is configured, handled by OS user
+A ControlZone platform resource rsc_cz_C11 is configured, handled by OS user
 c11adm. The local /opt/cm9/c11/bin/mzsh is used for monitoring, but for other
 actions /usr/sap/c11/bin/mzsh is used.
 This resource is grouped with an IP address resource rsc_ip_C11 into group
@@ -368,7 +368,7 @@ if this is possible with your CM ControlZone setup.
 .PP
 \fB* Example configuration for resource ControlZone UI.\fR
 .PP
-A ControlZone UI resoure rsc_ui_C11 is configured, handled by OS user c11adm.
+A ControlZone UI resource rsc_ui_C11 is configured, handled by OS user c11adm.
 The default path to mzsh 
 .\" TODO on central NFS share
 is used
@@ -406,7 +406,7 @@ just added to the resource group grp_cz_C11.
 .PP
 In some environments a loadbalancer is used for managing access to the virtual
 IP addres. Thus a respective resource agent might be needed. The resource might
-be grouped with the IPaddr2 resoure, and starts just after the IPaddr2.
+be grouped with the IPaddr2 resource, and starts just after the IPaddr2.
 In the example at hand azure-lb is the loadbalancer RA, 47011 is the used port.
 See also manual page ocf_heartbeat_azure-lb(7).
 .PP
