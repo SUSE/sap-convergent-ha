@@ -1,5 +1,5 @@
 #
-# spec file for package sap-convergent-resource-agents
+# spec file for package mz
 #
 # Copyright (c) 2023-2024 SUSE LLC
 #
@@ -15,8 +15,8 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 #
 
-Name:           sap-convergent-resource-agents
-Version:        1.0.0
+Name:           mz
+Version:        0.3.5
 Release:        0
 Group:          Productivity/Clustering/HA
 Summary:        Resource agents to control the convergent mediation control zone
@@ -25,7 +25,6 @@ License:        GPL-2.0-or-later
 URL:            https://www.suse.com 
 Source0:        %{name}-%{version}.tgz 
 
-BuildRequires:  gzip
 BuildArch:      noarch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
@@ -35,45 +34,24 @@ Requires:       python3
 Requires:       /usr/bin/xmllint
 
 %description
-Resource agents to control the convergent mediation control zone. The used interface to the application is the mz-shell.
+mz shell simulator not to be used for production, only for internal development
 
 Authors:
 --------
     Fabian Herschel
     Lars Pinne
 
+
 %prep
 tar xf %{S:0}
 
-%build
-gzip man/*
-
 %install
 
-# resource agents (ra)
-mkdir -p %{buildroot}/usr/lib/ocf/resource.d/suse
-install -m 0755 ra/SAP* %{buildroot}/usr/lib/ocf/resource.d/suse/
-
-# manual pages
-mkdir -p %{buildroot}%{_mandir}/man7
-install -m 0444 man/*.7.gz %{buildroot}%{_mandir}/man7
-
-# samples
-mkdir -p %{buildroot}/usr/share/%{name}/samples
-install -m 0444 samples/* %{buildroot}/usr/share/%{name}/samples
+mkdir -p %{buildroot}/usr/bin
+install -m 0755 test/bin/mzsh %{buildroot}/usr/bin
 
 %files
 %defattr(-,root,root)
-%dir /usr/lib/ocf
-%dir /usr/lib/ocf/resource.d
-%dir /usr/lib/ocf/resource.d/suse
-/usr/lib/ocf/resource.d/suse/*
-
-%license LICENSE
-%doc README.md
-%doc %{_mandir}/man7/*
-%dir /usr/share/%{name}
-%dir /usr/share/%{name}/samples
-%doc /usr/share/%{name}/samples/*
+/usr/bin/mzsh
 
 %changelog

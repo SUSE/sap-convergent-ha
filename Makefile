@@ -2,16 +2,23 @@
 # Author: Fabian Herschel 
 # License: GPL v 2.0+
 # thanks for template by Ilya Manyugin
-# make tarball
+# make RPM=mz tarball
 
 FILE_LIST = LICENSE \
 		README.md \
 		man \
 		ra \
-        	samples \
+		samples \
 		test
 
+ifeq ($(RPM),)
+$(info RPM is empty)
 PKG = sap-convergent-resource-agents
+else
+$(info RPM is $(RPM))
+PKG = mz
+endif
+
 SPECFILE = ${PKG}.spec
 VERSION = $(strip $(patsubst Version:,,$(shell grep '^Version:' $(SPECFILE))))
 
