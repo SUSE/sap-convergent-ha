@@ -1,7 +1,8 @@
 -------------------------------------------------------------------
 Mon May 13 09:10:52 UTC 2024 - abriel@suse.com
 
-- First revision
-- new resource agent to control the Convergent Mediation control
+- First revision of sap-convergent-resource-agents
+  a new resource agent to control the Convergent Mediation control
   zone components
   (jsc#PED-7175)
+  This package is supported only in the context of SAP RISE.

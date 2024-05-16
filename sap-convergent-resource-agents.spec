@@ -36,6 +36,7 @@ Requires:       /usr/bin/xmllint
 
 %description
 Resource agents to control the convergent mediation control zone. The used interface to the application is the mz-shell.
+This package is supported only in the context of SAP RISE.
 
 Authors:
 --------
