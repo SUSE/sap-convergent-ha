@@ -16,7 +16,7 @@ $(info RPM is empty)
 PKG = sap-convergent-resource-agents
 else
 $(info RPM is $(RPM))
-PKG = mz
+PKG = sap-convergent-mz
 endif
 
 SPECFILE = ${PKG}.spec

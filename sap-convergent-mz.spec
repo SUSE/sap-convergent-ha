@@ -1,5 +1,5 @@
 #
-# spec file for package mz
+# spec file for package sap-convergent-mz
 #
 # Copyright (c) 2023-2024 SUSE LLC
 #
@@ -15,7 +15,7 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 #
 
-Name:           mz
+Name:           sap-convergent-m
 Version:        0.3.5
 Release:        0
 Group:          Productivity/Clustering/HA
