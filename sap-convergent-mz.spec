@@ -15,7 +15,7 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 #
 
-Name:           sap-convergent-m
+Name:           sap-convergent-mz
 Version:        0.3.5
 Release:        0
 Group:          Productivity/Clustering/HA
