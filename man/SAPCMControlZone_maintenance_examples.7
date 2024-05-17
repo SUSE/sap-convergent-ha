@@ -149,6 +149,17 @@ Resource group is grp_C11.
 .\" # TODO check
 .RE
 .PP
+\fB* Remove fail-count from resource.\fR
+.PP
+This might be done after the cluster has recovered the resource from a failure.
+Resource group is grp_C11.
+.PP
+.RS 2
+# crm resource cleanup grp_C11
+.br
+# cibadmin -Q | grep fail-count
+.RE
+.PP
 \fB* Disable Linux cluster on all cluster nodes.\fR
 .PP
 On any cluster node the cluster will not start automatically on boot anymore.
