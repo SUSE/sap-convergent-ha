@@ -1,17 +1,25 @@
 #!/bin/bash
+#
 # /usr/lib/supportconfig/plugins/ha-sap-convergent
-
-# TODO PRIO2: validate RPMs sap-convergent-resource-agents resource-agents sbd
+#
+# (c) 2024 SUSE LLC
+# Author: A.Briel
+# GNU General Public License v2. No warranty.
+# http://www.gnu.org/licenses/gpl.html
+#
 
 # TODO PRIO1: detect mzadmin user and directories
 # TODO PRIO1: show mzadmin´s ~./bashrc
 # TODO PRIO1: show mzadmin´s $MZ_HOME $JAVA_HOME $PATH $MZ_PLATFORM
-# TODO PRIO3: show $MZ_HOME/bin/mzsh
-# TODO PRIO1: show "crm configure show"
-# TODO PRIO1: show Java VM from RAs $JAVA_HOME 
-# TODO PRIO1: show mzsh from RAs $MZ_HOME 
-# TODO PRIO1: show RAs $MZ_PLATFORM
+# TODO PRIO1: show mzadmin´s Java VM version
+# TODO PRIO1: show RA´s $MZ_HOME $JAVA_HOME $MZ_PLATFORM
+# TODO PRIO1: show RA´s Java VM version
 # TODO PRIO1: show running service platform, UI (, wd1) 
-# TODO PRIO2: show SAPCMControlZone entries in messages
-# TODO PRIO2: show services $MZ_home/log/..._current.log
+# TODO PRIO1: show services´ $MZ_home/log/..._current.log
+
+# TODO PRIO2: show "crm configure show"
+# TODO PRIO2: show SAPCMControlZone, Filesystem, IPaddr2 entries in messages
+# TODO PRIO2: validate RPMs sap-convergent-resource-agents resource-agents
+# TODO PRIO2: show mzadmin´s $MZ_HOME/bin/mzsh
+# TODO PRIO2: show RA´s $MZ_HOME/bin/mzsh
 #
