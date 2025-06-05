@@ -1,6 +1,6 @@
 .\ Version: 0.1
 .\"
-.TH SAPCMControlZone_maintenance_examples 7 "15 Apr 2024" "" "SAPCMControlZone"
+.TH SAPCMControlZone_maintenance_examples 7 "05 Jul 2024" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -16,7 +16,7 @@ section there.
 .\"
 .SH EXAMPLES
 .\"
-\fB* Example for checking clean and idle state.\fR
+\fB* Example for checking clean and idle state\fR
 .PP
 This steps should be performed before doing anything with the cluster, and
 after something has been done.
@@ -34,7 +34,7 @@ Example user is mzadmin.
 # cs_clusterstate -i
 .RE
 .PP
-\fB* Example for manual takeover using Linux cluster.\fR
+\fB* Example for manual takeover using Linux cluster\fR
 .PP
 ControlZone application and Linux cluster are checked for clean and idle state.
 The ControlZone resources are moved to the other node. The related location rule
@@ -66,7 +66,7 @@ Resource group is grp_C11, user is mzadmin.
 # su - mzadmin -c "mzsh status"
 .RE
 .PP
-\fB* Example for generic maintenance procedure.\fR
+\fB* Example for generic maintenance procedure\fR
 .PP
 ControlZone application and Linux cluster are checked for clean and idle state.
 The ControlZone resource group is set into maintenance mode.
@@ -103,7 +103,7 @@ Resource group is grp_C11, user is mzadmin. See also example above.
 # su - mzadmin -c "mzsh status"
 .RE
 .PP
-\fB* Set whole Linux cluster into maintenance.\fR
+\fB* Set whole Linux cluster into maintenance\fR
 .PP
 This disables all resource management as well as node fencing. However, fence
 requests from outside will be queued and executed once the cluster leaves
@@ -115,7 +115,7 @@ maintenance mode. See manual page crm(8) and stonith_admin(8).
 # crm_attribute --query -t crm_config -n maintenance-mode
 .RE
 .PP
-\fB* Remove left-over maintenance attribute from overall Linux cluster.\fR
+\fB* Remove left-over maintenance attribute from overall Linux cluster\fR
 .PP
 This could be done to avoid confusion caused by different maintenance procedures.
 Before doing so, check for cluster attribute maintenance-mode="false".
@@ -126,7 +126,7 @@ Before doing so, check for cluster attribute maintenance-mode="false".
 # crm_attribute --delete -t crm_config -n maintenance-mode
 .RE
 .PP
-\fB* Remove left-over standby attribute from Linux cluster nodes.\fR
+\fB* Remove left-over standby attribute from Linux cluster nodes\fR
 .PP
 This could be done to avoid confusion caused by different maintenance procedures.
 Before doing so for all nodes, check for node attribute standby="off" on all
@@ -138,7 +138,7 @@ nodes. Example node is node1.
 # crm_attribute --delete -t nodes -N node1 -n standby
 .RE
 .PP
-\fB* Remove left-over maintenance attribute from resource.\fR
+\fB* Remove left-over maintenance attribute from resource\fR
 .PP
 This should usually not be needed.
 Resource group is grp_C11.
@@ -149,7 +149,7 @@ Resource group is grp_C11.
 .\" # TODO check
 .RE
 .PP
-\fB* Disable Linux cluster on all cluster nodes.\fR
+\fB* Disable Linux cluster on all cluster nodes\fR
 .PP
 On any cluster node the cluster will not start automatically on boot anymore.
 Nevertheless a currently running cluster will keep running.
@@ -171,7 +171,7 @@ Needs password-less ssh between cluster nodes.
 # crm cluster run "systemctl status pacemaker" | grep pacemaker.service
 .RE
 .PP
-\fB* Start Linux cluster after node has been fenced.\fR
+\fB* Start Linux cluster after node has been fenced\fR
 .PP
 It is recommended to not configure the Linux cluster for always starting
 autmatically on boot. Better is to start automatically only, if cluster and/or
@@ -190,7 +190,7 @@ STONITH. STONITH via SBD is used in this example.
 # crm_mon -r
 .RE
 .PP
-\fB* Overview  on maintenance procedure for Linux cluster or OS.\fR
+\fB* Overview on maintenance procedure for Linux cluster or OS\fR
 .PP
 ControlZone instance remains running. But it will not automatically be moved or
 restarted while the Linux cluster is inactive. It is neccessary to wait for
@@ -224,7 +224,7 @@ Please report feedback and suggestions to feedback@suse.com.
 .\"
 \fBocf_suse_SAPCMControlZone\fP(7) , \fBSAPCMControlZone_basic_cluster\fP(7) ,
 \fBcrm\fP(8) , \fBcrm_simulate\fP(8) , \fBcrm_report\fP(8) , \fBcibadmin\fP(8) ,
-\fBcrm_mon\fP(8) ,  \fBsbd\fP(8) , \fBstonith_admin\fP(8) ,
+\fBcrm_mon\fP(8) , \fBfence_sbd\fP(8) , \fBsbd\fP(8) , \fBstonith_admin\fP(8) ,
 \fBcorosync-cfgtool\fP(8) ,
 \fBcs_clusterstate\fP(8) , \fBcs_wait_for_idle\fP(8) ,
 \fBcs_show_cluster_actions\fP(8) , \fBcs_clear_sbd_devices\fP(8) ,
@@ -239,7 +239,7 @@ F.Herschel, L.Pinne
 .\"
 .SH COPYRIGHT
 .\"
-(c) 2024 SUSE LLC
+(c) 2024-2025 SUSE LLC
 .br
 SAPCMControlZone comes with ABSOLUTELY NO WARRANTY.
 .br

@@ -310,7 +310,7 @@ export MZ_HOME=${RA_MZ_HOME:-"/opt/cm9/c11"}
 export JAVA_HOME=${RA_JAVA_HOME:-"/opt/cm9/c11/sapmachine17"}
 .RE
 .PP
-\fB* Example of a simple resource group with ControlZone platform and IP address.\fR
+\fB* Example of a simple resource group with ControlZone platform and IP address\fR
 .PP
 A ControlZone platform resoure rsc_cz_C11 is configured, handled by OS user
 c11adm. The local /opt/cm9/c11/bin/mzsh is used for monitoring, but for other
@@ -366,7 +366,7 @@ Note: To limit the impact of IP address failures on the ControlZone platform
 resource, the IP address resource can be place after the platform. Please check
 if this is possible with your CM ControlZone setup.
 .PP
-\fB* Example configuration for resource ControlZone UI.\fR
+\fB* Example configuration for resource ControlZone UI\fR
 .PP
 A ControlZone UI resoure rsc_ui_C11 is configured, handled by OS user c11adm.
 The default path to mzsh 
@@ -402,7 +402,7 @@ colocation col_with_cz 2000: rsc_ui_C11:Started grp_cz_C11:Started
 Note: Instead of defining order and colocation, the resource rsc_ui_C11 might be
 just added to the resource group grp_cz_C11.
 .PP
-\fB* Optional loadbalancer resource for specific environments.\fR
+\fB* Optional loadbalancer resource for specific environments\fR
 .PP
 In some environments a loadbalancer is used for managing access to the virtual
 IP addres. Thus a respective resource agent might be needed. The resource might
@@ -428,7 +428,7 @@ group grp_cz_C11 \\
  rsc_ip_C11 rsc_lb_C11 rsc_cz_C11
 .RE
 .PP
-\fB* Optional Filesystem resource for monitoring NFS shares.\fR
+\fB* Optional Filesystem resource for monitoring NFS shares\fR
 .PP
 A shared filesystem migth be statically mounted by OS on both cluster nodes.
 This filesystem holds work directories. It must not be confused with the
@@ -467,7 +467,7 @@ group grp_cz_C11 \\
 Note: If the cluster should try to recover locally before fencing the node,
 action on-fail=restart needs to be used instead of on-fail=fence.
 .PP
-\fB* Alternate resource order.\fR
+\fB* Alternate resource order\fR
 .PP
 All resources are managed within one group. The order is: filesystem, platform, IP address, loadbalancer, UI. The idea is to minimise impact of IP address and
 UI on platform. On the other hand, filesystem failures should lead to immediate
@@ -488,7 +488,7 @@ Resource is rsc_cz_C11, resource group is grp_C11.
 # crm configure show rsc_cz_C11 grp_C11
 .RE
 .PP
-\fB* Search for log entries of SAPCMControlZone, show errors only.\fR
+\fB* Search for log entries of SAPCMControlZone, show errors only\fR
 .PP
 .RS 2
 # grep "SAPCMControlZone.*rc=[1-7,9]" /var/log/messages
@@ -502,7 +502,7 @@ PID of run is 8558.
 # grep "SAPCMControlZone.*\\[8558\\]" /var/log/messages
 .RE
 .PP
-\fB* Show and delete failcount for resource.\fR
+\fB* Show and delete failcount for resource\fR
 .PP
 Resource is rsc_cz_C11, node is node22. Useful after a failure has been fixed,
 and for testing.
@@ -513,7 +513,7 @@ and for testing.
 # crm resource failcount rsc_cz_C11 delete node22
 .RE
 .PP
-\fB* Manually trigger a SAPCMControlZone probe action.\fR
+\fB* Manually trigger a SAPCMControlZone probe action\fR
 .PP
 USER is mzadmin, SERVICE is platform, MZSHELL is /usr/sap/c11/bin/mzsh .
 .PP
@@ -535,7 +535,7 @@ OCF_RESKEY_CRM_meta_interval=0 \\
 /usr/lib/ocf/resource.d/suse/SAPCMControlZone monitor
 .RE
 .PP
-\fB* Basic validation of SAPCMControlZone configuration.\fR
+\fB* Basic validation of SAPCMControlZone configuration\fR
 .PP
 The USER, MZSHELL and SERVICE are looked up in the installed system.
 .PP
@@ -547,14 +547,14 @@ OCF_RESKEY_CRM_meta_interval=0 \\
 /usr/lib/ocf/resource.d/suse/SAPCMControlZone validate\-all
 .RE
 .PP
-\fB* Example for identifying running CM platform processes.\fR
+\fB* Example for identifying running CM platform processes\fR
 .PP
 The JAVA_HOME is /usr/sap/c11/sapmachine17 .
 .RS 2
 # pgrep -f "/usr/sap/c11/sapmachine17/bin/java.*OnOutOfMemoryError=oom platform" -l
 .RE
 .PP
-\fB* Example for checking if a CM platform can be reached.\fR
+\fB* Example for checking if a CM platform can be reached\fR
 .PP
 The MZ_PLATFORM is http://192.168.1.234:9000 , the user is mzadmin.
 .PP
@@ -572,7 +572,7 @@ The MZ_PLATFORM is http://192.168.1.234:9000 , the user is mzadmin.
 ~> exit
 .RE
 .PP
-\fB* Example for checking if a CM platform can not reach the database.\fR
+\fB* Example for checking if a CM platform can not reach the database\fR
 .PP
 The user is mzadmin.
 .PP
@@ -590,7 +590,7 @@ The user is mzadmin.
 ~> exit
 .RE
 .PP
-\fB* Example for testing the SAPCMControlZone RA.\fR
+\fB* Example for testing the SAPCMControlZone RA\fR
 .PP
 The ControlZone platform will be terminated, while controlled by the Linux
 cluster. This could be done as very basic testing of SAPCMControlZone RA
