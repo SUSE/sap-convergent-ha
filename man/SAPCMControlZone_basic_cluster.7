@@ -1,6 +1,6 @@
 .\" Version: 0.1
 .\"
-.TH SAPCMControlZone_basic_cluster 7 "18 Mar 2024" "" "SAPCMControlZone"
+.TH SAPCMControlZone_basic_cluster 7 "05 Jul 2025" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -102,7 +102,7 @@ pcmk_delay_max.
 .\"
 .\" TODO OS network tcp_retries2=8 (8..10)
 .\"
-\fB* CRM basic configuration.\fR
+\fB* CRM basic configuration\fR
 .PP
 This example has been taken from a two-node cluster SLE-HA 15 SP4 with
 disk-based SBD. Priority fencing is configured and the SBD pcmk_delay_max has
@@ -147,7 +147,19 @@ op_defaults op-options: \\
  record-pending=true 
 .RE
 .PP
-\fB* Statically mounted NFS share for ControlZone platform data.\fR
+\fB* crm simple SBD stonith configuration on SLE 16\fR
+.PP
+The SBD STONITH/fencing mechanism on SLE-HA 16 uses fence_sbd instead of
+externa/sbd. See manual page fence_sbd(8) for details. 
+Example for a basic disk-based SBD resource on SLE 16:
+.PP
+.RS 2
+primitive rsc_stonith_sbd stonith:fence_sbd \\
+.br
+ params pcmk-delay-max=15
+.RE
+.PP
+\fB* Statically mounted NFS share for ControlZone platform data\fR
 .PP
 Below is an fstab example for a shared filesystem holding application data.
 The filesystem is statically mounted on all nodes of the cluster.
@@ -161,7 +173,7 @@ nfs1:/s/c11/platform /mnt/platform nfs4 rw,noac,sync,default 0 0
 Note: The NFS share might be monitored, but not mounted/umounted by the HA
 cluster. See ocf_suse_SAPCMControlZone(7) for details.
 .PP
-\fB* Ping cluster resource for checking connectivity.\fR
+\fB* Ping cluster resource for checking connectivity\fR
 .PP
 Below is an example of an optional ping resource for checking connectivity to
 the outer world. If the nodes have only one network interface, shared between
@@ -253,7 +265,7 @@ F.Herschel, L.Pinne
 .\"
 .SH COPYRIGHT
 .\"
-(c) 2023-2024 SUSE LLC
+(c) 2023-2025 SUSE LLC
 .br
 SAPCMControlZone comes with ABSOLUTELY NO WARRANTY.
 .br
