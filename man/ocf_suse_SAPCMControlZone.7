@@ -1,6 +1,6 @@
 .\" Version: 0.3
 .\"
-.TH ocf_suse_SAPCMControlZone 7 "15 Apr 2024" "" "SAPCMControlZone"
+.TH ocf_suse_SAPCMControlZone 7 "26 Jun 2025" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -371,9 +371,8 @@ if this is possible with your CM ControlZone setup.
 A ControlZone UI resoure rsc_ui_C11 is configured, handled by OS user c11adm.
 The default path to mzsh 
 .\" TODO on central NFS share
-is used
+is used.
 .\" TODO , no local copies are used (sub-optimal setup)
-.
 The resource might run on either node, but never in parallel.
 In case of ControlZone UI failure (or monitor timeout), the resource gets
 restarted until it gains success or migration-threshold is reached. If
@@ -709,6 +708,10 @@ variables set thru ~/.bashrc must not be changed.
 resource monitor operations. It also is called on the active or passive node in
 certain situations. Those calls might run in parallel.
 .PP
+* No firewall rules must block any needed port.
+.PP
+* No SELinux rules must block any needed action.
+.PP
 .\"
 .SH BUGS
 .\"
@@ -724,7 +727,8 @@ Please report feedback and suggestions to feedback@suse.com.
 \fBSAPCMControlZone_maintenance_examples\fP(7),
 \fBocf_heartbeat_IPaddr2\fP(7) , \fBocf_heartbeat_Filesystem\fP(7) ,
 \fBcrm\fP(8) , \fBcrm_mon\fP(8) , \fBcs_show_cluster_actions\fP(8) ,
-\fBnfs\fP(5) , \fBmount\fP(8) ,  \fBbash\fP(1) ,
+\fBnfs\fP(5) , \fBmount\fP(8) ,  \fBbash\fP(1) , \fBselinux\fP(8) ,
+\fBfirewalld\fP(8) ,
 .br
 http://clusterlabs.org/doc/en-US/Pacemaker/1.1/html/Pacemaker_Explained/s-ocf-return-codes.html ,
 .br
@@ -754,7 +758,7 @@ F.Herschel, L.Pinne
 .\"
 .SH COPYRIGHT
 .\"
-(c) 2023-2024 SUSE LLC
+(c) 2023-2025 SUSE LLC
 .br
 SAPCMControlZone comes with ABSOLUTELY NO WARRANTY.
 .br
