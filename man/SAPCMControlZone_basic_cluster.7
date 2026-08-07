@@ -1,6 +1,6 @@
 .\" Version: 0.1
 .\"
-.TH SAPCMControlZone_basic_cluster 7 "05 Jul 2025" "" "SAPCMControlZone"
+.TH SAPCMControlZone_basic_cluster 7 "05 Jul 2026" "" "SAPCMControlZone"
 .\"
 .SH NAME
 .\"
@@ -201,6 +201,28 @@ location loc_connect_C11 grp_C11 \\
  rule 90000: ping-okay gt 1
 .RE
 .PP
+\fB* test priority fencing for cluster communication failure, SLE 15\fR
+.PP
+This will test whether priority fencing is working.
+This test should not be done on production systems.
+See also manual page iptables(8) and corosync.conf(5).
+.br
+Note: Understand the impact before trying.
+.PP
+1. Check ControlZone services and Linux cluster for clean and idle state.
+.PP
+2. On passive node, block corosync ports.
+.RS 2
+# PORTS="5404,5405,5406,5407,5408,5409,5410,5411,5412"
+.br
+# iptables -I INPUT -p udp -m multiport --ports "$PORTS" -j DROP & exit
+.RE
+.PP
+3. On active node, watch cluster reaction.
+.RS 2
+# crm_mon -r
+.RE
+.PP
 .\"
 .SH FILES
 .\"
@@ -234,8 +256,8 @@ the Java 1.7 runtime environment shipped with the OS, potentially $JAVA_HOME
 .\"
 In case of any problem, please use your favourite SAP support process to open a
 request for the component BC-OP-LNX-SUSE.
-.br
-Please report feedback and suggestions to feedback@suse.com.
+.\" .br
+.\" TODO: Please report feedback and suggestions to feedback@suse.com.
 .PP
 .\"
 .SH SEE ALSO
@@ -265,7 +287,7 @@ F.Herschel, L.Pinne
 .\"
 .SH COPYRIGHT
 .\"
-(c) 2023-2025 SUSE LLC
+(c) 2023-2026 SUSE LLC
 .br
 SAPCMControlZone comes with ABSOLUTELY NO WARRANTY.
 .br
